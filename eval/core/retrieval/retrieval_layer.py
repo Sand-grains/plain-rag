@@ -3,7 +3,7 @@
 核心特性：
     - 第一轮：计算 6 项 IR 指标 + 诊断分类（accept / recall_miss / file_miss / ranking_miss / low_precision）
     - 第二轮：对 low_precision 样本追加检测（判定是检索问题还是标注问题）
-    - CANDIDATE_K = TOP_K * 2，候选池比最终输出大，用于 ranking_miss 检测
+    - CANDIDATE_K = TOP_K * 2，候选池应比最终输出大，用于 ranking_miss 检测
     - 父子双轨: 父块指标 + dense 子块指标（child_hit_at_k / child_recall_at_k，仅对标注了 expected_child_ids 的 query 参与）
     - 聚合输出 LayerOutput（逐 query 结果 + 聚合指标 + 按 category/difficulty 分组）
 
@@ -113,7 +113,8 @@ def _first_pass(retriever: Retriever, items: list[BenchmarkItem]) -> list[Retrie
         relevant_ids = set(item.expected_parent_ids)
         retrieved_ids = [chunk.chunk_id for chunk in final_chunks]
         candidate_ids = [chunk.chunk_id for chunk in all_parents]
-        dense_child_ids = [chunk.chunk_id for chunk in dense_children]
+        # child 层指标输入切片到 CANDIDATE_K * 2 : reranker 开时 dense 候选扩到 40, 切片恢复 child 口径可比
+        dense_child_ids = [chunk.chunk_id for chunk in dense_children[:CANDIDATE_K * 2]]
         expected_child_ids = set(item.expected_child_ids)
         child_annotated = bool(expected_child_ids)
         retrieved_files = list({chunk.origin_metadata.title + chunk.origin_metadata.doc_type for chunk in final_chunks})
