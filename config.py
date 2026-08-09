@@ -23,7 +23,7 @@
     - EVAL_THREADPOOL_WORKERS / JUDGE_MAX_RETRY / JUDGE_BASE_DELAY / JUDGE_DEADLINE: Eval 并发与重试参数
     - COST_INPUT_1K_PRICE / COST_OUTPUT_1K_PRICE: 成本估算单价
     - STORAGE_BACKEND: 存储后端 "memory" | "external"
-    - RERANKER_* / MERGE_*: Phase 3 精排（CrossEncoder 重排 + auto-merge 后处理）配置
+    - RERANKER_* / MERGE_*: 精排（CrossEncoder 重排 + auto-merge 后处理）配置
     - 基础设施连接参数（MILVUS / ES / PostgreSQL / Redis）已下沉至 infra/config.py
 """
 
@@ -98,19 +98,19 @@ RRF_K = 60                # RRF 融合 k 值（从 retriever.py 迁入）
 # ========== Reranker==========
 RERANKER_ENABLED: bool = os.getenv("RERANKER_ENABLED", "1") == "1"   # A/B 基线开关
 RERANKER_MODEL_PATH: str = os.getenv("RERANKER_MODEL_PATH")          # 本地Reranker模型离线路径
-RERANKER_TOP_K: int = 40           # 送入 reranker 的候选数（语料无关常数，扩张下单 query 延迟稳定）
-RERANKER_CACHE_TTL: int = 259200   # Redis 缓存 TTL(秒, 72h)
-RERANKER_ENRICHMENT: bool = os.getenv("RERANKER_ENRICHMENT", "0") == "1"   # pair enrichment 开关, 3a 基线后 A/B
+RERANKER_TOP_K: int = 40                                             # 送入 reranker 的候选数（语料无关常数）
+RERANKER_CACHE_TTL: int = 259200                                     # Redis 缓存 TTL(秒, 72h)
+RERANKER_ENRICHMENT: bool = os.getenv("RERANKER_ENRICHMENT", "0") == "1"   # 给 CrossEncoder 的输入 pair 追加结构上下文的A/B实验开关; 重排器不仅看到 chunk还可看到它在文档树里的位置（基线后 A/B）
 RERANKER_BATCH_SIZE: int = int(os.getenv("RERANKER_BATCH_SIZE", "32"))    # CrossEncoder predict 批次
 RERANKER_FP16: bool = os.getenv("RERANKER_FP16", "1") == "1"              # GPU 下 FP16(无 CUDA 自动回退 FP32)
 RERANKER_MAX_LENGTH: int = int(os.getenv("RERANKER_MAX_LENGTH", "1024"))  # CrossEncoder max_length（实测父块 p99=1000/max=1887 tok，1024 覆盖 99.1%；512 截断 13.6%）
-RERANKER_POOL_K: int = int(os.getenv("RERANKER_POOL_K", "40" if RERANKER_ENABLED else "0"))  # 召回全量候选数（向量库 + BM25 各取多少条）  解耦 rerank 开关: 控制组 RERANKER_ENABLED=0 RERANKER_POOL_K=40
+RERANKER_POOL_K: int = int(os.getenv("RERANKER_POOL_K", "40" if RERANKER_ENABLED else "0"))  # 召回的全量候选数（向量库 + BM25 各取多少条）  解耦 rerank 开关: 控制组 RERANKER_ENABLED=0 RERANKER_POOL_K=40
 RERANKER_AGENT_ENABLED: bool = os.getenv("RERANKER_AGENT_ENABLED", "0") == "1"   # agent 交互路径开关（默认关: eval 走 RERANKER_ENABLED）
 
 # ========== auto-merge==========
 MERGE_BOOST: float = float(os.getenv("MERGE_BOOST", "0.0"))   # 默认关闭
 MERGE_MIN_CHILD_HITS: int = 2    # 触发所需的最小非相邻子块命中数
-# G11 实测定案: 不加 score 下限 —— dense top-40 命中分数全 ≥0.47（达标父块 min-kept-hit p5=0.505）, 下限无约束力（0.5 仅滤 2.7%）
+# 不加 score 下限 —— dense top-40 命中分数全 ≥0.47（达标父块 min-kept-hit p5=0.505）, 下限无约束力（0.5 仅滤 2.7%）
 
 # Splitter 配置
 PARENT_CHUNK_SIZE = 1200   # 父块默认 chunk_size（flat_parent_child，父=4×子）
