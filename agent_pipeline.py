@@ -14,7 +14,7 @@
 """
 
 from pathlib import Path
-from config import LLM_API_KEY, LLM_MODEL_ID, LLM_BASE_URL, STORAGE_BACKEND  # 先加载 .env，确保后续导入的库能读到环境变量
+from config import LLM_API_KEY, LLM_MODEL_ID, LLM_BASE_URL, STORAGE_BACKEND, RERANKER_AGENT_ENABLED  # 先加载 .env，确保后续导入的库能读到环境变量
 from hello_agents import HelloAgentsLLM, SimpleAgent, ToolRegistry
 from indexing.loader import load
 from indexing.router import Router
@@ -83,7 +83,7 @@ llm = HelloAgentsLLM(
 )
 
 registry = ToolRegistry()
-retriever = Retriever(store)                             # 检索层封装
+retriever = Retriever(store, rerank_enabled=RERANKER_AGENT_ENABLED)   # agent 交互路径默认关 rerank（不常驻重排模型）
 registry.register_tool(RAGSearchTool(retriever))         # 将检索工具注册到工具注册表
 
 agent = SimpleAgent(
