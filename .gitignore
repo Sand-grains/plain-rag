@@ -14,3 +14,9 @@ units.md
 *.png
 .claude/
 .synthetic_cache/
+# pytest-cov 运行时数据
+.coverage
+.coverage.*
+htmlcov/
+
+tests/report.md
