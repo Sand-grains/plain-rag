@@ -34,10 +34,10 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent / ".env")  # 基于 config.py 自身位置定位 .env, 不依赖 CWD
 
-# LLM API 配置，从 .env 读取
-LLM_API_KEY = os.getenv("LLM_API_KEY")        # API 密钥
-LLM_MODEL_ID = os.getenv("LLM_MODEL_ID")      # 模型 ID，如 deepseek-v4-pro
-LLM_BASE_URL = os.getenv("LLM_BASE_URL")      # API 地址，如 https://api.deepseek.com
+# LLM API 配置，从 .env 读取（默认空串：无 .env 的 CI 环境也能 import，GENERATOR_CONFIG_HASH 只需确定性）
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")        # API 密钥
+LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "")      # 模型 ID，如 deepseek-v4-pro
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")      # API 地址，如 https://api.deepseek.com
 
 EVAL_LLM_MODEL_ID = os.getenv("EVAL_LLM_MODEL_ID", "deepseek-v4-flash")  # 评估专用低成本模型
 
