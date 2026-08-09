@@ -36,6 +36,25 @@ cpu = ["torch", "torchvision"]
 [tool.setuptools.packages.find]
 include = ["indexing*", "retrieval*", "agent*", "preprocess*"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --cov -m \"not external and not slow\" --durations=5"
+markers = [
+  "unit: 纯函数/模块级",
+  "integration: 模块间/双后端",
+  "regression: 回归迁移",
+  "external: 真连 PgSQL+ES+Milvus",
+  "slow: 慢",
+]
+
+[tool.coverage.run]
+source = ["config", "indexing", "retrieval", "preprocess", "eval", "infra", "agent"]
+branch = true
+omit = ["*/monitor/monitor_panel.py"]
+
+[tool.coverage.report]
+exclude_lines = ["except Exception", "pass"]
+
 [tool.uv.sources]
 torch = { index = "pytorch-cu128" }
 torchvision = { index = "pytorch-cu128" }
@@ -48,3 +67,9 @@ explicit = true
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
