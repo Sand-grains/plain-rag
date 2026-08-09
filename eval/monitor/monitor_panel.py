@@ -411,8 +411,8 @@ class MonitorPanel:
             if rerank_hit_rate is None:
                 rerank_line = "—"  # 无 rerank 调用（rerank 关 / 基线 / 控制组）
             else:
-                from retrieval.reranker import get_rerank_cache_stats
-                rerank_stats = get_rerank_cache_stats()
+                from retrieval.reranker import get_rerank_cache_statistics
+                rerank_stats = get_rerank_cache_statistics()
                 rerank_line = f"{rerank_stats['hits']} hit / {rerank_stats['misses']} miss ({rerank_hit_rate:.1%})"
             print(f"  Generator 缓存: {generator_rate}")
             print(f"  Judge 缓存:     {judge_rate}")

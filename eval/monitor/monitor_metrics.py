@@ -136,8 +136,8 @@ class MonitorMetrics:
     @property
     def rerank_cache_hit_rate(self) -> float | None:
         """rerank 缓存命中率；无任何 rerank 调用时返回 None（面板/报告显示 —）。"""
-        from retrieval.reranker import get_rerank_cache_stats
-        stats = get_rerank_cache_stats()
+        from retrieval.reranker import get_rerank_cache_statistics
+        stats = get_rerank_cache_statistics()
         total = stats["hits"] + stats["misses"]
         return stats["hits"] / total if total > 0 else None
 
