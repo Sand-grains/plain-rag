@@ -1,6 +1,6 @@
 """PostgreSQL 客户端：进行父块存储 + status 状态机 + 回滚清理 若干数据库操作
 
-Phase 2 起表名为 parent_chunks（父块集合，检索/benchmark 单元），
+表名为 parent_chunks（父块集合，检索/benchmark 单元），
 子块不入库（Milvus 存向量，metadata.parent_id 关联父块）。
 """
 from __future__ import annotations
@@ -50,7 +50,7 @@ class PgSQLClient:
         cursor.close()
 
     def drop_legacy_tables(self) -> None:
-        """迁移用：删除 Phase 1 遗留的 chunks 孤儿表。"""
+        """迁移用：删除遗留的 chunks 孤儿表。"""
         cursor = self._conn.cursor()
         cursor.execute("DROP TABLE IF EXISTS chunks")
         cursor.close()

@@ -1,6 +1,6 @@
 """Benchmark 标注工具：逐块标注 expected_chunk_ids (expected_parent_ids, expected_child_ids) + relevance + difficulty。
 
-Phase 2：检索/benchmark 单元为**父块**，标注父块 id。展示父块全文 + section_path。
+检索/benchmark 单元为**父块**，标注父块 id。展示父块全文 + section_path。
 
 特性：
   - 启动时可指定从第 N 条开始（断点续标）

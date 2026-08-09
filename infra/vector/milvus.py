@@ -1,6 +1,6 @@
 """Milvus 客户端：collection 管理 + Dense 向量检索（IP 度量 = 余弦相似度）。
 
-Phase 2 起 collection 存子块（rag_child_chunks），行含 parent_id 关联父块。
+collection 存子块（rag_child_chunks），行含 parent_id 关联父块。
 子块是稠密检索单元，检索结果由 IndexStore 拼成带父块元数据的 Chunk。
 """
 from __future__ import annotations
