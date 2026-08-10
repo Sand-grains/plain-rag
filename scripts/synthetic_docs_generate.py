@@ -1,6 +1,6 @@
 """批量生成中文技术笔记干扰语料（needle_test 配套生成器）。
 
-v2 相对 v1 的关键改造（设计见 guide/synthetic_data.md §三）：
+v2 相对 v1 的关键改造（设计见 steps/synthetic_data.md §三）：
     - 主题池：模板 × 槽位池组合式展开（TOPIC_TEMPLATES），按目标总量 2N 的 1.5× 造头寸
     - topic 级预筛：与 benchmark 全部 query+reference_facts 的 embedding 距离，剔除"贴脸"主题
     - 两分层：同一主题池按距离分 noisy(近) / control(远)，N 严格相等
@@ -286,7 +286,7 @@ class RateLimitCooling:
 # ---- 质量门槛 ----
 
 def passes_quality(text: str) -> bool:
-    """判断生成文本是否过 Markdown 结构质量门槛（guide §2.14）。"""
+    """判断生成文本是否过 Markdown 结构质量门槛（steps §2.14）。"""
     report = diagnose(text)
     return (
         report.has_h1

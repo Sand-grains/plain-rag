@@ -1,6 +1,6 @@
 """Needle Test v2：验证追加"干扰文档"后检索质量是否下降（三组索引 + 统计判定）。
 
-v2 相对 v1 的关键改造（设计见 guide/synthetic_data.md §三.8）：
+v2 相对 v1 的关键改造（设计见 steps/synthetic_data.md §三.8）：
     - 三组索引：clean / +N control / +N noisy（control 与 noisy 的 N 严格相等，从 manifest 读 stratum 分组）
     - 干扰物渗透率：noisy run 中 top-5 含 ≥1 篇 noisy 文档的 query 比例，< 阈值 → inconclusive（exit 2）
     - 判定：差分 recall_control − recall_noisy ≥ 0.05 → FAIL（exit 1），否则 PASS（exit 0）

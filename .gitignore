@@ -5,7 +5,7 @@
 .vector_cache/
 __pycache__/
 data/
-guide/
+steps/
 eval/results/
 slight_rag.egg-info/
 *.png
