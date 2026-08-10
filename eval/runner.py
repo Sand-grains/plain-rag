@@ -395,7 +395,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     for noisy in ("httpx", "openai", "jieba", "sentence_transformers"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
-    parser = argparse.ArgumentParser(description="slight_rag eval runner")
+    parser = argparse.ArgumentParser(description="plain-rag eval runner")
     parser.add_argument("--mode", choices=["retrieval", "full"], help="评估模式")
     parser.add_argument("--benchmark", default="benchmark/private_v6.json", help="benchmark 文件路径")
     parser.add_argument("--compare", nargs=2, metavar=("RUN_A", "RUN_B"), help="对比两次运行")

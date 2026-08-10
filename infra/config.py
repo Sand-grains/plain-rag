@@ -16,7 +16,7 @@ from config import _PROJECT_ROOT  # 触发 load_dotenv()，保证下方 os.geten
 
 # Redis 缓存配置
 REDIS_CONNECTION_URL = os.getenv("REDIS_CONNECTION_URL", "redis://localhost:6379/0")
-REDIS_KEY_PREFIX = os.getenv("REDIS_KEY_PREFIX", "slight_rag")
+REDIS_KEY_PREFIX = os.getenv("REDIS_KEY_PREFIX", "plain_rag")
 REDIS_DEFAULT_TTL = int(os.getenv("REDIS_DEFAULT_TTL", "259200"))  # 72h
 
 # Milvus 稠密向量检索配置

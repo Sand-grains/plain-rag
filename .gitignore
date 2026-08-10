@@ -7,7 +7,7 @@ __pycache__/
 data/
 steps/
 eval/results/
-slight_rag.egg-info/
+plain_rag.egg-info/
 *.png
 .claude/
 .synthetic_cache/

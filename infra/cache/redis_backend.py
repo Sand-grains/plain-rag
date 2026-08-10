@@ -9,7 +9,7 @@
 用法示例::
 
     from infra.cache.redis_backend import RedisBackend
-    backend = RedisBackend("redis://localhost:6379/0", key_prefix="slight_rag")
+    backend = RedisBackend("redis://localhost:6379/0", key_prefix="plain_rag")
     backend.set("key", "value", ttl_seconds=3600)
 
 公共接口：
@@ -23,7 +23,7 @@ from infra.cache.backend import CacheBackend
 class RedisBackend(CacheBackend):
     """Redis 缓存后端。一个实例持有一个连接池。"""
 
-    def __init__(self, redis_url: str, key_prefix: str = "slight_rag"):
+    def __init__(self, redis_url: str, key_prefix: str = "plain_rag"):
         self._client = redis.Redis.from_url(redis_url)
         self._prefix = key_prefix
 

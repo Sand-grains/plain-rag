@@ -211,7 +211,7 @@ class MonitorPanel:
         # Header
         redis_status = "connected" if self._redis_available else f"{C_RED}unavailable (no cache){C_RESET}"
         lines.append(f"{C_BOLD}{'═' * 76}{C_RESET}")
-        lines.append(f"  slight_rag eval · {self._eval_mode} mode · {self._benchmark_name} · {self.total_queries} queries")
+        lines.append(f"  plain-rag eval · {self._eval_mode} mode · {self._benchmark_name} · {self.total_queries} queries")
         lines.append(f"  GeneratorModel: {self._generator_model}  |  JudgeModel: {self._judge_model}")
         lines.append(f"  Redis: {redis_status}")
         lines.append(f"{C_BOLD}{'═' * 76}{C_RESET}")

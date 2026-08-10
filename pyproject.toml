@@ -1,5 +1,5 @@
 [project]
-name = "slight-rag"
+name = "plain-rag"
 version = "0.3.0"
 description = "从零构建的原生 RAG 系统，支持 Agent 编排与多层评估"
 requires-python = ">=3.11"

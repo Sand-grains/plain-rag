@@ -1,6 +1,6 @@
-"""integration：external 后端（G6 明示缺口）——默认排除，手动三服务 + SLIGHT_RAG_EXTERNAL=1 才跑。
+"""integration：external 后端（G6 明示缺口）——默认排除，手动三服务 + PLAIN_RAG_EXTERNAL=1 才跑。
 
-- `@pytest.mark.external` + `skipif(not SLIGHT_RAG_EXTERNAL)` 双重门控
+- `@pytest.mark.external` + `skipif(not PLAIN_RAG_EXTERNAL)` 双重门控
 - fixture 三端口探活（PgSQL/ES/Milvus），任一未开 → skip 而非 fail
 - 用例写真实三库（幂等，写前 rollback_doc 清理），测试 doc_id 用 `ext_test_` 前缀便于排查
 - 不满足环境时整个模块 skip，不影响默认 `uv run pytest -q`（addopts 已排除 external）
@@ -15,8 +15,8 @@ from indexing.chunk import Chunk, DocMetadata
 pytestmark = [
     pytest.mark.external,
     pytest.mark.skipif(
-        not os.getenv("SLIGHT_RAG_EXTERNAL"),
-        reason="external 回归为明示缺口：需 SLIGHT_RAG_EXTERNAL=1 且三服务在线",
+        not os.getenv("PLAIN_RAG_EXTERNAL"),
+        reason="external 回归为明示缺口：需 PLAIN_RAG_EXTERNAL=1 且三服务在线",
     ),
 ]
 
