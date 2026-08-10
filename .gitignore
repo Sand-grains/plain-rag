@@ -8,9 +8,6 @@ data/
 guide/
 eval/results/
 slight_rag.egg-info/
-add_up.md
-question_set.md
-units.md
 *.png
 .claude/
 .synthetic_cache/
