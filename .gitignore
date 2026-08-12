@@ -1,19 +1,35 @@
+# IDE
 .idea/
-# Virtual environments
+
+# 环境
 .env
+
+# 虚拟环境
 .venv/
 .vector_cache/
 __pycache__/
+
+# 语料
 data/
-steps/
+
+# 项目迭代开发文档
+docs/inner
+PLAN.md
+PROGRESS.md
+TODO.md
+
+# 评测结果
 eval/results/
+
+
 plain_rag.egg-info/
-*.png
 .claude/
 .synthetic_cache/
+
 # pytest-cov 运行时数据
 .coverage
 .coverage.*
 htmlcov/
 
+# 测试报告
 tests/report.md
