@@ -44,12 +44,11 @@ uv run python -m eval.runner --mode full
 9. external 前必须 infra_check
 10. 不移除空文档跳过逻辑
 11. 外部模式三库写入顺序不可乱
-12. 不引入 asyncio/tqdm/事件总线/Web Dashboard
 
 
 ## 必要说明
 eval/results/、data/、tests/report.md 是 gitignored 输出, 默认不去里面找实现
-
+docs/inner/plan/read和docs/inner/adr/read 是用户阅读的, 默认别去里面
 
 ## 专题文档路由
 - `docs/inner/code-style.md` — 写新代码/改代码前必读(docstring/命名/注解)
