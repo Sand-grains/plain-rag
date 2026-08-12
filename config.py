@@ -1,4 +1,5 @@
-"""项目根配置：LLM API、Embedding 模型、chunk 参数、eval 并发与重试、Generator 配置指纹。
+"""项目根配置：各模块横切配置
+注: infra (Redis/Milvus/ES/PgSQL) 的连接参数分离到 infra/config.py 中独立配置。
 
 核心特性：
     - 所有路径基于 __file__ 推导 _PROJECT_ROOT，不依赖 CWD
@@ -87,7 +88,6 @@ MONITOR_PANEL_MODE = os.getenv("MONITOR_PANEL_MODE", "ansi")  # "ansi" 或 "plai
 EMBEDDING_MODEL_PATH = "D:\Model\BGE-M3"  # BGE-M3, 1024 维, 本地路径
 
 # chunk配置层
-# CHUNK_SIZE = 500  CHUNK_OVERLAP = 100  # 滑动窗口
 CHILD_CHUNK_SIZE = 300    # 子块默认 chunk_size（字符数）
 CHILD_OVERLAP = 50        # 子块默认 overlap（字符数）
 TOP_K = 5                 # 检索时返回相似度最高的 Top-K 个 chunk
