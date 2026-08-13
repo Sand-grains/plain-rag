@@ -1,5 +1,6 @@
 # IDE
 .idea/
+__pycache__/
 
 # 环境
 .env
@@ -7,29 +8,31 @@
 # 虚拟环境
 .venv/
 .vector_cache/
-__pycache__/
 
 # 语料
 data/
 
-# 项目迭代开发文档
+# 项目内部迭代开发
 docs/inner
 PLAN.md
 PROGRESS.md
-TODO.md
+scripts/docs-backup.sh
 
-# 评测结果
+# 评测报告
 eval/results/
 
-
-plain_rag.egg-info/
-.claude/
-.synthetic_cache/
+# 测试报告
+tests/report.md
 
 # pytest-cov 运行时数据
 .coverage
 .coverage.*
 htmlcov/
 
-# 测试报告
-tests/report.md
+plain_rag.egg-info/
+.claude/
+.synthetic_cache/
+
+
+
+
