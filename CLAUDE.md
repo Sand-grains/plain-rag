@@ -35,7 +35,7 @@ uv run python -m eval.runner --mode full
 ## 全局硬约束
 以下内容必须严格遵守
 1. 每次只做一个功能点, 每一个功能点都必须配套端到端测试, 验证通过(全绿)后才可开始下一个 (WIP=1)
-2. 禁止在实现功能A时"顺便"重构功能B
+2. 禁止在实现功能A时"顺便"重构功能B; 核心功能实现没验证通过前, 也不允许做任何重构。
 3. 新增核心逻辑或原有核心逻辑的变动必须配套测试并全绿
 4. 新增/修改代码必须遵循 docs/inner/code-style.md 中说明的约束
 5. 生成文档需严格遵守`docs/inner/doc-style.md`中的规范
@@ -47,12 +47,18 @@ uv run python -m eval.runner --mode full
 11. 不移除空文档跳过逻辑
 12. 外部模式三库写入顺序不可乱
 13. 改分块策略必须重标 benchmark
+14. e2e 非空必须配足够 timeout(registry 强制单一 floor 600s)且由 registry 校验; e2e 是冒烟门(抓崩溃/前置, 不抓指标回退), 指标回退靠人工看 eval 报告
 
 
 ## 必要说明
 eval/results/、data/、tests/report.md 是 gitignored 输出, 默认不去里面找实现
 docs/inner/plan/read和docs/inner/adr/read 是用户阅读的, 默认别去里面
-mermaid 图渲染: 图类型用 graph(flowchart 兼容旧渲染器); 节点文本含特殊字符(/ . + 全角标点)必须引号包裹, 如 A["text"]; 箭头一律用 ASCII ->, 不用 Unicode →; 生成文档后自查渲染, 不渲染即为失败
+mermaid 图渲染: 图类型用 graph 且必须带方向字母(如 graph LR / graph TD); 
+        不用 flowchart(旧渲染器不兼容); 
+        裸 graph 无方向在 mermaid v8.4.0 (Typora)下词法将报错黑屏; 
+        节点文本含特殊字符(/ . + 全角标点)必须引号包裹, 如 A["text"]; 
+        箭头一律用 ASCII ->, 不用 Unicode →; 
+        生成文档后自查渲染, 不渲染即为失败
 
 ## 专题文档路由
 - `docs/inner/code-style.md` — 写新代码/改代码前必读(docstring/命名/注解)
@@ -68,12 +74,29 @@ mermaid 图渲染: 图类型用 graph(flowchart 兼容旧渲染器); 节点文�
 
 
 ## 协作风格
-用户每次新开的会话, 交付每一个任务时, 你都要阅读 PROGRESS.md , 确认当前项目进度, 并获取PROGRESS.md中的相关计划文档, 再根据计划文档路由获取必要上下文(你所需要的信息都已包含在项目仓库里)。
+用户每次新开的会话, 给出一个需求/任务时, 你都要阅读 PROGRESS.md , 确认当前项目进度, 并获取PROGRESS.md中的相关计划文档, 再根据计划文档路由获取必要上下文(你所需要的信息都已包含在项目仓库里)。
+当你完成一个任务后, 请根据你所完成的计划文档, 更新PROGRESS.md
 
-【harness 治理】
-新功能点实现必须登记为 harness/features.yaml 的一项(行为+验证命令), 经 start→verify 收口; 未登记项不算进入治理, 也就不能进入实现。
-功能项实现状态(not_started/active/blocked/passing/regressed/abandoned) 只由 harness 命令决定, agent 只能提交 verify 请求, 不得自行宣布完成。
-完成与否以程序命令判定为准(严禁擅自决定): 
+【项目内 harness 治理】
+新功能点实现必须登记为 harness/features.yaml 的一项(行为+验证命令), 经 start → verify 收口; 未登记项不算进入治理, 也就不能进入实现。
+功能项实现状态(not_started/active/blocked/passed/regressed/abandoned) 只由 harness 命令决定, agent 只能提交 verify 请求, 不得自行宣布完成。
+
+任务完成定义:
+1. 单元测试通过
+2. 集成测试通过
+3. 端到端流程验证通过(涉及跨组件修改时必须通过)
+在第 1 层没通过时，禁止进入第 2 层
+在第 2 层没通过时，禁止进入第 3 层
+
+端到端验证(e2e)按改动范围经 `harness verify <ID> --e2e` 显式触发, 需要先问用户再执行:
+- 改检索链路(retriever/embedding/reranker/分块/索引) -> `uv run python -m eval.runner --mode retrieval --no-report`(免费, 全量, 终端出真指标)
+- 改生成/Judge/Agent 编排 -> `uv run python -m eval.runner --mode full --smoke`(计费, 限 5 条, error 退非零)
+- 两者都改 -> `--mode full --smoke`(含 L1 样本); 纯内部逻辑 -> e2e 置 null
+- 配 precheck 前置自检(如 `eval.runner --precheck`); 前置未满足不判回归, 重标注后同一项延续通过
+- 用户拒绝 e2e 须在 note 留痕(原因+风险自担), 该项计入"端到端未验"(harness status 可见)
+- e2e 一律不写 eval/results 质量报告, 质量报告只来自手动 eval 运行
+
+即完成与否以程序命令判定为准(严禁擅自决定): 
 - `uv run python -m harness status` (状态分布/健康度)
 - `uv run python -m harness verify <ID>` (跑门禁判通过)
 - `uv run python -m harness next` (出候选, 由用户拍板)
