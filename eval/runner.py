@@ -1,8 +1,11 @@
-"""Eval CLI 主入口：retrieval / full 两种评估模式 + --compare 对比。
+"""Eval CLI 主入口：retrieval / full 两种评估模式 + --precheck / --smoke / --no-report / --compare。
 
 核心特性：
     - --mode retrieval：仅 Layer 1 检索评估（不调 LLM，免费），MonitorPanel.final_report() 输出终端报告
     - --mode full：Layer 1 + Layer 2 完整评估（调 Judge LLM，计费），MonitorPanel daemon 实时面板 + 最终报告
+    - --precheck：独立前置自检（索引存在 + benchmark 标注有效 + 条目非空）, 返回 0/1
+    - --mode full --smoke：生成链路冒烟（限前 N 条完整 retrieve->generate->judge，有 error 退 3, 不写 eval/results 报告、不起 MonitorPanel daemon，供 harness e2e 门禁）
+    - --no-report：跳过 generate_report 与 timeline 落盘，保留终端报告（e2e 一律携带）
     - --compare RUN_A RUN_B：对比两次运行的指标差异
     - 外层 ThreadPoolExecutor（max_workers=EVAL_THREADPOOL_WORKERS）控 query 级并发，_evaluate_one 做 per-query 隔离
     - _load_previous_run() 加载最近一次 per_query.json 作为 Delta 基线
@@ -14,11 +17,15 @@
 
     uv run python -m eval.runner --mode retrieval
     uv run python -m eval.runner --mode full
+    uv run python -m eval.runner --precheck
+    uv run python -m eval.runner --mode full --smoke --limit 5
     uv run python -m eval.runner --compare 2026-07-26_120000 2026-07-26_150000
 
 公共接口：
     - run_retrieval_mode: Layer 1 检索评估
     - run_full_mode: Layer 1 + Layer 2 完整评估（含 MonitorPanel）
+    - run_precheck: 前置自检（索引/标注/条目）
+    - run_smoke_mode: 生成链路冒烟（限条数，error 退 3）
     - run_compare: 对比两次运行
     - main: argparse CLI 入口
 """
@@ -166,6 +173,42 @@ def _evaluate_one(item: BenchmarkItem, retriever: Retriever, generator: Generato
 
 # ---- 评估模式 ----
 
+def _prepare_eval(benchmark_path: str):
+    """前置自检 + 就绪: 索引存在 + benchmark 标注有效 + 条目非空; 未满足时打印原因并退出 1。
+
+    抽取自 run_retrieval_mode/run_full_mode 的公共前奏, 供 precheck / smoke 复用;
+    三者的前置判定与打印逐字一致, 保证 precheck 的"前置未满足"与 mode 运行的报错语义相同。
+
+    Args:
+        benchmark_path: benchmark 文件路径。
+
+    Returns:
+        tuple[Retriever, list[BenchmarkItem]]: 就绪的检索器与有效条目。
+
+    Raises:
+        SystemExit: 索引缺失 / benchmark 标注失效 / 条目为空时退出 1。
+    """
+    from eval.core.benchmark import load_benchmark
+
+    print(f"加载索引（{STORAGE_BACKEND} 模式）...")
+    store = IndexStore.vector_restore()
+    if store is None:
+        print("错误: 索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
+        sys.exit(1)
+    retriever = Retriever(store)
+
+    print(f"加载 benchmark: {benchmark_path}")
+    result = load_benchmark(benchmark_path, valid_chunk_ids=store.chunk_ids)
+    _abort_if_invalid_benchmark(result)
+    items = result.valid_items
+    total = len(items)
+    print(f"  条目: {total}")
+    if total == 0:
+        print("错误: benchmark 无有效条目，中止")
+        sys.exit(1)
+    return retriever, items
+
+
 def _abort_if_invalid_benchmark(result: BenchmarkLoadResult) -> None:
     """基准校验：expected_chunk_ids 与当前索引不一致 → 打印醒目警告并中止。
 
@@ -189,16 +232,16 @@ def _abort_if_invalid_benchmark(result: BenchmarkLoadResult) -> None:
     sys.exit(1)
 
 
-def run_retrieval_mode(benchmark_path: str) -> str:
+def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     """仅 Layer 1 检索评估（不调 LLM，免费），输出终端报告并落盘结果。
 
     Args:
         benchmark_path: benchmark 文件路径。
+        no_report: True 时跳过 generate_report 与 timeline 落盘，保留终端报告。
 
     Returns:
-        str：本次运行结果目录（eval/results/timeline/<ts>）。
+        str | None：本次运行结果目录（eval/results/timeline/<ts>）；no_report 时返回 None。
     """
-    from eval.core.benchmark import load_benchmark
     from eval.core.retrieval.retrieval_layer import run_retrieval_eval
     from eval.reporter import generate_report, build_run_info
     from eval.monitor import get_metrics, reset_metrics
@@ -207,22 +250,8 @@ def run_retrieval_mode(benchmark_path: str) -> str:
     reset_metrics()
     metrics = get_metrics()
 
-    print(f"加载索引（{STORAGE_BACKEND} 模式）...")
-    store = IndexStore.vector_restore()
-    if store is None:
-        print("错误: 索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
-        sys.exit(1)
-    retriever = Retriever(store)
-
-    print(f"加载 benchmark: {benchmark_path}")
-    result = load_benchmark(benchmark_path, valid_chunk_ids=store.chunk_ids)
-    _abort_if_invalid_benchmark(result)
-    items = result.valid_items
+    retriever, items = _prepare_eval(benchmark_path)
     total = len(items)
-    print(f"  条目: {total}")
-    if total == 0:
-        print("错误: benchmark 无有效条目，中止")
-        sys.exit(1)
 
     # MonitorPanel（仅 final_report, 无 daemon 线程）
     previous_per_query = _load_previous_run()
@@ -237,6 +266,8 @@ def run_retrieval_mode(benchmark_path: str) -> str:
     panel.query_count = total
     panel.final_report()
 
+    if no_report:
+        return None
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     results_dir = str(_PROJECT_ROOT / "eval" / "results" / "timeline" / timestamp)
     run_info = build_run_info(benchmark_path)
@@ -244,16 +275,16 @@ def run_retrieval_mode(benchmark_path: str) -> str:
     return results_dir
 
 
-def run_full_mode(benchmark_path: str) -> str:
+def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     """Layer 1 + Layer 2 完整评估（调 Judge LLM，计费），实时面板 + 落盘报告。
 
     Args:
         benchmark_path: benchmark 文件路径。
+        no_report: True 时跳过 generate_report 与 timeline 落盘，保留终端报告。
 
     Returns:
-        str：本次运行结果目录（eval/results/timeline/<ts>）。
+        str | None：本次运行结果目录（eval/results/timeline/<ts>）；no_report 时返回 None。
     """
-    from eval.core.benchmark import load_benchmark
     from eval.core.retrieval.retrieval_layer import run_retrieval_eval
     from eval.reporter import generate_report, build_run_info
     from eval.core.llm_as_judge.judge import _get_client
@@ -263,26 +294,12 @@ def run_full_mode(benchmark_path: str) -> str:
     reset_metrics()
     metrics = get_metrics()
 
-    print(f"加载索引（{STORAGE_BACKEND} 模式）...")
-    store = IndexStore.vector_restore()
-    if store is None:
-        print("错误: 索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
-        sys.exit(1)
-    retriever = Retriever(store)
+    retriever, items = _prepare_eval(benchmark_path)
+    total = len(items)
     generator = Generator(model=LLM_MODEL_ID)
 
     # 主线程预初始化 OpenAI client，避免并行区域多线程竞争
     _get_client()
-
-    print(f"加载 benchmark: {benchmark_path}")
-    result = load_benchmark(benchmark_path, valid_chunk_ids=store.chunk_ids)
-    _abort_if_invalid_benchmark(result)
-    items = result.valid_items
-    total = len(items)
-    print(f"  条目: {total}")
-    if total == 0:
-        print("错误: benchmark 无有效条目，中止")
-        sys.exit(1)
 
     # 加载上次运行（Delta 基线）
     previous_per_query = _load_previous_run()
@@ -344,6 +361,8 @@ def run_full_mode(benchmark_path: str) -> str:
     panel.final_report()
 
     # 写入文件报告
+    if no_report:
+        return None
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     results_dir = str(_PROJECT_ROOT / "eval" / "results" / "timeline" / timestamp)
     run_info = build_run_info(benchmark_path, run_mode="full")
@@ -353,6 +372,63 @@ def run_full_mode(benchmark_path: str) -> str:
 
     print(f"\n报告: {results_dir}")
     return results_dir
+
+
+SMOKE_DEFAULT_LIMIT = 5
+
+
+def run_precheck(benchmark_path: str) -> None:
+    """独立前置自检: 索引存在 + benchmark 标注有效 + 条目非空, 不跑 eval。
+
+    供 harness e2e 的 precheck 字段引用; 未满足时打印原因并退出 1（与 mode 运行报错语义一致）。
+
+    Args:
+        benchmark_path: benchmark 文件路径。
+
+    Raises:
+        SystemExit: 前置未满足时退出 1。
+    """
+    _prepare_eval(benchmark_path)
+    print("前置自检通过: 索引存在 + benchmark 标注有效 + 条目非空")
+
+
+def run_smoke_mode(benchmark_path: str, limit: int = SMOKE_DEFAULT_LIMIT) -> None:
+    """生成链路冒烟: 只跑前 limit 条完整 retrieve->generate->judge 路径。
+
+    e2e 是冒烟门不是质量门: 有 verdict=error 或 generator_error 的条目 → 退 3, 否则退 0。
+    独立驱动循环（不复用 run_full_mode 的 as_completed 循环, 其无条件调 panel.query_done）,
+    不写 eval/results 质量报告（不建 timeline、不调 generate_report）、不起 MonitorPanel daemon;
+    内部 _evaluate_one 的 get_panel 有 None 守卫, 无面板安全。
+
+    Args:
+        benchmark_path: benchmark 文件路径。
+        limit: 只评估前 N 条（query 级）, 默认 SMOKE_DEFAULT_LIMIT。
+
+    Raises:
+        SystemExit: 有异常条目时退出 3。
+    """
+    from eval.core.llm_as_judge.judge import _get_client
+    from eval.monitor import reset_metrics
+
+    reset_metrics()
+    retriever, items = _prepare_eval(benchmark_path)
+    generator = Generator(model=LLM_MODEL_ID)
+    _get_client()
+
+    selected = items[:limit]
+    print(f"[smoke] 冒烟评估前 {len(selected)}/{len(items)} 条 (limit={limit})...")
+    error_count = 0
+    for item in selected:
+        result = _evaluate_one(item, retriever, generator)
+        is_error = result.verdict == "error" or bool(result.generator_error)
+        if is_error:
+            error_count += 1
+        print(f"  {item.query_id}: verdict={result.verdict or 'n/a'}"
+              + ("  [error]" if is_error else ""))
+    if error_count:
+        print(f"[smoke] 结束: {error_count} 条异常 (verdict=error 或 generator_error), 冒烟未通过")
+        sys.exit(3)
+    print(f"[smoke] 结束: 无异常, 冒烟通过")
 
 
 def run_compare(run_a: str, run_b: str) -> None:
@@ -398,15 +474,24 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="plain-rag eval runner")
     parser.add_argument("--mode", choices=["retrieval", "full"], help="评估模式")
     parser.add_argument("--benchmark", default="benchmark/private_v6.json", help="benchmark 文件路径")
+    parser.add_argument("--precheck", action="store_true", help="前置自检(索引/标注/条目), 不跑 eval")
+    parser.add_argument("--smoke", action="store_true", help="生成链路冒烟(只跑前 limit 条, 隐含 --no-report)")
+    parser.add_argument("--limit", type=int, default=SMOKE_DEFAULT_LIMIT, help="smoke 只评估前 N 条")
+    parser.add_argument("--no-report", action="store_true", help="不写 eval/results 质量报告, 保留终端报告")
     parser.add_argument("--compare", nargs=2, metavar=("RUN_A", "RUN_B"), help="对比两次运行")
     args = parser.parse_args()
 
     if args.compare:
         run_compare(args.compare[0], args.compare[1])
+    elif args.precheck:
+        run_precheck(args.benchmark)
     elif args.mode == "retrieval":
-        run_retrieval_mode(args.benchmark)
+        run_retrieval_mode(args.benchmark, no_report=args.no_report)
     elif args.mode == "full":
-        run_full_mode(args.benchmark)
+        if args.smoke:
+            run_smoke_mode(args.benchmark, limit=args.limit)
+        else:
+            run_full_mode(args.benchmark, no_report=args.no_report)
     else:
         parser.print_help()
 
