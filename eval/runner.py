@@ -212,7 +212,7 @@ def _prepare_eval(benchmark_path: str):
 def _abort_if_invalid_benchmark(result: BenchmarkLoadResult) -> None:
     """基准校验：expected_chunk_ids 与当前索引不一致 → 打印醒目警告并中止。
 
-    分块策略变更后旧标注整体失效，继续跑会产出全零假数据，拒绝执行。
+    分块策略变更后旧标注整体失效，继续跑会产出假数据，拒绝执行。
 
     Args:
         result: benchmark 加载结果，含 invalid_chunk_ids 校验信息。
