@@ -1,0 +1,185 @@
+schema: 1
+milestone: 007-harness-governance
+items:
+- id: F01
+  behavior: 'harness-状态机: 编码转移表并拒绝非法转移'
+  behavior_hash: 554c49ed0080
+  gate: uv run pytest harness/tests/test_state_machine.py -q --cov=harness.core.state_machine
+    --cov-fail-under=90
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: '回归修复: 还原 F01 门禁'
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 8
+    coverage: 100.0
+    duration: 1.66
+    mode: gate
+- id: F02
+  behavior: 'harness-清单解析: features.yaml 解析/校验/渲染'
+  behavior_hash: 9d2313a458fb
+  gate: uv run pytest harness/tests/test_registry.py -q --cov=harness.core.registry
+    --cov-fail-under=75
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 19
+    coverage: 87.33999999999999
+    duration: 2.38
+    mode: gate
+- id: F03
+  behavior: 'harness-验证器: 退出码判定 + 两级验证'
+  behavior_hash: 50487297081f
+  gate: uv run pytest harness/tests/test_verifier.py -q --cov=harness.service.verifier
+    --cov-fail-under=90
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 13
+    coverage: 93.60000000000001
+    duration: 15.36
+    mode: gate
+- id: F04
+  behavior: 'harness-调度器: 只出候选'
+  behavior_hash: e738a5a088e0
+  gate: uv run pytest harness/tests/test_scheduler.py -q --cov=harness.service.scheduler
+    --cov-fail-under=90
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 4
+    coverage: 100.0
+    duration: 1.78
+    mode: gate
+- id: F05
+  behavior: 'harness-追踪器: 状态分布 + 健康度'
+  behavior_hash: 29d00b96ac7a
+  gate: uv run pytest harness/tests/test_tracker.py -q --cov=harness.service.tracker
+    --cov-fail-under=90
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 16
+    coverage: 100.0
+    duration: 1.78
+    mode: gate
+- id: F06
+  behavior: 'harness-报告器: PROGRESS.md 快照'
+  behavior_hash: c7cf64bbff85
+  gate: uv run pytest harness/tests/test_reporter.py -q --cov=harness.service.reporter
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 4
+    coverage: 88.71
+    duration: 1.92
+    mode: gate
+- id: F07a
+  behavior: 'harness-CLI 核心: start/verify/reactivate/abandon/block/note 子命令, 不依赖 F04-F06'
+  behavior_hash: 4fbfb7657e7f
+  gate: uv run pytest harness/tests/test_cli_core.py -q --cov=harness.cli --cov-fail-under=55
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 14
+    coverage: 62.580000000000005
+    duration: 16.91
+    mode: gate
+- id: F07b
+  behavior: 'harness-CLI 完整: next/status/verify-all/report 子命令, 依赖 F04-F06'
+  behavior_hash: 90cd38cc8a0e
+  gate: uv run pytest harness/tests/test_cli_full.py -q --cov=harness.cli --cov-fail-under=55
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 6
+    coverage: 65.64
+    duration: 9.25
+    mode: gate
+- id: F08
+  behavior: 'harness-端到端验证: full 字段/--full 旗标改 e2e/--e2e, precheck 前置自检, 按功能项声明端到端测评命令
+    (含eval --precheck/--smoke 模式)'
+  behavior_hash: 6fe2d5ab8ca2
+  gate: uv run pytest harness/tests/test_e2e.py tests/unit/test_eval_runner_modes.py
+    -q --cov=harness.service.verifier --cov=harness.core.registry --cov=harness.cli
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: null
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 29
+    coverage: 83.75
+    duration: 42.94
+    mode: gate
+- id: F09
+  behavior: 'harness-完成时间与状态语义: FeatureItem 增 finished_time 字段(active->passed 记录/巡检不刷新/regressed
+    清空/渲染展示), 状态 token passing 改 passed'
+  behavior_hash: c63c31848583
+  gate: uv run pytest harness/tests/test_registry.py harness/tests/test_state_machine.py
+    harness/tests/test_reporter.py -q --cov=harness.core.registry --cov=harness.core.state_machine
+    --cov=harness.service.reporter --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-14 18:54
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 35
+    coverage: 88.57000000000001
+    duration: 2.69
+    mode: gate
