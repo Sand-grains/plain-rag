@@ -5,7 +5,7 @@
 | ID | 行为 | 门禁验证 | 端到端验证 | 状态 | 完成时间 | 叙述 |
 | --- | --- | --- | --- | --- | --- | --- |
 | F01 | harness-状态机: 编码转移表并拒绝非法转移 | `uv run pytest harness/tests/test_state_machine.py -q --cov=harness.core.state_machine --cov-fail-under=90` | `-` | passed | - | 回归修复: 还原 F01 门禁 |
-| F02 | harness-清单解析: features.yaml 解析/校验/渲染 | `uv run pytest harness/tests/test_registry.py -q --cov=harness.core.registry --cov-fail-under=75` | `-` | passed | - | - |
+| F02 | harness-清单解析: features.yaml 解析/校验/渲染 | `uv run pytest harness/tests/test_registry.py -q --cov=harness.core.registry --cov=harness.core.models --cov=harness.core.persistence --cov=harness.core.render --cov-fail-under=75` | `-` | passed | - | - |
 | F03 | harness-验证器: 退出码判定 + 两级验证 | `uv run pytest harness/tests/test_verifier.py -q --cov=harness.service.verifier --cov-fail-under=90` | `-` | passed | - | - |
 | F04 | harness-调度器: 只出候选 | `uv run pytest harness/tests/test_scheduler.py -q --cov=harness.service.scheduler --cov-fail-under=90` | `-` | passed | - | - |
 | F05 | harness-追踪器: 状态分布 + 健康度 | `uv run pytest harness/tests/test_tracker.py -q --cov=harness.service.tracker --cov-fail-under=90` | `-` | passed | - | - |

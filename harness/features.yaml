@@ -17,12 +17,13 @@ items:
     exit_code: 0
     tests: 8
     coverage: 100.0
-    duration: 1.66
+    duration: 1.84
     mode: gate
 - id: F02
   behavior: 'harness-清单解析: features.yaml 解析/校验/渲染'
   behavior_hash: 9d2313a458fb
   gate: uv run pytest harness/tests/test_registry.py -q --cov=harness.core.registry
+    --cov=harness.core.models --cov=harness.core.persistence --cov=harness.core.render
     --cov-fail-under=75
   e2e: null
   precheck: null
@@ -33,9 +34,9 @@ items:
   timeout: null
   last_verify:
     exit_code: 0
-    tests: 19
-    coverage: 87.33999999999999
-    duration: 2.38
+    tests: 23
+    coverage: 88.31
+    duration: 2.36
     mode: gate
 - id: F03
   behavior: 'harness-验证器: 退出码判定 + 两级验证'
@@ -53,7 +54,7 @@ items:
     exit_code: 0
     tests: 13
     coverage: 93.60000000000001
-    duration: 15.36
+    duration: 16.14
     mode: gate
 - id: F04
   behavior: 'harness-调度器: 只出候选'
@@ -89,7 +90,7 @@ items:
     exit_code: 0
     tests: 16
     coverage: 100.0
-    duration: 1.78
+    duration: 1.88
     mode: gate
 - id: F06
   behavior: 'harness-报告器: PROGRESS.md 快照'
@@ -106,8 +107,8 @@ items:
   last_verify:
     exit_code: 0
     tests: 4
-    coverage: 88.71
-    duration: 1.92
+    coverage: 88.89
+    duration: 1.94
     mode: gate
 - id: F07a
   behavior: 'harness-CLI 核心: start/verify/reactivate/abandon/block/note 子命令, 不依赖 F04-F06'
@@ -124,7 +125,7 @@ items:
     exit_code: 0
     tests: 14
     coverage: 62.580000000000005
-    duration: 16.91
+    duration: 18.02
     mode: gate
 - id: F07b
   behavior: 'harness-CLI 完整: next/status/verify-all/report 子命令, 依赖 F04-F06'
@@ -141,7 +142,7 @@ items:
     exit_code: 0
     tests: 6
     coverage: 65.64
-    duration: 9.25
+    duration: 9.2
     mode: gate
 - id: F08
   behavior: 'harness-端到端验证: full 字段/--full 旗标改 e2e/--e2e, precheck 前置自检, 按功能项声明端到端测评命令
@@ -160,8 +161,8 @@ items:
   last_verify:
     exit_code: 0
     tests: 29
-    coverage: 83.75
-    duration: 42.94
+    coverage: 85.03
+    duration: 51.08
     mode: gate
 - id: F09
   behavior: 'harness-完成时间与状态语义: FeatureItem 增 finished_time 字段(active->passed 记录/巡检不刷新/regressed
@@ -180,6 +181,6 @@ items:
   last_verify:
     exit_code: 0
     tests: 35
-    coverage: 88.57000000000001
-    duration: 2.69
+    coverage: 89.52
+    duration: 2.48
     mode: gate
