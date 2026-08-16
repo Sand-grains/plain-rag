@@ -151,3 +151,8 @@ STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "memory")
 # 成本监控配置
 COST_INPUT_1K_PRICE = float(os.getenv("COST_INPUT_1K_PRICE", "0.0003"))
 COST_OUTPUT_1K_PRICE = float(os.getenv("COST_OUTPUT_1K_PRICE", "0.0012"))
+
+# 可观测性配置
+OBS_ENABLED = os.getenv("OBS_ENABLED", "1") == "1"    # 观测总开关(日志落盘/trace)
+OBS_LOG_DIR = str(_PROJECT_ROOT / "logs")  # 日志目录(__file__ 推导, CWD 无关)
+OBS_SANITIZE = os.getenv("OBS_SANITIZE", "0") == "1"  # trace.jsonl 落盘脱敏开关, 默认关
