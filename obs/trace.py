@@ -100,7 +100,7 @@ def session_traces() -> list[RagTrace]:
 
 
 def clear_session_traces() -> None:
-    """清空收集器(run 开头 begin_run / 收尾 finalize_traces 消费后各一次)。"""
+    """清空收集器(run 开头 reset_traces / 收尾 finalize_traces 消费后各一次)。"""
     _session_traces.clear()
 
 
