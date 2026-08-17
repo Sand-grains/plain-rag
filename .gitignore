@@ -13,6 +13,7 @@ __pycache__/
 data/
 
 # 项目内部迭代开发
+CLAUDE.md
 docs/inner
 PLAN.md
 PROGRESS.md
@@ -20,6 +21,9 @@ scripts/docs-backup.sh
 
 # 评测报告
 eval/results/
+
+# 观测日志
+logs/
 
 # 测试报告
 tests/report.md
@@ -30,7 +34,8 @@ tests/report.md
 htmlcov/
 
 plain_rag.egg-info/
-.claude/
+.claude/*
+!.claude/commands/
 .synthetic_cache/
 
 
