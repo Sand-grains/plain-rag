@@ -22,7 +22,7 @@ from pathlib import Path
 import config
 from obs import trace as trace_module
 from obs.failure_attribution import classify_failure
-from obs.retention import prune_logs
+from obs.retention_policy import prune_logs
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ def finalize_traces(benchmark_items, judge_results, layer1_results=None, out_dir
         for payload in payloads:
             file_handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
     trace_module.clear_session_traces()
-    prune_logs(logs_dir=logs_root, max_traces=None, max_total=200)  # 任何时候总日志文件数硬上限
+    prune_logs(logs_dir=logs_root, max_traces=None, max_all_logs=200)  # 任何时候总日志文件数硬上限
     logger.info("trace 落盘: %s (%d 条)", trace_path, len(payloads))
     return trace_path
 
