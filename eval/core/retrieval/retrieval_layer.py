@@ -20,6 +20,7 @@
 """
 
 import statistics
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 
 from eval.core.benchmark import BenchmarkItem
@@ -70,17 +71,20 @@ class LayerOutput:
 CANDIDATE_K = TOP_K * 2
 
 
-def run_retrieval_eval(retriever: Retriever, items: list[BenchmarkItem]) -> LayerOutput:
+def run_retrieval_eval(retriever: Retriever, items: list[BenchmarkItem],
+                       per_query_ctx=None) -> LayerOutput:
     """执行 Layer 1 检索评估，含两轮 low_precision 判定。
 
     Args:
         retriever: 检索器，提供 retrieve_with_dense_child 双路召回。
         items: benchmark 条目列表。
+        per_query_ctx: 可选回调, callable(item) -> 上下文管理器, 包每 query 处理
+            (检索模式 per-query trace_scope hook; retrieval_layer 本身不 import obs, 只调可选回调)。
 
     Returns:
         LayerOutput: 包含逐 query 结果、聚合指标、分组统计。
     """
-    results = _first_pass(retriever, items)
+    results = _first_pass(retriever, items, per_query_ctx)
     results = _second_pass_low_precision(results)
     aggregate = _aggregate(results)
     by_category = _group_by(results, key=lambda result: result.category)
@@ -93,70 +97,74 @@ def run_retrieval_eval(retriever: Retriever, items: list[BenchmarkItem]) -> Laye
     )
 
 
-def _first_pass(retriever: Retriever, items: list[BenchmarkItem]) -> list[RetrievalEvalResult]:
+def _first_pass(retriever: Retriever, items: list[BenchmarkItem],
+                per_query_ctx=None) -> list[RetrievalEvalResult]:
     """第一轮：计算指标。ranking_miss 通过 candidate 级检索判定。
 
     Args:
         retriever: 检索器，提供 retrieve_with_dense_child 双路召回。
         items: benchmark 条目列表。
+        per_query_ctx: 可选回调, callable(item) -> 上下文管理器, 未提供时用 no-op(零开销)。
 
     Returns:
         list[RetrievalEvalResult]：逐 query 的检索评估结果，诊断含 pending（待第二轮判定）。
     """
     results = []
+    ctx_fn = per_query_ctx or (lambda item: nullcontext())
     for item in items:
-        # 用 top_k * 2 做候选检索，前 TOP_K 为 final，剩余为 candidate-only
-        all_parents, dense_children = retriever.retrieve_with_dense_child(item.query, top_k=CANDIDATE_K)
-        final_chunks = all_parents[:TOP_K]
-        candidate_only = all_parents[TOP_K:]
+        with ctx_fn(item):
+            # 用 top_k * 2 做候选检索，前 TOP_K 为 final，剩余为 candidate-only
+            all_parents, dense_children = retriever.retrieve_with_dense_child(item.query, top_k=CANDIDATE_K)
+            final_chunks = all_parents[:TOP_K]
+            candidate_only = all_parents[TOP_K:]
 
-        relevant_ids = set(item.expected_parent_ids)
-        retrieved_ids = [chunk.chunk_id for chunk in final_chunks]
-        candidate_ids = [chunk.chunk_id for chunk in all_parents]
-        # child 层指标输入切片到 CANDIDATE_K * 2 : reranker 开时 dense 候选扩到 40, 切片恢复 child 口径可比
-        dense_child_ids = [chunk.chunk_id for chunk in dense_children[:CANDIDATE_K * 2]]
-        expected_child_ids = set(item.expected_child_ids)
-        child_annotated = bool(expected_child_ids)
-        retrieved_files = list({chunk.origin_metadata.title + chunk.origin_metadata.doc_type for chunk in final_chunks})
+            relevant_ids = set(item.expected_parent_ids)
+            retrieved_ids = [chunk.chunk_id for chunk in final_chunks]
+            candidate_ids = [chunk.chunk_id for chunk in all_parents]
+            # child 层指标输入切片到 CANDIDATE_K * 2 : reranker 开时 dense 候选扩到 40, 切片恢复 child 口径可比
+            dense_child_ids = [chunk.chunk_id for chunk in dense_children[:CANDIDATE_K * 2]]
+            expected_child_ids = set(item.expected_child_ids)
+            child_annotated = bool(expected_child_ids)
+            retrieved_files = list({chunk.origin_metadata.title + chunk.origin_metadata.doc_type for chunk in final_chunks})
 
-        has_intersection = any(retrieved_id in relevant_ids for retrieved_id in retrieved_ids)
-        has_candidate_intersection = any(retrieved_id in relevant_ids for retrieved_id in candidate_ids)
-        expected_files_stems = {stem(filepath) for filepath in item.expected_files}
-        retrieved_files_stems = {stem(filepath) for filepath in retrieved_files}
-        file_miss_flag = not expected_files_stems & retrieved_files_stems if expected_files_stems else False
+            has_intersection = any(retrieved_id in relevant_ids for retrieved_id in retrieved_ids)
+            has_candidate_intersection = any(retrieved_id in relevant_ids for retrieved_id in candidate_ids)
+            expected_files_stems = {stem(filepath) for filepath in item.expected_files}
+            retrieved_files_stems = {stem(filepath) for filepath in retrieved_files}
+            file_miss_flag = not expected_files_stems & retrieved_files_stems if expected_files_stems else False
 
-        if not has_intersection:
-            if has_candidate_intersection:
-                diagnosis = "ranking_miss"
-            elif file_miss_flag:
-                diagnosis = "file_miss"
+            if not has_intersection:
+                if has_candidate_intersection:
+                    diagnosis = "ranking_miss"
+                elif file_miss_flag:
+                    diagnosis = "file_miss"
+                else:
+                    diagnosis = "recall_miss"
             else:
-                diagnosis = "recall_miss"
-        else:
-            diagnosis = "pending"  # 等第二轮 low_precision 判定
+                diagnosis = "pending"  # 等第二轮 low_precision 判定
 
-        results.append(RetrievalEvalResult(
-            query_id=item.query_id,
-            query=item.query,
-            category=item.category,
-            difficulty=item.difficulty,
-            recall_at_k=recall_at_k(retrieved_ids, relevant_ids, TOP_K),
-            precision_at_k=precision_at_k(retrieved_ids, relevant_ids, TOP_K),
-            hit_at_k=hit_at_k(retrieved_ids, relevant_ids, TOP_K),
-            mrr=mrr(retrieved_ids, relevant_ids),
-            map_at_k=avg_precision(retrieved_ids, relevant_ids, TOP_K),
-            ndcg_at_k=ndcg_at_k(retrieved_ids, item.relevance, TOP_K),
-            diagnosis=diagnosis,
-            final_chunk_ids=retrieved_ids,
-            candidate_chunk_ids=candidate_ids,
-            retrieved_files=retrieved_files,
-            child_hit_at_k=hit_at_k(dense_child_ids, expected_child_ids, len(dense_child_ids)),
-            child_recall_at_k=recall_at_k(dense_child_ids, expected_child_ids, len(dense_child_ids)),
-            child_annotated=child_annotated,
-            query_rewritten=item.query,
-            query_rewritten_flag="原",
-            final_context_text=_build_context(final_chunks),
-        ))
+            results.append(RetrievalEvalResult(
+                query_id=item.query_id,
+                query=item.query,
+                category=item.category,
+                difficulty=item.difficulty,
+                recall_at_k=recall_at_k(retrieved_ids, relevant_ids, TOP_K),
+                precision_at_k=precision_at_k(retrieved_ids, relevant_ids, TOP_K),
+                hit_at_k=hit_at_k(retrieved_ids, relevant_ids, TOP_K),
+                mrr=mrr(retrieved_ids, relevant_ids),
+                map_at_k=avg_precision(retrieved_ids, relevant_ids, TOP_K),
+                ndcg_at_k=ndcg_at_k(retrieved_ids, item.relevance, TOP_K),
+                diagnosis=diagnosis,
+                final_chunk_ids=retrieved_ids,
+                candidate_chunk_ids=candidate_ids,
+                retrieved_files=retrieved_files,
+                child_hit_at_k=hit_at_k(dense_child_ids, expected_child_ids, len(dense_child_ids)),
+                child_recall_at_k=recall_at_k(dense_child_ids, expected_child_ids, len(dense_child_ids)),
+                child_annotated=child_annotated,
+                query_rewritten=item.query,
+                query_rewritten_flag="原",
+                final_context_text=_build_context(final_chunks),
+            ))
     return results
 
 

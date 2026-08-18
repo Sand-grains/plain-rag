@@ -10,6 +10,7 @@
 - search_sparse 返回父块
 - get_parents 按 parent_id 取父块（RRF 融合后统一落到父块）
 """
+import logging
 import pickle
 from dataclasses import replace
 from pathlib import Path
@@ -21,6 +22,9 @@ from rank_bm25 import BM25Okapi
 from config import STORAGE_BACKEND, TOP_K, VECTOR_CACHE_DIR
 from indexing.chunk import Chunk, DocMetadata
 from indexing.chunk_ingest_ex import cleanup_suspending, ingest_doc
+from obs.trace_decorators import observe_stage
+
+logger = logging.getLogger(__name__)
 
 _MEMORY_FORMAT_VERSION = 1
 
@@ -169,6 +173,7 @@ class IndexStore:
             children = [chunk for chunk in self._children if chunk.metadata.get("parent_id") == parent_id]
         return sorted(children, key=lambda chunk: _chunk_seq(chunk.chunk_id))
 
+    @observe_stage("dense")
     def search_dense(self, query_vector: list[float], top_k: int = TOP_K) -> list[Chunk]:
         """稠密检索：返回子块 Chunk（含 metadata.parent_id）。
 
@@ -183,6 +188,7 @@ class IndexStore:
             return self._search_dense_external(query_vector, top_k)
         return self._search_dense_memory(query_vector, top_k)
 
+    @observe_stage("sparse")
     def search_sparse(self, query: str, top_k: int = TOP_K) -> list[Chunk]:
         """稀疏检索：返回父块 Chunk。
 
@@ -323,7 +329,7 @@ class IndexStore:
             with open(chunks_file, "rb") as file_handle:
                 payload = pickle.load(file_handle)
             if not isinstance(payload, tuple) or len(payload) != 3 or payload[0] != _MEMORY_FORMAT_VERSION:
-                print(f"[IndexStore] 缓存格式版本不符（期望 v{_MEMORY_FORMAT_VERSION}），触发重索引：{chunks_file}")
+                logger.warning("缓存格式版本不符（期望 v%s），触发重索引：%s", _MEMORY_FORMAT_VERSION, chunks_file)
                 return None
             _, children, parents = payload
             store = cls()
@@ -335,7 +341,7 @@ class IndexStore:
             store._bm25 = BM25Okapi(store._bm25_tokenized)
             return store
         except Exception as exception:
-            print(f"[IndexStore] 缓存恢复失败（{exception}），触发重索引")
+            logger.warning("缓存恢复失败（%s），触发重索引", exception)
             return None
 
     # ---- external 实现 ----

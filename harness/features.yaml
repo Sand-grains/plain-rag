@@ -1,5 +1,5 @@
 schema: 1
-milestone: 007-harness-governance
+milestone: 009-observability
 items:
 - id: F01
   behavior: 'harness-状态机: 编码转移表并拒绝非法转移'
@@ -17,7 +17,7 @@ items:
     exit_code: 0
     tests: 8
     coverage: 100.0
-    duration: 1.84
+    duration: 1.62
     mode: gate
 - id: F02
   behavior: 'harness-清单解析: features.yaml 解析/校验/渲染'
@@ -36,7 +36,7 @@ items:
     exit_code: 0
     tests: 23
     coverage: 88.31
-    duration: 2.36
+    duration: 2.3
     mode: gate
 - id: F03
   behavior: 'harness-验证器: 退出码判定 + 两级验证'
@@ -54,7 +54,7 @@ items:
     exit_code: 0
     tests: 13
     coverage: 93.60000000000001
-    duration: 16.14
+    duration: 15.36
     mode: gate
 - id: F04
   behavior: 'harness-调度器: 只出候选'
@@ -72,7 +72,7 @@ items:
     exit_code: 0
     tests: 4
     coverage: 100.0
-    duration: 1.78
+    duration: 1.64
     mode: gate
 - id: F05
   behavior: 'harness-追踪器: 状态分布 + 健康度'
@@ -90,7 +90,7 @@ items:
     exit_code: 0
     tests: 16
     coverage: 100.0
-    duration: 1.88
+    duration: 1.69
     mode: gate
 - id: F06
   behavior: 'harness-报告器: PROGRESS.md 快照'
@@ -108,7 +108,7 @@ items:
     exit_code: 0
     tests: 4
     coverage: 88.89
-    duration: 1.94
+    duration: 2.38
     mode: gate
 - id: F07a
   behavior: 'harness-CLI 核心: start/verify/reactivate/abandon/block/note 子命令, 不依赖 F04-F06'
@@ -125,7 +125,7 @@ items:
     exit_code: 0
     tests: 14
     coverage: 62.580000000000005
-    duration: 18.02
+    duration: 17.3
     mode: gate
 - id: F07b
   behavior: 'harness-CLI 完整: next/status/verify-all/report 子命令, 依赖 F04-F06'
@@ -142,7 +142,7 @@ items:
     exit_code: 0
     tests: 6
     coverage: 65.64
-    duration: 9.2
+    duration: 9.45
     mode: gate
 - id: F08
   behavior: 'harness-端到端验证: full 字段/--full 旗标改 e2e/--e2e, precheck 前置自检, 按功能项声明端到端测评命令
@@ -162,7 +162,7 @@ items:
     exit_code: 0
     tests: 29
     coverage: 85.03
-    duration: 51.08
+    duration: 38.34
     mode: gate
 - id: F09
   behavior: 'harness-完成时间与状态语义: FeatureItem 增 finished_time 字段(active->passed 记录/巡检不刷新/regressed
@@ -182,5 +182,141 @@ items:
     exit_code: 0
     tests: 35
     coverage: 89.52
-    duration: 2.48
+    duration: 2.58
+    mode: gate
+- id: F10
+  behavior: 'obs-migrate: eval/monitor 迁入 obs(monitor_metrics/monitor_panel 逻辑与类名不变,
+    MonitorMetrics 唯一真源保留), obs/_stats.py 复制 4 纯函数(avg_of/percentile/p95/format_time),
+    import 从 eval.monitor 改 obs, pyproject 纳入打包/覆盖/omit'
+  behavior_hash: b46eed640010
+  gate: uv run pytest -q
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-16 09:09
+  state: passed
+  note: null
+  timeout: 180
+  last_verify:
+    exit_code: 0
+    tests: 412
+    coverage: 81.51
+    duration: 89.27
+    mode: gate
+- id: F11
+  behavior: 'obs-base: obs/logging_setup.py 落盘 logs/plain_rag.log(10MB x 5, request_id
+    注入), config 增 OBS_LOG_DIR/OBS_ENABLED/OBS_SANITIZE, logs/ 入 .gitignore, 运行时链路
+    print 换 logger(index_store/agent_pipeline/eval.runner), agent_pipeline 补 __main__
+    守卫'
+  behavior_hash: 8a1f94bd909f
+  gate: uv run pytest tests/unit/test_obs_logging.py tests/unit/test_agent_pipeline_entry.py
+    -q --cov=obs.logging_setup --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-16 09:14
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 10
+    coverage: 95.12
+    duration: 28.42
+    mode: gate
+- id: F12
+  behavior: 'obs-trace: RagTrace + ContextVar trace_scope + 装饰器(observe_stage/trace_rerank/observe_pipeline)
+    + 业务模块 _diagnostics 诊断槽 + 检索/full 双模式 per-query hook + session 收集器 + trace.jsonl
+    独立落盘(与 no-report 解耦)'
+  behavior_hash: 4907ceb8b826
+  gate: uv run pytest tests/unit/test_obs_trace.py tests/unit/test_obs_decorators.py
+    -q --cov=obs.trace --cov=obs.trace_decorators --cov=obs.lifecycle --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: uv run python -m eval.runner --precheck
+  e2e_passed: true
+  finished_time: 2026-08-16 09:23
+  state: passed
+  note: null
+  timeout: 600
+  last_verify:
+    exit_code: 0
+    tests: 19
+    coverage: 98.82
+    duration: 27.48
+    mode: gate
+- id: F13
+  behavior: 'obs-attribution: 归因器按序判定五类(rerank_fallback/empty_recall/recall_absent/rerank_drop/generation_error),
+    recalled_ids 判据 + 多 expected any-miss + evidence.eval_diagnosis, finalize_traces
+    归因并入 trace.jsonl'
+  behavior_hash: 8ebf77c5a444
+  gate: uv run pytest tests/unit/test_obs_attribution.py -q --cov=obs.failure_attribution
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-16 09:31
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 14
+    coverage: 97.83
+    duration: 26.33
+    mode: gate
+- id: F14
+  behavior: 'obs-stdio-safe: setup_logging 对 sys.stdout/stderr reconfigure(errors=replace),
+    防 GBK 重定向下不可编码字符(如 ¥ U+00A5)使 final_report 抛 UnicodeEncodeError 被裸 except 吞成面板截断'
+  behavior_hash: d1cf432602ae
+  gate: uv run pytest tests/unit/test_obs_logging.py -q --cov=obs.logging_setup --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-16 09:54
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 8
+    coverage: 95.12
+    duration: 30.59
+    mode: gate
+- id: F15
+  behavior: 'obs-retention: obs/retention_policy.prune_logs(trace>100 保留最近100, 总文件<=200
+    硬上限) + scripts/prune_logs.py 计划任务入口(每3天) + trace 按天分包 logs/traces/YYYY-MM-DD/
+    + finalize_traces 落盘后强制总上限'
+  behavior_hash: f59cc6f628bb
+  gate: uv run pytest tests/unit/test_obs_retention_policy.py tests/unit/test_obs_trace.py
+    -q --cov=obs.retention_policy --cov=obs.lifecycle --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-18 08:18
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 17
+    coverage: 94.32000000000001
+    duration: 26.27
+    mode: gate
+- id: F16
+  behavior: 'checkout-会话退出检查: scripts/exit_check.py 三档模式编排门禁+清洁+回归计数+退出码, 命令正文双写(.claude/commands/checkout.md
+    自包含 + instruction-set.md), CLAUDE.md 退出/开始约定与 note 连续性'
+  behavior_hash: 5e754c53a442
+  gate: uv run pytest tests/unit/test_exit_check.py -q --cov=scripts.exit_check --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-17 21:57
+  state: passed
+  note: null
+  timeout: null
+  last_verify:
+    exit_code: 0
+    tests: 34
+    coverage: 92.52
+    duration: 28.69
     mode: gate

@@ -30,6 +30,7 @@ from indexing.chunk import Chunk
 from indexing.index_store import IndexStore, _chunk_seq
 from retrieval.embedding import embed
 from retrieval.reranker import Reranker
+from obs.trace_decorators import observe_retrieval_pipeline
 
 
 def _parent_key(chunk: Chunk) -> str:
@@ -133,7 +134,9 @@ class Retriever:
         parents, _ = self.retrieve_with_dense_child(query, top_k)
         return parents
 
-    def retrieve_with_dense_child(self, query: str, top_k: int = TOP_K) -> tuple[list[Chunk], list[Chunk]]:
+    @observe_retrieval_pipeline
+    def retrieve_with_dense_child(self, query: str, top_k: int = TOP_K,
+                                  _diagnostics: dict | None = None) -> tuple[list[Chunk], list[Chunk]]:
         """混合检索 → RRF 融合 → [auto-merge → CrossEncoder 重排] → 返回(父块 top_k, dense 子块候选)。
 
         dense 子块候选供 child 层指标/诊断使用（auto-merge 只读信号源，不修改）。
@@ -144,6 +147,7 @@ class Retriever:
         Args:
             query: 查询文本。
             top_k: 返回的父块最大条数。
+            _diagnostics: 可选观测诊断槽(不 import obs), 完整召回键集(recalled_ids)经此传出, 无 trace 时 None。
 
         Returns:
             tuple[list[Chunk], list[Chunk]]：(父块 top_k, dense 子块候选列表)。
@@ -163,6 +167,9 @@ class Retriever:
         for rank, chunk in enumerate(sparse_results, start=1):
             key = _parent_key(chunk)
             rrf_scores[key] = rrf_scores.get(key, 0.0) + 1.0 / (RRF_K + rank)
+
+        if _diagnostics is not None:  # 完整召回键集(RRF 融合全量 key, 含被池截断候选), 供归因区分 recall_absent/rerank_drop
+            _diagnostics["recalled_ids"] = list(rrf_scores.keys())
 
         if not self._rerank_enabled:  # 基线/agent/控制组路径，原样返回（实例级门控）
             sorted_ids = sorted(rrf_scores, key=rrf_scores.get, reverse=True)[:top_k]

@@ -4,6 +4,7 @@
     - 使用 hello-agents 框架（HelloAgentsLLM + SimpleAgent + ToolRegistry）
     - 将 RAGSearchTool 注册为 agent 工具
     - 支持交互式终端问答循环
+    - __main__ 守卫: import 不触发交互循环, 入口才 setup_logging 并跑管线
 
 用法示例::
 
@@ -13,7 +14,10 @@
     - main: 管线编排入口
 """
 
+import logging
+import sys
 from pathlib import Path
+
 from config import LLM_API_KEY, LLM_MODEL_ID, LLM_BASE_URL, STORAGE_BACKEND, RERANKER_AGENT_ENABLED  # 先加载 .env，确保后续导入的库能读到环境变量
 from hello_agents import HelloAgentsLLM, SimpleAgent, ToolRegistry
 from indexing.loader import load
@@ -23,42 +27,9 @@ from retrieval.embedding import embed
 from indexing.index_store import IndexStore
 from retrieval.retriever import Retriever
 from agent.tools import RAGSearchTool
+from obs.logging_setup import setup_logging
 
-data_dir = Path("data")
-docs = []
-for file_path in data_dir.rglob("*"):
-    if file_path.is_file() and file_path.suffix in (".txt", ".md"):
-        docs.extend(load(str(file_path)))
-
-if not docs:
-    print("data/ 目录下没有找到 .txt 或 .md 文档，请放入测试文档后重试")
-    exit(1)
-
-print(f"已加载 {len(docs)} 篇文档")
-
-store = IndexStore()
-router = Router()
-total_parents = 0
-total_children = 0
-for doc in docs:
-    diagnosed_doc = diagnose(doc.content)
-    splitter = router.route(diagnosed_doc)
-    base_meta = {"doc_id": doc.doc_id, "doc_meta": doc.origin_metadata}
-    result = splitter.split(doc.content, base_meta)
-    parents, children = result if isinstance(result, tuple) else (result, result)
-    if not parents:
-        print(f" [SKIP] {doc.doc_id}: 空文档，跳过")
-        continue
-    child_vectors = embed([c.content for c in children])
-    store.batch_add(parents, children, child_vectors)
-    total_parents += len(parents)
-    total_children += len(children)
-    print(f"  [OK] {doc.doc_id}: {len(parents)} 父块 / {len(children)} 子块（{type(splitter).__name__}）")
-
-store.vector_persistence()
-print(f"入库完成（{STORAGE_BACKEND} 模式）：{total_parents} 父块 / {total_children} 子块")
-
-# ==================== Agent 层 ====================
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """
 ## Role
@@ -75,34 +46,76 @@ SYSTEM_PROMPT = """
 4.引用来源时标注[来源X], 在回答的末尾注明引用的文档名称
 """
 
-llm = HelloAgentsLLM(
-    model=LLM_MODEL_ID,
-    api_key=LLM_API_KEY,
-    base_url=LLM_BASE_URL,
-    provider="custom"
-)
 
-registry = ToolRegistry()
-retriever = Retriever(store, rerank_enabled=RERANKER_AGENT_ENABLED)   # agent 交互路径默认关 rerank（不常驻重排模型）
-registry.register_tool(RAGSearchTool(retriever))         # 将检索工具注册到工具注册表
+def main() -> None:
+    """Agent 管线编排入口：setup_logging → 索引 → 检索工具 → SimpleAgent → 交互式问答。"""
+    setup_logging()
+    data_dir = Path("data")
+    docs = []
+    for file_path in data_dir.rglob("*"):
+        if file_path.is_file() and file_path.suffix in (".txt", ".md"):
+            docs.extend(load(str(file_path)))
 
-agent = SimpleAgent(
-    name="专业知识库问答助手",
-    llm=llm,
-    system_prompt=SYSTEM_PROMPT,
-    tool_registry=registry
-)
+    if not docs:
+        logger.warning("data/ 目录下没有找到 .txt 或 .md 文档，请放入测试文档后重试")
+        sys.exit(1)
 
-# ==================== 交互循环 ====================
-print("\n" + "=" * 50)
-print("Agent 已就绪，输入问题开始对话（输入 exit 退出）")
-print("=" * 50 + "\n")
+    logger.info("已加载 %d 篇文档", len(docs))
 
-while True:
-    query = input(">>> ")
-    if query.lower() in ("exit", "quit", "q"):
-        break
-    if not query.strip():
-        continue
-    answer = agent.run(query)
-    print("\n" + answer + "\n")
+    store = IndexStore()
+    router = Router()
+    total_parents = 0
+    total_children = 0
+    for doc in docs:
+        diagnosed_doc = diagnose(doc.content)
+        splitter = router.route(diagnosed_doc)
+        base_meta = {"doc_id": doc.doc_id, "doc_meta": doc.origin_metadata}
+        result = splitter.split(doc.content, base_meta)
+        parents, children = result if isinstance(result, tuple) else (result, result)
+        if not parents:
+            logger.warning(" [SKIP] %s: 空文档，跳过", doc.doc_id)
+            continue
+        child_vectors = embed([c.content for c in children])
+        store.batch_add(parents, children, child_vectors)
+        total_parents += len(parents)
+        total_children += len(children)
+        logger.info("  [OK] %s: %d 父块 / %d 子块（%s）", doc.doc_id, len(parents), len(children), type(splitter).__name__)
+
+    store.vector_persistence()
+    logger.info("入库完成（%s 模式）：%d 父块 / %d 子块", STORAGE_BACKEND, total_parents, total_children)
+
+    # ==================== Agent 层 ====================
+
+    llm = HelloAgentsLLM(
+        model=LLM_MODEL_ID,
+        api_key=LLM_API_KEY,
+        base_url=LLM_BASE_URL,
+        provider="custom"
+    )
+
+    registry = ToolRegistry()
+    retriever = Retriever(store, rerank_enabled=RERANKER_AGENT_ENABLED)   # agent 交互路径默认关 rerank（不常驻重排模型）
+    registry.register_tool(RAGSearchTool(retriever))         # 将检索工具注册到工具注册表
+
+    agent = SimpleAgent(
+        name="专业知识库问答助手",
+        llm=llm,
+        system_prompt=SYSTEM_PROMPT,
+        tool_registry=registry
+    )
+
+    # ==================== 交互循环 ====================
+    logger.info("\n%s\nAgent 已就绪，输入问题开始对话（输入 exit 退出）\n%s\n", "=" * 50, "=" * 50)
+
+    while True:
+        query = input(">>> ")
+        if query.lower() in ("exit", "quit", "q"):
+            break
+        if not query.strip():
+            continue
+        answer = agent.run(query)
+        logger.info("\n%s\n", answer)
+
+
+if __name__ == "__main__":
+    main()

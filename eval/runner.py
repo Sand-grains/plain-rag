@@ -53,6 +53,8 @@ if TYPE_CHECKING:
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent  # eval/runner.py → eval/ → 项目根
 
+logger = logging.getLogger(__name__)
+
 
 # ---- 模块级状态 ----
 
@@ -121,46 +123,53 @@ def _evaluate_one(item: BenchmarkItem, retriever: Retriever, generator: Generato
     from eval.core.llm_as_judge.judge import run_judge, JudgeResult
     from eval.core.llm_as_judge.judge_formatter import get_formatter, build_judge_context
     from eval.core.llm_as_judge.judge_cache import _cache_generator_key
-    from eval.monitor import get_metrics
-    from eval.monitor import get_panel
+    from obs import get_metrics
+    from obs import get_panel
+    from obs.trace import trace_scope, trace_var
     from infra.cache import get_cache as get_cache_backend
     from infra.config import REDIS_DEFAULT_TTL
 
     try:
-        # Stage: retrieve
-        retrieve_start = time_module.time()
-        chunks = retriever.retrieve(item.query, top_k=TOP_K)
-        retrieve_ms = (time_module.time() - retrieve_start) * 1000
+        with trace_scope(item.query_id, item.query):  # per-query trace: worker 内开, 包全链路
+            # Stage: retrieve
+            retrieve_start = time_module.time()
+            chunks = retriever.retrieve(item.query, top_k=TOP_K)
+            retrieve_ms = (time_module.time() - retrieve_start) * 1000
 
-        # Generator cache
-        context_str = build_judge_context(chunks)
-        generator_cache_key = _cache_generator_key(item.query_id, context_str)
-        cache_backend = get_cache_backend()
-        generator_cached = cache_backend.get(generator_cache_key)
+            # Generator cache
+            context_str = build_judge_context(chunks)
+            generator_cache_key = _cache_generator_key(item.query_id, context_str)
+            cache_backend = get_cache_backend()
+            generator_cached = cache_backend.get(generator_cache_key)
 
-        metrics = get_metrics()
+            metrics = get_metrics()
 
-        # Stage: generate
-        if generator_cached is not None:
-            metrics.record_generator_cache_hit()
-            answer = generator_cached
-            generate_ms = 0.0
-        else:
-            metrics.record_generator_cache_miss()
-            generate_start = time_module.time()
-            answer = generator.generate(item.query, chunks, temperature=GENERATOR_TEMPERATURE)
-            generate_ms = (time_module.time() - generate_start) * 1000
-            metrics.record_llm_call("generator")
-            cache_backend.set(generator_cache_key, answer, ttl_seconds=REDIS_DEFAULT_TTL)
+            # Stage: generate
+            if generator_cached is not None:
+                metrics.record_generator_cache_hit()
+                answer = generator_cached
+                generate_ms = 0.0
+            else:
+                metrics.record_generator_cache_miss()
+                generate_start = time_module.time()
+                answer = generator.generate(item.query, chunks, temperature=GENERATOR_TEMPERATURE)
+                generate_ms = (time_module.time() - generate_start) * 1000
+                metrics.record_llm_call("generator")
+                cache_backend.set(generator_cache_key, answer, ttl_seconds=REDIS_DEFAULT_TTL)
 
-        # Judge（temperature=0 保证确定性）
-        result = run_judge(item.query_id, item.query, chunks, answer,
-                          item.reference_facts, formatter=get_formatter(),
-                          temperature=0.0)
-        result.retrieve_ms = retrieve_ms
-        result.generate_ms = generate_ms
+            # generate 计时旁路(不重构 generator.py): 现有 generate_ms 计时写入 trace
+            current_trace = trace_var.get()
+            if current_trace is not None:
+                current_trace.durations["generate"] = generate_ms
 
-        return result
+            # Judge（temperature=0 保证确定性）
+            result = run_judge(item.query_id, item.query, chunks, answer,
+                              item.reference_facts, formatter=get_formatter(),
+                              temperature=0.0)
+            result.retrieve_ms = retrieve_ms
+            result.generate_ms = generate_ms
+
+            return result
     except Exception as error:
         panel = get_panel()
         if panel:
@@ -190,21 +199,21 @@ def _prepare_eval(benchmark_path: str):
     """
     from eval.core.benchmark import load_benchmark
 
-    print(f"加载索引（{STORAGE_BACKEND} 模式）...")
+    logger.info("加载索引（%s 模式）...", STORAGE_BACKEND)
     store = IndexStore.vector_restore()
     if store is None:
-        print("错误: 索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
+        logger.error("索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
         sys.exit(1)
     retriever = Retriever(store)
 
-    print(f"加载 benchmark: {benchmark_path}")
+    logger.info("加载 benchmark: %s", benchmark_path)
     result = load_benchmark(benchmark_path, valid_chunk_ids=store.chunk_ids)
     _abort_if_invalid_benchmark(result)
     items = result.valid_items
     total = len(items)
-    print(f"  条目: {total}")
+    logger.info("  条目: %d", total)
     if total == 0:
-        print("错误: benchmark 无有效条目，中止")
+        logger.error("benchmark 无有效条目，中止")
         sys.exit(1)
     return retriever, items
 
@@ -219,16 +228,16 @@ def _abort_if_invalid_benchmark(result: BenchmarkLoadResult) -> None:
     """
     if not result.invalid_chunk_ids:
         return
-    print("=" * 64)
-    print("⚠⚠  benchmark 含无效 expected_parent_ids（与当前索引的父块 chunk_id 集合不符）")
-    print(f"     共 {len(result.invalid_chunk_ids)} 条含缺失 id：")
+    logger.warning("=" * 64)
+    logger.warning("⚠⚠  benchmark 含无效 expected_parent_ids（与当前索引的父块 chunk_id 集合不符）")
+    logger.warning("     共 %d 条含缺失 id：", len(result.invalid_chunk_ids))
     for index, chunk_ids in list(result.invalid_chunk_ids.items())[:5]:
         shown = ", ".join(chunk_ids[:5]) + ("..." if len(chunk_ids) > 5 else "")
-        print(f"       条目 #{index + 1}: 缺失 {shown}")
-    print("     分块策略已变更（父子块），旧标注整体失效。请先重标注：")
-    print("       uv run python benchmark/anno_tool.py --output benchmark/private_v6.json")
-    print("     已中止本次评估——拒绝产出全零假数据。")
-    print("=" * 64)
+        logger.warning("       条目 #%d: 缺失 %s", index + 1, shown)
+    logger.warning("     分块策略已变更（父子块），旧标注整体失效。请先重标注：")
+    logger.warning("       uv run python benchmark/anno_tool.py --output benchmark/private_v6.json")
+    logger.warning("     为拒绝产出全量假数据, 已终止本次评估")
+    logger.warning("=" * 64)
     sys.exit(1)
 
 
@@ -244,10 +253,13 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
     """
     from eval.core.retrieval.retrieval_layer import run_retrieval_eval
     from eval.reporter import generate_report, build_run_info
-    from eval.monitor import get_metrics, reset_metrics
-    from eval.monitor import MonitorPanel
+    from obs import get_metrics, reset_metrics
+    from obs import MonitorPanel
+    from obs.lifecycle import reset_traces, finalize_traces
+    from obs.trace import trace_scope
 
     reset_metrics()
+    reset_traces()
     metrics = get_metrics()
 
     retriever, items = _prepare_eval(benchmark_path)
@@ -259,12 +271,15 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
     panel.set_total(total)
     panel.set_meta(benchmark_name=benchmark_path, eval_mode="retrieval")
 
-    print("执行 Layer 1 检索评估...")
-    output = run_retrieval_eval(retriever, items)
+    logger.info("执行 Layer 1 检索评估...")
+    output = run_retrieval_eval(retriever, items,
+                                 per_query_ctx=lambda item: trace_scope(item.query_id, item.query))
     metrics.layer1_results = output.results
 
     panel.query_count = total
     panel.final_report()
+
+    finalize_traces(items, [], layer1_results=output.results)  # trace 落盘与 --no-report 解耦, 恒写
 
     if no_report:
         return None
@@ -288,10 +303,12 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     from eval.core.retrieval.retrieval_layer import run_retrieval_eval
     from eval.reporter import generate_report, build_run_info
     from eval.core.llm_as_judge.judge import _get_client
-    from eval.monitor import get_metrics, reset_metrics
-    from eval.monitor import MonitorPanel, set_panel
+    from obs import get_metrics, reset_metrics
+    from obs import MonitorPanel, set_panel
+    from obs.lifecycle import reset_traces, finalize_traces
 
     reset_metrics()
+    reset_traces()
     metrics = get_metrics()
 
     retriever, items = _prepare_eval(benchmark_path)
@@ -308,7 +325,7 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     retriever.retrieve(items[0].query, top_k=TOP_K)
 
     # 创建 MonitorPanel（所有 print 需在 start() 前完成，否则被 ANSI 清屏覆盖）
-    print("启动监控面板...")
+    logger.info("启动监控面板...")
     panel = MonitorPanel(metrics, previous_per_query)
     set_panel(panel)
     panel.set_total(total)
@@ -360,6 +377,8 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     # 最终报告（终端）
     panel.final_report()
 
+    finalize_traces(items, judge_results, layer1_results=layer1.results)  # trace 落盘与 --no-report 解耦, 恒写
+
     # 写入文件报告
     if no_report:
         return None
@@ -370,7 +389,7 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
                     judge_results=judge_results,
                     metrics_summary=metrics.summary_dict())
 
-    print(f"\n报告: {results_dir}")
+    logger.info("报告: %s", results_dir)
     return results_dir
 
 
@@ -389,7 +408,7 @@ def run_precheck(benchmark_path: str) -> None:
         SystemExit: 前置未满足时退出 1。
     """
     _prepare_eval(benchmark_path)
-    print("前置自检通过: 索引存在 + benchmark 标注有效 + 条目非空")
+    logger.info("前置自检通过: 索引存在 + benchmark 标注有效 + 条目非空")
 
 
 def run_smoke_mode(benchmark_path: str, limit: int = SMOKE_DEFAULT_LIMIT) -> None:
@@ -408,7 +427,7 @@ def run_smoke_mode(benchmark_path: str, limit: int = SMOKE_DEFAULT_LIMIT) -> Non
         SystemExit: 有异常条目时退出 3。
     """
     from eval.core.llm_as_judge.judge import _get_client
-    from eval.monitor import reset_metrics
+    from obs import reset_metrics
 
     reset_metrics()
     retriever, items = _prepare_eval(benchmark_path)
@@ -416,19 +435,19 @@ def run_smoke_mode(benchmark_path: str, limit: int = SMOKE_DEFAULT_LIMIT) -> Non
     _get_client()
 
     selected = items[:limit]
-    print(f"[smoke] 冒烟评估前 {len(selected)}/{len(items)} 条 (limit={limit})...")
+    logger.info("[smoke] 冒烟评估前 %d/%d 条 (limit=%d)...", len(selected), len(items), limit)
     error_count = 0
     for item in selected:
         result = _evaluate_one(item, retriever, generator)
         is_error = result.verdict == "error" or bool(result.generator_error)
         if is_error:
             error_count += 1
-        print(f"  {item.query_id}: verdict={result.verdict or 'n/a'}"
-              + ("  [error]" if is_error else ""))
+        logger.info("  %s: verdict=%s%s", item.query_id, result.verdict or "n/a",
+                    "  [error]" if is_error else "")
     if error_count:
-        print(f"[smoke] 结束: {error_count} 条异常 (verdict=error 或 generator_error), 冒烟未通过")
+        logger.error("[smoke] 结束: %d 条异常 (verdict=error 或 generator_error), 冒烟未通过", error_count)
         sys.exit(3)
-    print(f"[smoke] 结束: 无异常, 冒烟通过")
+    logger.info("[smoke] 结束: 无异常, 冒烟通过")
 
 
 def run_compare(run_a: str, run_b: str) -> None:
@@ -446,7 +465,7 @@ def run_compare(run_a: str, run_b: str) -> None:
     summary_b = read_json(os.path.join(dir_b, "summary.json"))
 
     if not summary_a or not summary_b:
-        print("错误: 找不到 summary.json")
+        logger.error("找不到 summary.json")
         sys.exit(1)
 
     agg_a = summary_a["aggregate"]
@@ -454,21 +473,22 @@ def run_compare(run_a: str, run_b: str) -> None:
 
     metrics_list = ["recall_at_k", "precision_at_k", "hit_at_k", "mrr", "map_at_k", "ndcg_at_k",
                     "child_hit_at_k", "child_recall_at_k"]
-    print(f"\n{'Metric':<18} {'Run A':>10} {'Run B':>10} {'Delta':>10}")
-    print("-" * 50)
+    logger.info("\n%s", f"{'Metric':<18} {'Run A':>10} {'Run B':>10} {'Delta':>10}")
+    logger.info("-" * 50)
     for metric_name in metrics_list:
         value_a = agg_a.get(metric_name, 0)
         value_b = agg_b.get(metric_name, 0)
         delta = value_b - value_a
         arrow = "↑" if delta > 0 else ("↓" if delta < 0 else " ")
-        print(f"{metric_name:<18} {value_a:>10.4f} {value_b:>10.4f} {arrow} {abs(delta):>8.4f}")
+        logger.info("%s", f"{metric_name:<18} {value_a:>10.4f} {value_b:>10.4f} {arrow} {abs(delta):>8.4f}")
 
 
 # ---- CLI 入口 ----
 
 def main() -> None:
     """CLI 入口：路由 --mode / --compare 到对应执行函数。"""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    from obs.logging_setup import setup_logging
+    setup_logging()
     for noisy in ("httpx", "openai", "jieba", "sentence_transformers"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="plain-rag eval runner")

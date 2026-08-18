@@ -37,6 +37,7 @@ from sentence_transformers import CrossEncoder
 import torch
 from infra.cache import get_cache
 from indexing.chunk import Chunk
+from obs.trace_decorators import trace_rerank
 
 _model: CrossEncoder | None = None
 _model_lock = threading.Lock()  # 模块级锁守护模块级单例 _model（锁与被保护对象同级）
@@ -161,8 +162,10 @@ class Reranker:
     模型懒加载(构造廉价), 进程内可安全持有多个实例共享同一模块级 _model（锁加在模块级）。
     """
 
+    @trace_rerank
     def rerank(self, query: str, parent_chunks: list[Chunk], top_k: int,
-               corpus_signature: str = "", skip_cache: bool = False) -> list[Chunk]:
+               corpus_signature: str = "", skip_cache: bool = False,
+               _diagnostics: dict | None = None) -> list[Chunk]:
         """对候选父块重排：返回按 CrossEncoder 分数降序的前 top_k 块。
 
         Args:
@@ -171,23 +174,32 @@ class Reranker:
             top_k: 返回的最大条数。
             corpus_signature: 语料签名（作为缓存 key 组件, skip_cache 时不使用）。
             skip_cache: True 时跳过查/写缓存直接 predict（calibrate 专用）。
+            _diagnostics: 可选观测诊断槽(不 import obs), 降级/缓存命中信号经此传出, 无 trace 时 None。
 
         Returns:
             list[Chunk]：按重排分数降序的前 top_k 块；异常时降级返回 parent_chunks[:top_k]（原 RRF 序）。
         """
         if len(parent_chunks) <= 1:  # 空/单候选直接返回（无可排性）
+            if _diagnostics is not None:
+                _diagnostics["is_rerank_cache_hit"] = None
             return parent_chunks[:top_k]
         try:
-            score_map = self._score_map(query, parent_chunks, corpus_signature, skip_cache)
+            score_map = self._score_map(query, parent_chunks, corpus_signature, skip_cache, _diagnostics)
         except Exception as exception:
             # 降级保序：任一异常 → 直接返回原 RRF 后的parent_chunks(检索主链路不因 reranker 而崩溃)
             logging.warning("reranker 异常，降级为原 RRF :%s", exception)
+            if _diagnostics is not None:
+                _diagnostics["fallback_required"] = True
+                _diagnostics["error"] = str(exception)
+                _diagnostics["error_code"] = type(exception).__name__
+                _diagnostics["fallback_to"] = "rrf_order"
             return parent_chunks[:top_k]
         reranked_chunks = sorted(parent_chunks, key=lambda chunk: score_map.get(chunk.chunk_id, 0.0), reverse=True)
         return reranked_chunks[:top_k]
 
     def _score_map(self, query: str, parent_chunks: list[Chunk],
-                   corpus_signature: str, skip_cache: bool) -> dict[str, float]:
+                   corpus_signature: str, skip_cache: bool,
+                   _diagnostics: dict | None = None) -> dict[str, float]:
         """取当前候选集的 chunk_id 映射为一个分数表。 chunk_id与打分分数一一对应
 
         skip_cache 时直接 predict: 否则先查缓存，命中则只对当前候选集合查分（集合外旧条目忽略），
@@ -198,19 +210,26 @@ class Reranker:
             parent_chunks: 当前候选父块列表。
             corpus_signature: 语料签名。
             skip_cache: 是否跳过缓存。
+            _diagnostics: 可选观测诊断槽, 缓存命中信号(True/False/None)经此传出, 无 trace 时 None。
 
         Returns:
             dict[str, float]：候选 chunk_id → 重排分数（当前候选缺分时调用方按 0.0 排尾部）。
         """
         if skip_cache: # 如果跳过缓存, 直接全部重新打分
+            if _diagnostics is not None:
+                _diagnostics["is_rerank_cache_hit"] = None
             return self._score_uncached(query, parent_chunks)
         key = _cache_key(query, corpus_signature)
         cached = self._read_cache(key)
         if cached is not None:
             _rerank_cache_statistics["hits"] += 1
+            if _diagnostics is not None:
+                _diagnostics["is_rerank_cache_hit"] = True
             candidate_ids = {chunk.chunk_id for chunk in parent_chunks}
             return {chunk_id: score for chunk_id, score in cached.items() if chunk_id in candidate_ids}
         _rerank_cache_statistics["misses"] += 1
+        if _diagnostics is not None:
+            _diagnostics["is_rerank_cache_hit"] = False
         score_map = self._score_uncached(query, parent_chunks)
         self._write_cache(key, score_map)
         return score_map

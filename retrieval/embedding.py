@@ -16,6 +16,7 @@
 
 from config import EMBEDDING_MODEL_PATH          # 先加载配置（触发 load_dotenv()，设置 HF_ENDPOINT 等环境变量）
 from sentence_transformers import SentenceTransformer  # 后导入模型库（此时环境变量已就绪）
+from obs.trace_decorators import observe_stage
 
 _model: SentenceTransformer | None = None  # 模块级单例，整个进程只加载一次模型
 
@@ -32,6 +33,7 @@ def _get_model() -> SentenceTransformer:
     return _model
 
 
+@observe_stage("embed")
 def embed(texts: list[str]) -> list[list[float]]:
     """将文本列表编码为归一化向量列表，每条向量模长=1（点积即余弦相似度）。
 
