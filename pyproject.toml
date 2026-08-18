@@ -32,7 +32,7 @@ cuda = ["torch", "torchvision"]
 cpu = ["torch", "torchvision"]
 
 [tool.setuptools.packages.find]
-include = ["indexing*", "retrieval*", "agent*", "preprocess*", "harness*"]
+include = ["indexing*", "retrieval*", "agent*", "preprocess*", "harness*", "obs*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "harness/tests"]
@@ -46,9 +46,9 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["config", "indexing", "retrieval", "preprocess", "eval", "infra", "agent", "harness"]
+source = ["config", "indexing", "retrieval", "preprocess", "eval", "infra", "agent", "harness", "obs"]
 branch = true
-omit = ["*/monitor/monitor_panel.py"]
+omit = ["obs/monitor_panel.py"]
 
 [tool.coverage.report]
 exclude_lines = ["except Exception", "pass"]
