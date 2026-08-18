@@ -1,4 +1,4 @@
-"""MonitorPanel：后台 daemon 线程终端实时面板。
+"""MonitorPanel：后台 daemon 线程终端实时面板(自 eval/monitor 迁入, 逻辑与类名不变)。
 
 核心特性：
     - 后台 daemon 线程每 2 秒持锁浅拷贝 metrics → 格式化面板 → 清屏重绘（ANSI）或追加（plain）
@@ -12,7 +12,7 @@
 
 用法示例::
 
-    from eval.monitor.monitor_panel import MonitorPanel, set_panel
+    from obs.monitor_panel import MonitorPanel, set_panel
     panel = MonitorPanel(metrics, previous_per_query)
     set_panel(panel)
     panel.set_total(len(items))
@@ -36,10 +36,10 @@ from collections import deque
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from eval.utils import format_time, p95
+from obs._stats import format_time, p95
 
 if TYPE_CHECKING:
-    from eval.monitor.monitor_metrics import MonitorMetrics
+    from obs.monitor_metrics import MonitorMetrics
 
 # Windows: 显式开启 ANSI 转义码支持（Python 默认不会设置此标志）
 if sys.platform == "win32":

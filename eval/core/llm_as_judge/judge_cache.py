@@ -73,7 +73,7 @@ def get_judge_cache(cache_key: str) -> JudgeResult | None:
         JudgeResult | None：命中返回反序列化结果，否则 None。
     """
     from eval.core.llm_as_judge.judge import JudgeResult
-    from eval.monitor import get_metrics
+    from obs import get_metrics
     cache = get_cache()
     cached = cache.get(cache_key)
     if cached is not None:

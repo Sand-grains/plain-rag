@@ -1,4 +1,4 @@
-"""Eval 运行时监控指标采集：MonitorMetrics 为唯一真源。
+"""Eval 运行时监控指标采集：MonitorMetrics 为唯一真源(自 eval/monitor 迁入, 逻辑与类名不变)。
 
 核心特性：
     - 阶段延迟 ×4：stage_retrieve_ms / stage_generate_ms / stage_judge_faithfulness_ms / stage_judge_quality_ms
@@ -10,7 +10,7 @@
 
 用法示例::
 
-    from eval.monitor.monitor_metrics import get_metrics, reset_metrics
+    from obs.monitor_metrics import get_metrics, reset_metrics
     reset_metrics()
     metrics = get_metrics()
     metrics.record_stage("retrieve", 120.5)
@@ -28,7 +28,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
-from eval.utils import avg_of, percentile, p95
+from obs._stats import avg_of, percentile, p95
 
 
 @dataclass

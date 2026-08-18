@@ -42,7 +42,7 @@ from config import (LLM_API_KEY, LLM_BASE_URL, EVAL_LLM_MODEL_ID,
 from eval.utils import clamp_score, extract_json
 from eval.core.llm_as_judge.judge_formatter import Formatter, build_judge_context, get_formatter
 from eval.core.llm_as_judge.judge_cache import _cache_judge_key, get_judge_cache, set_judge_cache
-from eval.monitor import get_panel
+from obs import get_panel
 
 if TYPE_CHECKING:
     from indexing.chunk import Chunk
@@ -120,7 +120,7 @@ def _call_llm(client: OpenAI, model: str, prompt: str,
         temperature=temperature,
     )
     try:
-        from eval.monitor import get_metrics
+        from obs import get_metrics
         if call_type:
             get_metrics().record_llm_call(call_type)
         if response.usage:
@@ -136,7 +136,7 @@ def _call_llm(client: OpenAI, model: str, prompt: str,
     try:
         return extract_json(text)
     except (json.JSONDecodeError, ValueError) as error:
-        from eval.monitor import get_metrics
+        from obs import get_metrics
         try:
             get_metrics().record_parse_error()
         except ImportError:
@@ -187,7 +187,7 @@ def _judge_with_retry(
                 future.cancel()
                 last_error = TimeoutError(f"Judge call timed out after {deadline}s")
             except RETRYABLE_ERRORS as error:
-                from eval.monitor import get_metrics
+                from obs import get_metrics
                 try:
                     get_metrics().record_retry()
                 except ImportError:
