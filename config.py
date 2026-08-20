@@ -156,3 +156,7 @@ COST_OUTPUT_1K_PRICE = float(os.getenv("COST_OUTPUT_1K_PRICE", "0.0012"))
 OBS_ENABLED = os.getenv("OBS_ENABLED", "1") == "1"    # 观测总开关(日志落盘/trace)
 OBS_LOG_DIR = str(_PROJECT_ROOT / "logs")  # 日志目录(__file__ 推导, CWD 无关)
 OBS_SANITIZE = os.getenv("OBS_SANITIZE", "0") == "1"  # trace.jsonl 落盘脱敏开关, 默认关
+
+# 观测的跨 run 指标库(metrics_sink)配置
+OBS_METRICS_DIR = str(_PROJECT_ROOT / "eval" / "results" / "metrics")  # 指标库目录(timeline 同址, 不受 logs prune 管)
+OBS_METRICS_MAX_RUNS = int(os.getenv("OBS_METRICS_MAX_RUNS", "500"))   # 指标库最大 run 数, record 后超限截尾(500 run 压力可控)
