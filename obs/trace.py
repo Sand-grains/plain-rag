@@ -48,9 +48,14 @@ class StageError:
 
 @dataclass
 class RagTrace:
-    """单条 query 的完整链路数据集 (三视图 + 完整召回集 + 计时 + 阶段错误)。"""
-    query_id: str = ""                       # 查询标识
+    """单条 query 的完整链路数据集 (三视图 + 完整召回集 + 计时 + 阶段错误)。
+
+    trace_type 判别 eval/agent: 009 只记 eval, 010-2 F23 agent 路径复用同一收集器与
+    trace.jsonl, 类型判别供阶段聚合(010-1 F24)按类型过滤, 防 agent 检索/生成阶段污染 eval 阶段统计。
+    """
+    query_id: str = ""                       # 查询标识(agent 路径为会话内序列号)
     query: str = ""                          # 查询文本
+    trace_type: str = "eval"                 # 链路类型判别: "eval" | "agent"(加法式, 默认兼容既有)
     candidates_before_rerank: list[str] = field(default_factory=list)  # rerank 前候选(RRF 池截断集)
     candidates_after_rerank: list[str] = field(default_factory=list)   # rerank 后候选
     recalled_ids: list[str] = field(default_factory=list)              # 完整召回键集(RRF 全量 key, 含被池截断)
@@ -70,6 +75,7 @@ class RagTrace:
         return {
             "query_id": self.query_id,
             "query": self.query,
+            "trace_type": self.trace_type,
             "candidates_before_rerank": self.candidates_before_rerank,
             "candidates_after_rerank": self.candidates_after_rerank,
             "recalled_ids": self.recalled_ids,
@@ -107,20 +113,21 @@ def clear_session_traces() -> None:
 # ---- trace_scope ----
 
 @contextmanager
-def trace_scope(query_id: str, query: str) -> Iterator[RagTrace]:
+def trace_scope(query_id: str, query: str, trace_type: str = "eval") -> Iterator[RagTrace]:
     """上下文管理器: 单条 query 的观测作用域
     进入并生成新 request_id/trace_id/RagTrace 并写三个 var, 退出自动 append 进收集器。
 
     Args:
-        query_id: 查询标识。
+        query_id: 查询标识(agent 路径传会话内序列号)。
         query: 查询文本。
+        trace_type: 链路类型 "eval" | "agent", 决定 request_id 前缀与阶段聚合的过滤维度。
 
     Yields:
         RagTrace: 当前链路的 trace 容器(装饰器自动消费, 调用方一般不直接使用)。
     """
-    token_request_id = request_id_var.set(f"eval-{query_id}")
+    token_request_id = request_id_var.set(f"{trace_type}-{query_id}")
     token_trace_id = trace_id_var.set(str(uuid.uuid4()))
-    trace = RagTrace(query_id=query_id, query=query)
+    trace = RagTrace(query_id=query_id, query=query, trace_type=trace_type)
     token_trace = trace_var.set(trace)
     try:
         yield trace
