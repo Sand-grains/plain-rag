@@ -39,6 +39,8 @@ class FeatureItem:
     finished_time: str | None = None  # 完成时间(精确到分), active -> passed 落值, 巡检不刷新
     note: str | None = None  # 叙述, reporter照抄
     timeout: float | None = None  # e2e 超时秒数(强制下限 600s)
+    metric_gate: dict | None = None  # 可选指标门声明, 指标门不过则整体 passed=False: {command, thresholds:{name:{min/max}} (指标的绝对值是否跌穿底限 recall ≥ 0.5), delta:{name:{drop}}} (防缓慢劣化: 较基线 drop ≤ 0.05)
+    baseline_run_id: str | None = None  # harness 自动维护的最近一次指标门通过的 run 指针(metrics.jsonl 中的 run_id) (基线, 仅通过时更新)
     behavior_hash: str = ""  # behavior 的 sha256 12位前缀, 检测行为描述是否被改
     last_verify: dict | None = None  # 最近验证证据(退出码/测试数/覆盖率/耗时/模式), 供可疑项判定
 
