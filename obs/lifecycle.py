@@ -21,6 +21,7 @@ from pathlib import Path
 
 import config
 from obs import trace as trace_module
+from obs.evidence import compute_evidence_coverage
 from obs.failure_attribution import classify_failure
 from obs.retention_policy import prune_logs
 
@@ -42,47 +43,67 @@ def reset_traces() -> None:
     trace_module.clear_session_traces()
 
 
-def finalize_traces(benchmark_items, judge_results, layer1_results=None, out_dir=None) -> Path | None:
-    """收尾: 从 session收集器 取全部 trace → 归因 → 写 trace.jsonl → 清空 session。
+def finalize_traces(benchmark_items=None, judge_results=None, layer1_results=None, out_dir=None,
+                    return_attribution: bool = False) -> Path | None | tuple[Path | None, dict]:
+    """收尾: 从 session收集器 取全部 trace → (可跳过)归因 → 写 trace.jsonl → 清空 session。
+
+    benchmark_items 为 None 时跳过归因(agent 路径): 无 expected_parent_ids 上下文, 硬归因会以空
+    expected 对每条 agent trace 误判 empty_recall/recall_absent, 故直接序列化不带 failure_attribution。
+    eval 路径仍传 benchmark_items(位置参数兼容), 归因语义不变。
 
     Args:
-        benchmark_items: benchmark 条目列表(供 expected_parent_ids 归因用)。
+        benchmark_items: benchmark 条目列表(供 expected_parent_ids 归因用); None 时跳过归因。
         judge_results: JudgeResult 列表(full 模式提供; retrieval 模式传空), 归因 generation_error 用。
         layer1_results: Layer1 结果(鸭子类型, 只读 .query_id/.diagnosis), 供 evidence.eval_diagnosis 交叉引用。
         out_dir: 落盘目录, 默认 config.OBS_LOG_DIR/traces(测试可显式传入临时目录)。
+        return_attribution: True 时额外返回归因表(供 metrics_sink record_run 组装 attribution 字段)。
 
     Returns:
         Path | None: 落盘的 trace.jsonl 路径; 无 trace 时返回 None。
+        return_attribution=True 时返回 (Path | None, dict): (trace 路径, query_id -> {failure_type, evidence} 归因表)。
     """
     traces = trace_module.session_traces()
     if not traces:
         trace_module.clear_session_traces()
-        return None
-    expected_by_query = {
-        getattr(item, "query_id", ""): list(getattr(item, "expected_parent_ids", []))
-        for item in benchmark_items
-    }
-    judge_by_query = {
-        getattr(result, "query_id", ""): result for result in judge_results
-    }
-    diagnosis_by_query = {
-        getattr(result, "query_id", ""): getattr(result, "diagnosis", None)
-        for result in (layer1_results or [])
-    }
+        return (None, {}) if return_attribution else None
+
     payloads = []
-    for trace in traces:
-        payload = trace.to_dict()
-        attribution = classify_failure(
-            trace,
-            expected_by_query.get(trace.query_id, []),
-            judge_by_query.get(trace.query_id),
-        )
-        if attribution is not None:
-            diagnosis = diagnosis_by_query.get(trace.query_id)
-            if diagnosis is not None:
-                attribution["evidence"]["eval_diagnosis"] = diagnosis
-            payload["failure_attribution"] = attribution
-        payloads.append(payload)
+    attribution_by_query: dict[str, dict] = {}
+    if benchmark_items is None:
+        # agent 路径: 无 benchmark 上下文, 跳过归因(硬归因会对每条 agent trace 误判), 直接序列化
+        payloads = [trace.to_dict() for trace in traces]
+    else:
+        expected_by_query = {
+            getattr(item, "query_id", ""): list(getattr(item, "expected_parent_ids", []))
+            for item in benchmark_items
+        }
+        judge_by_query = {
+            getattr(result, "query_id", ""): result for result in judge_results
+        }
+        diagnosis_by_query = {
+            getattr(result, "query_id", ""): getattr(result, "diagnosis", None)
+            for result in (layer1_results or [])
+        }
+        for trace in traces:
+            payload = trace.to_dict()
+            attribution = classify_failure(
+                trace,
+                expected_by_query.get(trace.query_id, []),
+                judge_by_query.get(trace.query_id),
+            )
+            if attribution is not None:
+                diagnosis = diagnosis_by_query.get(trace.query_id)
+                if diagnosis is not None:
+                    attribution["evidence"]["eval_diagnosis"] = diagnosis
+                coverage = compute_evidence_coverage(trace, expected_by_query.get(trace.query_id, []))
+                if coverage is not None:
+                    attribution["evidence"]["evidence_coverage"] = coverage
+                payload["failure_attribution"] = attribution
+                attribution_by_query[trace.query_id] = {
+                    "failure_type": attribution["failure_type"],
+                    "evidence": attribution["evidence"],
+                }
+            payloads.append(payload)
     if config.OBS_SANITIZE:
         payloads = [_sanitize(payload) for payload in payloads]
     logs_root = Path(config.OBS_LOG_DIR if out_dir is None else out_dir)
@@ -96,7 +117,7 @@ def finalize_traces(benchmark_items, judge_results, layer1_results=None, out_dir
     trace_module.clear_session_traces()
     prune_logs(logs_dir=logs_root, max_traces=None, max_all_logs=200)  # 任何时候总日志文件数硬上限
     logger.info("trace 落盘: %s (%d 条)", trace_path, len(payloads))
-    return trace_path
+    return (trace_path, attribution_by_query) if return_attribution else trace_path
 
 
 def _sanitize(value):
