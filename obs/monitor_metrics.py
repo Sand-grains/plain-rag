@@ -1,4 +1,13 @@
-"""Eval 运行时监控指标采集：MonitorMetrics 为唯一真源(自 eval/monitor 迁入, 逻辑与类名不变)。
+"""Eval 进程运行时监控指标采集容器(run 进行中, 属于跑完即失的进程内存)
+MonitorMetrics 为唯一真源(自 eval/monitor 迁入, 逻辑与类名不变)。
+
+- token 明细: total_input/output_tokens + 每次调用的列表
+- 阶段延迟列表: retrieve / generate / judge_faithfulness / judge_quality / end_to_end 各一份 ms 列表
+- 缓存计数: Generator/Judge 各自的 hits/misses
+- 错误/重试: error_count / error_types(dict)/ retry_count / parse_error_count
+- LLM 调用计数: generator / judge_faithfulness / judge_quality 三路
+- per-query 原始结果对象: layer1_results / layer2_results(对象列表, 唯一真源)
+- 成本单价
 
 核心特性：
     - 阶段延迟 ×4：stage_retrieve_ms / stage_generate_ms / stage_judge_faithfulness_ms / stage_judge_quality_ms
