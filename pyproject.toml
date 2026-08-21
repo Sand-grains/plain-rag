@@ -36,7 +36,7 @@ include = ["indexing*", "retrieval*", "agent*", "preprocess*", "harness*", "obs*
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "harness/tests"]
-addopts = "-ra --strict-markers --cov -m \"not external and not slow\" --durations=5"
+addopts = "-ra --strict-markers -m \"not external and not slow\" --durations=5"
 markers = [
   "unit: 纯函数/模块级",
   "integration: 模块间/双后端",
