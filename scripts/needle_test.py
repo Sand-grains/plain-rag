@@ -72,7 +72,7 @@ def _decide(interference_drop: float, penetration: float,
 # ---- 路径与文档加载 ----
 
 def _project_path(value: str) -> Path:
-    """相对路径基于项目根解析，避免依赖 CWD（CLAUDE.md 约定）。"""
+    """相对路径基于项目根解析，避免依赖 CWD（AGENTS.md 约定）。"""
     path = Path(value)
     return path if path.is_absolute() else _PROJECT_DIR / path
 

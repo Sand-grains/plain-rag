@@ -13,7 +13,8 @@ __pycache__/
 data/
 
 # 项目内部迭代开发
-CLAUDE.md
+AGENTS.md
+CONTEXT.md
 docs/inner
 PLAN.md
 PROGRESS.md
