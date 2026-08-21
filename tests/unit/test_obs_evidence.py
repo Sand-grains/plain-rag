@@ -10,7 +10,7 @@ import pytest
 
 from obs import trace as trace_module
 from obs.evidence import compute_evidence_coverage
-from obs.lifecycle import finalize_traces
+from obs.trace_lifecycle import finalize_traces
 from obs.trace import RagTrace, clear_session_traces, request_id_var, trace_scope
 
 

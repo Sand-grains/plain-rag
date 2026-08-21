@@ -316,8 +316,8 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
     from eval.serialization import build_run_info
     from obs import get_metrics, reset_metrics
     from obs import MonitorPanel
-    from obs.lifecycle import reset_traces, finalize_traces
-    from obs.stage_report import write_step_report
+    from obs.trace_lifecycle import reset_traces, finalize_traces
+    from obs.trace_stage_report import write_step_report
     from obs.trace import session_traces, trace_scope
 
     reset_metrics()
@@ -372,8 +372,8 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     from eval.core.llm_as_judge.judge import _get_client
     from obs import get_metrics, reset_metrics
     from obs import MonitorPanel, set_panel
-    from obs.lifecycle import reset_traces, finalize_traces
-    from obs.stage_report import write_step_report
+    from obs.trace_lifecycle import reset_traces, finalize_traces
+    from obs.trace_stage_report import write_step_report
     from obs.trace import session_traces
 
     reset_metrics()
@@ -603,7 +603,7 @@ def _render_compare(result: dict) -> None:
 def main() -> None:
     """CLI 入口：路由 --mode / --compare 到对应执行函数。"""
     from obs.logging_setup import setup_logging
-    from obs.exit_guard import register_exit_guard
+    from obs.trace_exit_guard import register_exit_guard
     setup_logging()
     register_exit_guard()  # atexit 兜底清空 trace 收集器 + SIGINT/SIGTERM 收尾
     for noisy in ("httpx", "openai", "jieba", "sentence_transformers"):

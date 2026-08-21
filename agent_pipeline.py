@@ -29,9 +29,9 @@ from retrieval.embedding import embed
 from indexing.index_store import IndexStore
 from retrieval.retriever import Retriever
 from agent.tools import RAGSearchTool
-from obs.lifecycle import finalize_traces
+from obs.trace_lifecycle import finalize_traces
 from obs.logging_setup import setup_logging
-from obs.exit_guard import register_exit_guard
+from obs.trace_exit_guard import register_exit_guard
 from obs.trace import trace_scope
 
 logger = logging.getLogger(__name__)

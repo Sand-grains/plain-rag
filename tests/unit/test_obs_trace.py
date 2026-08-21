@@ -10,7 +10,7 @@ import pytest
 
 import config
 from obs import trace as trace_module
-from obs.lifecycle import reset_traces, finalize_traces
+from obs.trace_lifecycle import reset_traces, finalize_traces
 from obs.trace import RagTrace, clear_session_traces, request_id_var, trace_id_var, trace_scope, trace_var
 
 
@@ -142,7 +142,7 @@ class TestFinalizeTraces:
         assert finalize_traces([], [], out_dir=tmp_path) is not None
 
     def test_sanitize_strips_sensitive_field_names(self):
-        from obs.lifecycle import _sanitize
+        from obs.trace_lifecycle import _sanitize
         payload = {
             "query": "q", "api_key": "secret",
             "nested": {"authorization": "Bearer x", "ok": 1},

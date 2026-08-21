@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from obs._stats import percentile
-from obs.stage_report import _round1, aggregate_stage_report, write_step_report
+from obs.trace_stage_report import _round1, aggregate_stage_report, write_step_report
 from obs.trace import RagTrace, StageError, STAGE_DURATION_KEYS
 
 

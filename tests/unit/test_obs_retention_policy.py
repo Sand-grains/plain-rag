@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from obs.lifecycle import finalize_traces
+from obs.trace_lifecycle import finalize_traces
 from obs.retention_policy import prune_logs
 from obs.trace import clear_session_traces, trace_scope
 

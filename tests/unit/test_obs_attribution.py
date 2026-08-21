@@ -8,7 +8,7 @@ import json
 import pytest
 
 from obs import trace as trace_module
-from obs.lifecycle import finalize_traces
+from obs.trace_lifecycle import finalize_traces
 from obs.failure_attribution import classify_failure
 from obs.trace import RagTrace, clear_session_traces, trace_scope, trace_var
 

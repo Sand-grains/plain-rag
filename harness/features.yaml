@@ -268,7 +268,7 @@ items:
     独立落盘(与 no-report 解耦)'
   behavior_hash: 4907ceb8b826
   gate: uv run pytest tests/unit/test_obs_trace.py tests/unit/test_obs_decorators.py
-    -q --cov=obs.trace --cov=obs.trace_decorators --cov=obs.lifecycle --cov-fail-under=80
+    -q --cov=obs.trace --cov=obs.trace_decorators --cov=obs.trace_lifecycle --cov-fail-under=80
   e2e: uv run python -m eval.runner --mode retrieval --no-report
   precheck: uv run python -m eval.runner --precheck
   e2e_passed: true
@@ -335,7 +335,7 @@ items:
     + finalize_traces 落盘后强制总上限'
   behavior_hash: f59cc6f628bb
   gate: uv run pytest tests/unit/test_obs_retention_policy.py tests/unit/test_obs_trace.py
-    -q --cov=obs.retention_policy --cov=obs.lifecycle --cov-fail-under=80
+    -q --cov=obs.retention_policy --cov=obs.trace_lifecycle --cov-fail-under=80
   e2e: null
   precheck: null
   e2e_passed: false
@@ -423,7 +423,7 @@ items:
     run_id 时间戳)'
   behavior_hash: 3c39be9c8f7a
   gate: uv run pytest tests/unit/test_obs_runner.py tests/unit/test_obs_trace.py tests/unit/test_eval_reporter.py
-    -q --cov=obs.lifecycle --cov-fail-under=80
+    -q --cov=obs.trace_lifecycle --cov-fail-under=80
   e2e: uv run python -m eval.runner --mode retrieval --no-report
   precheck: uv run python -m eval.runner --precheck
   e2e_passed: true
@@ -487,10 +487,10 @@ items:
     mode: gate
     artifact: verify-20260819-100645-F21.log
 - id: F22
-  behavior: 'obs-exit-guard: obs/exit_guard.py atexit 兜底清空 session 收集器 + 日志 flush
+  behavior: 'obs-exit-guard: obs/trace_exit_guard.py atexit 兜底清空 session 收集器 + 日志 flush
     + SIGINT/SIGTERM 最小化转 KeyboardInterrupt(幂等), eval/runner main() 注册'
   behavior_hash: 874c76ad0cd5
-  gate: uv run pytest tests/unit/test_obs_exit_guard.py -q --cov=obs.exit_guard --cov-fail-under=80
+  gate: uv run pytest tests/unit/test_obs_exit_guard.py -q --cov=obs.trace_exit_guard --cov-fail-under=80
   e2e: null
   precheck: null
   e2e_passed: false
@@ -514,7 +514,7 @@ items:
     + atexit 收尾落 trace.jsonl + --query 单轮模式'
   behavior_hash: 415806c0ba02
   gate: uv run pytest tests/unit/test_obs_agent_trace.py tests/unit/test_obs_trace.py
-    tests/unit/test_agent_pipeline_entry.py -q --cov=obs.trace --cov=obs.lifecycle
+    tests/unit/test_agent_pipeline_entry.py -q --cov=obs.trace --cov=obs.trace_lifecycle
     --cov-fail-under=80
   e2e: uv run python agent_pipeline.py --query '知识库包含什么内容'
   precheck: null
@@ -534,11 +534,11 @@ items:
     mode: gate
     artifact: verify-20260819-100751-F23.log
 - id: F24
-  behavior: 'obs-stage-timing: obs/stage_report 跨 query 阶段计时聚合(每阶段 count/avg/p50/p95,
+  behavior: 'obs-stage-timing: obs/trace_stage_report 跨 query 阶段计时聚合(每阶段 count/avg/p50/p95,
     跳过 0 耗时) + retry 差额(fallback_required→rerank 求和) + error_code 聚合 + 落 logs/traces/step_timing-<ts>.jsonl
     + eval runner 收尾接线, 只读不改链路(条例三)'
   behavior_hash: 85e1cfbfc82a
-  gate: uv run pytest tests/unit/test_obs_stage_timing.py -q --cov=obs.stage_report
+  gate: uv run pytest tests/unit/test_obs_stage_timing.py -q --cov=obs.trace_stage_report
     --cov-fail-under=80
   e2e: uv run python -m eval.runner --mode retrieval --no-report
   precheck: null
