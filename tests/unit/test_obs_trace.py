@@ -112,6 +112,23 @@ class TestFinalizeTraces:
     def test_no_traces_returns_none(self, tmp_path):
         assert finalize_traces([], [], out_dir=tmp_path) is None
 
+    def test_return_attribution_no_traces(self, tmp_path):
+        trace_path, attribution = finalize_traces([], [], out_dir=tmp_path, return_attribution=True)
+        assert trace_path is None
+        assert attribution == {}
+
+    def test_return_attribution_collects_failure_types(self, tmp_path):
+        with trace_scope("Q1", "q1"):
+            pass
+        with trace_scope("Q2", "q2"):
+            pass
+        trace_path, attribution = finalize_traces([], [], out_dir=tmp_path, return_attribution=True)
+        assert trace_path is not None
+        # 无 expected 且无 retrieved_chunks → empty_recall 归因; 只收 {failure_type, evidence} 结构
+        assert attribution["Q1"]["failure_type"] == "empty_recall"
+        assert "evidence" in attribution["Q1"]
+        assert set(attribution) == {"Q1", "Q2"}
+
     def test_reset_traces_clears_collector(self):
         with trace_scope("Q1", "q"):
             pass

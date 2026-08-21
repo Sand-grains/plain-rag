@@ -7,12 +7,15 @@ fake 层由 tests/unit/conftest.py autouse 安装; smoke 测试 patch _prepare_e
 隔离真实检索与 LLM, 只测驱动循环本身。
 """
 import json
+import logging
 
 import pytest
 
+import config
 import eval.runner as runner
 from eval.core.benchmark import BenchmarkItem
 from eval.core.llm_as_judge.judge import JudgeResult
+from obs import metrics_sink
 
 
 def _benchmark(tmp_path, items) -> str:
@@ -136,3 +139,44 @@ class TestSmokeMode:
         runner.run_smoke_mode("dummy.json", limit=5)
         after = set(timeline.iterdir()) if timeline.exists() else set()
         assert before == after
+
+
+class TestRunCompare:
+    """F20: run_compare 改读指标库(metrics_sink), 参数语义为 run_id。"""
+
+    def _seed_runs(self, metrics_dir) -> None:
+        per_query = {}
+        for index in range(1, 7):
+            per_query[f"Q{index}"] = {"recall_at_k": 0.5, "hit_at_k": 1, "diagnosis": "accept"}
+        expected_by_query = {query_id: [query_id] for query_id in per_query}
+        for run_id in ("run-a", "run-b"):
+            metrics_sink.record_run(
+                run_id=run_id, benchmark="b", config={}, corpus_signature="corpus-x",
+                test_mode="retrieval", num_queries=6, expected_parent_ids_by_query=expected_by_query,
+                summary={"aggregate": {"hit_at_k": 0.8, "diagnosis_distribution": {"accept": 6}}},
+                per_query=per_query, attribution={},
+            )
+
+    def test_compare_renders_sections(self, monkeypatch, tmp_path, caplog):
+        monkeypatch.setattr(config, "OBS_METRICS_DIR", str(tmp_path / "metrics"))
+        self._seed_runs(tmp_path / "metrics")
+        with caplog.at_level(logging.INFO):
+            runner.run_compare("run-a", "run-b")
+        assert "对比 run-a vs run-b" in caplog.text
+        assert "[Layer1]" in caplog.text
+        assert "hit_at_k" in caplog.text
+
+    def test_invalid_run_id_exits_nonzero(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(config, "OBS_METRICS_DIR", str(tmp_path / "metrics"))
+        with pytest.raises(SystemExit) as exc:
+            runner.run_compare("absent-a", "absent-b")
+        assert exc.value.code == 1
+
+    def test_legacy_run_reports_hint(self, monkeypatch, tmp_path, caplog):
+        monkeypatch.setattr(config, "OBS_METRICS_DIR", str(tmp_path / "metrics"))
+        monkeypatch.setattr(runner, "_PROJECT_ROOT", tmp_path)  # 让 timeline 目录判定落在 tmp_path
+        (tmp_path / "eval" / "results" / "timeline" / "old-run").mkdir(parents=True)
+        with pytest.raises(SystemExit) as exc:
+            runner.run_compare("old-run", "absent-run")
+        assert exc.value.code == 1
+        assert "legacy timeline run" in caplog.text
