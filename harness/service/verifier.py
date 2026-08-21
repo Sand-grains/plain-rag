@@ -1,5 +1,6 @@
-"""验证器: 执行功能项验证命令
-退出码 + junitxml 双重判定, 是 features.yaml 条例的 active -> passed 唯一路径
+"""门禁执行器, 跑 gate/e2e 验证命令, 判定通过与否 + 产出证据, 指标门防退化
+
+是 features.yaml 条例的 active -> passed 唯一路径
 
 gate 和 e2e 是 Features.yaml 里每个功能项的两个同级验证命令字段
 gate: 默认跑, 本质是验证"实现逻辑正确"的 pytest 测试 (附加 --junitxml 与 --cov-report=xml 采集证据)
@@ -14,20 +15,26 @@ e2e: 显式触发的、验证"全链路在真实模型上跑通"的重验证 (�
     - gate 前缀白名单(uv run pytest / python -m pytest / pytest), 拒绝任意命令当 gate
     - gate 自带 --cov= 作用域时中和全局 addopts 的裸 --cov, 让覆盖率按模块计(可选 --cov-fail-under 作为覆盖率门禁)
     - 验证证据(command/测试名/测试数/coverage/耗时/mode)进 VerificationResult, 供报告器与可疑项标记
+    - verify 输出落 logs/verify/ 并保留最近 _VERIFY_LOG_KEEP 个(自产自清, 防无限累积)
 
 与上层的关系: cli 调 verify() 拿结果, 再经 registry.record_verification 落状态与证据。
 """
+import json
+import logging
 import shlex
 import shutil
 import subprocess
 import tempfile
 import time
 import xml.etree.ElementTree as ElementTree
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import datetime
 from pathlib import Path
 
 from harness.core.errors import HarnessError
 from harness.core.models import FeatureItem
+
+logger = logging.getLogger(__name__)
 
 # gate 命令前缀白名单: 可扩展允许列表, 防"任意命令当 gate"
 DEFAULT_GATE_PREFIXES: tuple[tuple[str, ...], ...] = (
@@ -35,6 +42,12 @@ DEFAULT_GATE_PREFIXES: tuple[tuple[str, ...], ...] = (
     ("python", "-m", "pytest"),
     ("pytest",),
 )
+
+# 指标门超时: metric_gate command 是完整 eval(约 40s+), 不能沿用 gate 默认 60s, 对齐 e2e 的 600s 下限
+_METRIC_GATE_TIMEOUT = 600.0
+
+# verify 目录保留上限(verify-*.log + metric_gate-*.json): verify 路径无 eval 收尾触发全局裁剪, 需自产自清
+_VERIFY_LOG_KEEP = 200
 
 
 @dataclass(frozen=True)
@@ -52,16 +65,28 @@ class VerificationResult:
     passed: bool                         # 最终通过结论, gate 为双重判定, e2e/precheck 为仅退出码判定
     precheck_passed: bool | None = None  # None=gate; False=precheck 未满足; True=e2e 正常跑完
     mode: str = "gate"                   # "gate" / "e2e"
+    metric_gate: dict | None = None  # 指标门报告(gate 通过且声明 metric_gate 时附加), 未触发为 None
+    metric_baseline_run_id: str | None = None  # 指标门通过时的当前 run_id(新基线指针, 供 registry 持久化)
+    artifact: str | None = None  # 完整输出落盘文件名(logs/verify/verify-<ts>-<ID>.log), 供决策 evidence 引用
 
     def to_evidence(self) -> dict:
-        """压缩成写入 features.yaml 的 last_verify 证据。"""
-        return {
+        """压缩成写入 features.yaml 的 last_verify 证据(指标门触发时附加 metric 摘要, 落盘时附加 artifact)。"""
+        evidence = {
             "exit_code": self.exit_code,
             "tests": self.test_count,
             "coverage": self.coverage,
             "duration": round(self.duration_seconds, 2),
             "mode": self.mode,
         }
+        if self.artifact is not None:
+            evidence["artifact"] = self.artifact
+        if self.metric_gate is not None:
+            evidence["metric"] = {
+                "passed": self.metric_gate["passed"],
+                "run_id": self.metric_gate.get("run_id"),
+                "checks": len(self.metric_gate.get("checks", [])),
+            }
+        return evidence
 
 
 class Verifier:
@@ -122,7 +147,7 @@ class Verifier:
             test_count, test_names = self._parse_junit(junit_path)
             coverage = self._parse_coverage(coverage_path)
             passed = self._is_passed(exit_code, test_count, timed_out)
-            return VerificationResult(
+            result = VerificationResult(
                 item_id=item.id,
                 command=command,
                 exit_code=exit_code,
@@ -135,7 +160,12 @@ class Verifier:
                 passed=passed,
                 precheck_passed=None,
                 mode="gate",
+                artifact=self._write_verify_log(item.id, output),
             )
+            if passed and item.metric_gate:
+                # gate 通过后追加指标门: 跑 metric_gate command, 判定阈值/delta, 合并进 passed
+                result = self._apply_metric_gate(item, result)
+            return result
 
     def _verify_e2e(self, item: FeatureItem) -> VerificationResult:
         """e2e 路径: precheck 前置自检 → 跑 item.e2e, 仅凭退出码判定, 不附加 junit/coverage。"""
@@ -162,6 +192,7 @@ class Verifier:
                     passed=False,
                     precheck_passed=False,
                     mode="e2e",
+                    artifact=self._write_verify_log(item.id, output),
                 )
 
         started = time.monotonic()
@@ -181,6 +212,7 @@ class Verifier:
             passed=passed,
             precheck_passed=True,
             mode="e2e",
+            artifact=self._write_verify_log(item.id, output),
         )
 
     def _write_cov_config(self, tmp_path: Path) -> Path:
@@ -321,3 +353,163 @@ class Verifier:
         if test_count == 0:
             return False  # pytest 空收集(退出码 5): 0 个测试 = 无验证
         return True  # test_count 为 None(非 pytest 命令)时回退到仅看退出码
+
+    def _apply_metric_gate(self, item: FeatureItem, result: VerificationResult) -> VerificationResult:
+        """gate 通过后执行指标门: 跑 metric_gate.command → metrics_sink 最新 run → 阈值/delta 判定。
+
+        指标值读 metrics_sink 新 run 的 summary.aggregate(§8.4: 消费 metrics_sink, 不读 timeline summary.json);
+        基线 = item.baseline_run_id 指向的 run(无基线时只判阈值); 判定合并进 result.passed。
+        报告落 logs/verify/metric_gate-<ts>.json; 通过时置 metric_baseline_run_id 供 registry 持久化基线。
+
+        Args:
+            item: 待验证功能项(声明了 metric_gate)。
+            result: gate 已通过的结果。
+
+        Returns:
+            VerificationResult: 附加 metric_gate 报告与 metric_baseline_run_id 的新结果。
+        """
+        metric_gate = item.metric_gate
+        command = metric_gate["command"]
+        timeout = item.timeout or _METRIC_GATE_TIMEOUT
+        before = self._latest_run_id()
+        started = time.monotonic()
+        exit_code, timed_out, output = self._run(shlex.split(command), timeout)
+        duration_seconds = time.monotonic() - started
+        run = self._latest_run()
+
+        report = {
+            "item_id": item.id,
+            "command": command,
+            "command_exit_code": exit_code,
+            "command_timed_out": timed_out,
+            "duration_seconds": round(duration_seconds, 2),
+            "baseline_run_id": item.baseline_run_id,
+            "checks": [],
+            "passed": False,
+            "reason": None,
+        }
+        if exit_code != 0 or timed_out:
+            report["reason"] = "metric_gate command 失败(退出码非 0 或超时)"
+            report["command_output_tail"] = output.strip().splitlines()[-5:]
+        elif run is None or run.get("run_id") == before:
+            report["reason"] = "metric_gate command 未在 metrics_sink 写入新 run"
+        else:
+            report["run_id"] = run.get("run_id")
+            baseline = self._baseline_aggregate(item.baseline_run_id)
+            report["checks"], report["passed"] = self._evaluate_metric_gate(run, baseline, metric_gate)
+        report["path"] = str(self._write_metric_report(report))
+        baseline = report.get("run_id") if report["passed"] else result.metric_baseline_run_id
+        # VerificationResult 是 frozen dataclass: 用 replace 产出带指标门的新结果, 不原地改
+        return replace(
+            result,
+            metric_gate=report,
+            metric_baseline_run_id=baseline,
+            passed=result.passed and report["passed"],
+        )
+
+    def _evaluate_metric_gate(self, run: dict, baseline_aggregate: dict | None,
+                              metric_gate: dict) -> tuple[list[dict], bool]:
+        """阈值 + delta 判定: 逐指标产出 check 行, 返回 (checks, 全部通过?)。
+
+        thresholds 从当前 run summary.aggregate 校验 min/max; delta 相对基线比较 drop 阈值
+        (基线缺失时跳过 delta 段, 只判阈值; 基线存在但指标/基线值缺失则判 fail)。
+
+        Args:
+            run: metrics_sink 当前 run 记录。
+            baseline_aggregate: 基线 run 的 summary.aggregate; None 表示无基线。
+            metric_gate: FeatureItem.metric_gate 声明。
+
+        Returns:
+            tuple[list[dict], bool]: 逐指标 check 行 + 是否全部通过。
+        """
+        aggregate = (run.get("summary") or {}).get("aggregate") or {}
+        checks: list[dict] = []
+        for name, rule in (metric_gate.get("thresholds") or {}).items():
+            value = aggregate.get(name)
+            if value is None:
+                checks.append({"name": name, "kind": "threshold", "rule": rule, "value": None,
+                               "passed": False, "reason": "指标在 run 中缺失"})
+                continue
+            min_ok = rule.get("min") is None or value >= rule["min"]
+            max_ok = rule.get("max") is None or value <= rule["max"]
+            checks.append({"name": name, "kind": "threshold", "rule": rule, "value": value,
+                           "passed": min_ok and max_ok, "reason": None})
+        if baseline_aggregate is not None:
+            for name, rule in (metric_gate.get("delta") or {}).items():
+                drop = rule.get("drop")
+                value = aggregate.get(name)
+                base = baseline_aggregate.get(name)
+                if value is None or base is None:
+                    checks.append({"name": name, "kind": "delta", "rule": rule, "value": value,
+                                   "baseline": base, "passed": False, "reason": "指标或基线值缺失, 无法对比"})
+                    continue
+                # 先取整再比较: 浮点减法误差(如 0.85-0.82=0.030000000000000027)会让边界 drop 误判 fail
+                delta = round(base - value, 6)
+                checks.append({"name": name, "kind": "delta", "rule": rule, "value": value,
+                               "baseline": base, "delta": delta, "passed": delta <= drop,
+                               "reason": None})
+        return checks, all(check["passed"] for check in checks)
+
+    def _latest_run(self) -> dict | None:
+        """metrics_sink 最新 run 记录; 库空返回 None。"""
+        from obs import metrics_sink
+        runs = metrics_sink.list_runs()
+        return runs[0] if runs else None
+
+    def _latest_run_id(self) -> str | None:
+        """metrics_sink 最新 run_id; 库空返回 None。"""
+        run = self._latest_run()
+        return run.get("run_id") if run else None
+
+    def _baseline_aggregate(self, baseline_run_id: str | None) -> dict | None:
+        """基线 run 的 summary.aggregate; 无基线指针或基线 run 已剪除返回 None。"""
+        if not baseline_run_id:
+            return None
+        from obs import metrics_sink
+        run = metrics_sink.get_run(baseline_run_id)
+        if run is None:
+            return None
+        return (run.get("summary") or {}).get("aggregate") or None
+
+    def _prune_verify_dir(self, verify_dir: Path) -> None:
+        """verify 目录保留最近 _VERIFY_LOG_KEEP 个文件, 防 verify 日志无限累积。
+
+        复用 obs.retention_policy.prune_logs 的 max_all_logs 规则(按 mtime 保留最近 N 个);
+        失败仅告警不打断 verify。
+        """
+        try:
+            from obs.retention_policy import prune_logs
+            prune_logs(logs_dir=verify_dir, max_traces=None, max_all_logs=_VERIFY_LOG_KEEP)
+        except Exception as error:
+            logger.warning("verify 日志保留失败(不打断 verify): %s", error)
+
+    def _write_metric_report(self, report: dict) -> Path:
+        """门禁报告落 logs/verify/metric_gate-<ts>.json(计划 §7)。"""
+        import config
+        verify_dir = Path(config.OBS_LOG_DIR) / "verify"
+        verify_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%H%M%S")
+        report_path = verify_dir / f"metric_gate-{timestamp}.json"
+        report_path.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
+        self._prune_verify_dir(verify_dir)
+        return report_path
+
+    def _write_verify_log(self, item_id: str, output: str) -> str | None:
+        """verify 完整输出落 logs/verify/verify-<ts>-<ID>.log, 返回日志文件名(供 last_verify.artifact)。
+
+        空输出不落盘(无证据可存); 失败仅告警不打断 verify。
+        """
+        if not output:
+            return None
+        import config
+        try:
+            verify_dir = Path(config.OBS_LOG_DIR) / "verify"
+            verify_dir.mkdir(parents=True, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            filename = f"verify-{timestamp}-{item_id}.log"
+            (verify_dir / filename).write_text(output, encoding="utf-8")
+            self._prune_verify_dir(verify_dir)
+            return filename
+        except Exception as error:
+            logger.warning("verify 输出落盘失败(不打断 verify): %s", error)
+            return None
