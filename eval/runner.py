@@ -1,4 +1,16 @@
-"""Eval CLI 主入口：retrieval / full 两种评估模式 + --precheck / --smoke / --no-report / --compare。
+"""Eval CLI 主入口: 评估 + 指标库收尾接线的薄编排器
+把一次 run 的编排、落盘、跨 run 指标持久化、指标对比 四件事串起来
+序列化下沉到 serialization, 持久化下沉到 metrics_sink, 文件落盘下沉到 reporter
+
+CLI 入口与模式路由(main)
+评估编排（run_retrieval_mode / run_full_mode / run_smoke_mode / _prepare_eval）
+指标库收尾接线（_record_run_metrics + _resolve_corpus_signature）
+Delta 基线加载（_load_previous_run）
+阶段计时 + 归因（收尾段）
+compare（run_compare + _render_compare + _compare_section + _report_missing_run）
+
+包含 retrieval / full 两种评估模式,
+  --precheck / --smoke / --no-report / --compare 命令后缀作可选特性叠加
 
 核心特性：
     - --mode retrieval：仅 Layer 1 检索评估（不调 LLM，免费），MonitorPanel.final_report() 输出终端报告
@@ -10,7 +22,8 @@
     - 外层 ThreadPoolExecutor（max_workers=EVAL_THREADPOOL_WORKERS）控 query 级并发，_evaluate_one 做 per-query 隔离
     - _load_previous_run() 从指标库加载最近一次 per_query 作为 Delta 基线
 
-默认读 benchmark/private_v6.json，可用 --benchmark 指定其他文件。
+默认读 benchmark/private_v6.json (可用 --benchmark 指定其他文件)
+
 结果写入 eval/results/timeline/<timestamp>/。
 
 用法示例::
@@ -99,15 +112,6 @@ def _load_previous_run() -> dict[str, dict] | None:
 
 # ---- 指标库收尾(metrics_sink record_run) ----
 
-# per_query 落指标库的白名单: 只留数值指标/verdict/延迟/诊断, 显式丢弃 final_context_text/query 等正文(回放归 trace.jsonl)
-_PER_QUERY_WHITELIST = (
-    "recall_at_k", "precision_at_k", "hit_at_k", "mrr", "map_at_k", "ndcg_at_k",
-    "child_hit_at_k", "child_recall_at_k",
-    "faithfulness", "answer_relevancy", "context_precision", "context_recall", "answer_correctness",
-    "verdict", "retrieve_ms", "generate_ms", "diagnosis",
-)
-
-
 def _resolve_corpus_signature(retriever) -> str:
     """语料签名: 优先复用 retriever 懒计算的 _corpus_signature(内容强哈希), 否则由 chunk_ids 派生。
 
@@ -120,30 +124,6 @@ def _resolve_corpus_signature(retriever) -> str:
     chunk_ids = sorted(store.chunk_ids) if store is not None else []
     material = "|".join(chunk_ids)
     return hashlib.sha256(material.encode("utf-8")).hexdigest()[:12]
-
-
-def _build_metrics_per_query(output, judge_results) -> dict:
-    """per_query 白名单瘦身: 复用 reporter 公开序列化器后按 _PER_QUERY_WHITELIST 提取, 只留纯指标。
-
-    Args:
-        output: Layer 1 评估输出(含逐 query 结果)。
-        judge_results: Layer 2 JudgeResult 列表(full 模式), 按 query_id 合并进对应记录。
-
-    Returns:
-        dict: query_id -> 纯指标记录(白名单子集)。
-    """
-    from eval.reporter import serialize_result, serialize_judge_result
-    judge_by_query = {result.query_id: result for result in (judge_results or [])}
-    per_query = {}
-    for result in output.results:
-        record = serialize_result(result)
-        judge = judge_by_query.get(result.query_id)
-        if judge is not None:
-            record.update(serialize_judge_result(judge))
-        per_query[result.query_id] = {
-            key: record[key] for key in _PER_QUERY_WHITELIST if key in record
-        }
-    return per_query
 
 
 def _record_run_metrics(*, run_id: str, benchmark_path: str, retriever, items, output,
@@ -163,7 +143,7 @@ def _record_run_metrics(*, run_id: str, benchmark_path: str, retriever, items, o
         attribution: finalize_traces 返回的归因表(query_id -> {failure_type, evidence})。
         test_mode: retrieval / full。
     """
-    from eval.reporter import build_run_info, build_summary
+    from eval.serialization import build_metrics_per_query, build_run_info, build_summary
     from obs.metrics_sink import record_run
     try:
         record_run(
@@ -177,7 +157,7 @@ def _record_run_metrics(*, run_id: str, benchmark_path: str, retriever, items, o
                 item.query_id: list(item.expected_parent_ids) for item in items
             },
             summary=build_summary(output, judge_results, metrics.summary_dict()),
-            per_query=_build_metrics_per_query(output, judge_results),
+            per_query=build_metrics_per_query(output, judge_results),
             attribution=attribution,
             timestamp=datetime.now().isoformat(),
         )
@@ -332,7 +312,8 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
         str | None：本次运行结果目录（eval/results/timeline/<ts>）；no_report 时返回 None。
     """
     from eval.core.retrieval.retrieval_layer import run_retrieval_eval
-    from eval.reporter import generate_report, build_run_info
+    from eval.reporter import generate_report
+    from eval.serialization import build_run_info
     from obs import get_metrics, reset_metrics
     from obs import MonitorPanel
     from obs.lifecycle import reset_traces, finalize_traces
@@ -386,7 +367,8 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
         str | None：本次运行结果目录（eval/results/timeline/<ts>）；no_report 时返回 None。
     """
     from eval.core.retrieval.retrieval_layer import run_retrieval_eval
-    from eval.reporter import generate_report, build_run_info
+    from eval.reporter import generate_report
+    from eval.serialization import build_run_info
     from eval.core.llm_as_judge.judge import _get_client
     from obs import get_metrics, reset_metrics
     from obs import MonitorPanel, set_panel
