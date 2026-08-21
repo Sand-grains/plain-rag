@@ -1,9 +1,11 @@
-"""harness CLI: 命令全集入口。
+"""Harness治理命令全集入口
+每个子命令是一个合法转移的入口, 参数被翻译为 registry 的状态改写调用
+决策日志的触发入口, 指标门结果的展示层
 
-核心子命令(不依赖 F04-F06): start / verify / block / unblock / reactivate / abandon / note。
-完整子命令(next/status/verify-all/report)在 P4 追加。
+核心子命令: start / verify / block / unblock / reactivate / abandon / note
+完整子命令(next/status/verify-all/report)在 P4 追加
 所有状态改写都经 registry 原子落盘, 非法转移抛 HarnessError 并被本层转成
-非零退出码; verify 的退出码即验证结论(0 = 通过), 供脚本/CI 消费。
+非零退出码; verify 的退出码即验证结论(0 = 通过), 供脚本 / CI 消费
 
 与上层的关系: 每个命令即一个合法转移的触发点, 命令集与 state_machine 转移表
 对账(条例七); 缺省 features.yaml 路径由 __file__ 推导, 不依赖 CWD。
@@ -13,7 +15,7 @@ import sys
 from pathlib import Path
 
 from harness.core.errors import HarnessError
-from harness.core.registry import ItemNotFoundError, Registry
+from harness.core.registry import DECISION_ACTIONS, ItemNotFoundError, Registry
 from harness.service.reporter import Reporter
 from harness.service.scheduler import next_candidate
 from harness.core.states import ABANDONED, ACTIVE, BLOCKED, PASSED, VALID_STATES
@@ -86,14 +88,33 @@ def _print_verification(item_id: str, result, new_state: str) -> None:
             if result.coverage is not None:
                 detail += f", 覆盖率 {result.coverage:.1f}%"
         print(f"验证 {item_id}: 通过 ({detail}) -> {new_state}")
+        if result.metric_gate is not None:
+            report = result.metric_gate
+            print(f"  指标门: 通过 (run_id={report.get('run_id')}, {len(report.get('checks', []))} 项)")
     else:
         reason = f"退出码 {result.exit_code}" if result.exit_code is not None else "超时"
         detail = f"{result.test_count or 0} 测试" if result.test_count is not None else "端到端验证"
         print(f"验证 {item_id}: 未通过 ({reason}, {detail}) -> {new_state}")
-        tail = result.output.strip().splitlines()[-12:]
-        if tail:
-            print("  | " + "\n  | ".join(tail))
+        if result.metric_gate is not None:
+            _print_metric_gate_detail(result.metric_gate)
+        else:
+            tail = result.output.strip().splitlines()[-12:]
+            if tail:
+                print("  | " + "\n  | ".join(tail))
 
+
+def _print_metric_gate_detail(report: dict) -> None:
+    """指标门失败明细(计划 §7): 打印不达标指标与原因。"""
+    reason = report.get("reason") or "阈值/delta 不达标"
+    print(f"  指标门: 未通过 ({reason})")
+    for check in report.get("checks", []):
+        if not check["passed"]:
+            rule = check.get("rule") or {}
+            baseline = f"基线 {check['baseline']}, " if "baseline" in check else ""
+            print(f"    FAIL {check['name']}: value={check.get('value')}, "
+                  f"rule={rule}, {baseline}{check.get('reason') or ''}")
+    if report.get("command_output_tail"):
+        print("  | " + "\n  | ".join(report["command_output_tail"]))
 
 def _build_parser() -> argparse.ArgumentParser:
     """构建 CLI 解析器: 每个子命令即是一个合法状态转移的触发点, 命令集与转移表对账。
@@ -110,6 +131,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_start = subparsers.add_parser("start", help="not_started -> active")
     parser_start.add_argument("item_id")
+    parser_start.add_argument("-m", "--note", default=None, help="开始理由(可选, 写决策日志)")
 
     parser_verify = subparsers.add_parser("verify", help="验证门禁, 决定 active -> passed / passed -> regressed")
     parser_verify.add_argument("item_id")
@@ -124,10 +146,14 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_abandon = subparsers.add_parser("abandon", help="任意态 -> abandoned")
     parser_abandon.add_argument("item_id")
+    parser_abandon.add_argument("-m", "--note", default=None, help="放弃理由(可选, 写决策日志)")
 
-    parser_note = subparsers.add_parser("note", help="写叙述字段, 不碰状态")
+    parser_note = subparsers.add_parser("note", help="写叙述字段, 不碰状态(可 --action/--reason 结构化决策)")
     parser_note.add_argument("item_id")
-    parser_note.add_argument("note_text")
+    parser_note.add_argument("note_text", nargs="?", default=None, help="自由文本叙述")
+    parser_note.add_argument("--action", choices=DECISION_ACTIONS, default=None, help="决策 action")
+    parser_note.add_argument("--reason", default=None, help="决策理由(结构化)")
+    parser_note.add_argument("--evidence", default=None, help="证据引用(如 verify 日志文件名)")
 
     subparsers.add_parser("next", help="调度器出候选(只读), 用户拍板")
     subparsers.add_parser("status", help="状态分布 + 健康度(只读)")
@@ -152,7 +178,7 @@ def _run_core(args, features_path: Path) -> int:
     verifier = Verifier()
 
     if args.command == "start":
-        item = registry.apply_state(args.item_id, ACTIVE)
+        item = registry.apply_state(args.item_id, ACTIVE, note=args.note, action="start")
         _print_state_change(item.id, item.state)
         return 0
 
@@ -166,33 +192,44 @@ def _run_core(args, features_path: Path) -> int:
             if tail:
                 print("  | " + "\n  | ".join(tail), file=sys.stderr)
             return 2
-        updated = registry.record_verification(item.id, result.passed, result.to_evidence(), note=args.note)
+        updated = registry.record_verification(item.id, result.passed, result.to_evidence(), note=args.note,
+                                               metric_baseline=result.metric_baseline_run_id)
         _print_verification(item.id, result, updated.state)
         return 0 if result.passed else 1
 
     if args.command == "block":
-        item = registry.apply_state(args.item_id, BLOCKED, note=args.note)
+        item = registry.apply_state(args.item_id, BLOCKED, note=args.note, action="block")
         _print_state_change(item.id, item.state)
         return 0
 
     if args.command == "unblock":
-        item = registry.apply_state(args.item_id, ACTIVE, note=args.note)
+        item = registry.apply_state(args.item_id, ACTIVE, note=args.note, action="unblock")
         _print_state_change(item.id, item.state)
         return 0
 
     if args.command == "reactivate":
-        item = registry.apply_state(args.item_id, ACTIVE, note=args.note)
+        item = registry.apply_state(args.item_id, ACTIVE, note=args.note, action="reactivate")
         _print_state_change(item.id, item.state)
         return 0
 
     if args.command == "abandon":
-        item = registry.apply_state(args.item_id, ABANDONED)
+        item = registry.apply_state(args.item_id, ABANDONED, note=args.note, action="abandon")
         _print_state_change(item.id, item.state)
         return 0
 
     if args.command == "note":
-        item = registry.apply_note(args.item_id, args.note_text)
-        print(f"{item.id} 叙述: {item.note}")
+        if args.action is not None:
+            if not (args.reason or args.note_text):
+                raise HarnessError("结构化决策必须给 --reason 或自由文本")
+            reason = args.reason or args.note_text
+            item = registry.apply_note(args.item_id, args.note_text,
+                                       action=args.action, reason=reason, evidence=args.evidence)
+            print(f"{item.id} 决策已记录: {args.action} ({reason})")
+        else:
+            if args.note_text is None:
+                raise HarnessError("note 需要自由文本或 --action/--reason 结构化输入")
+            item = registry.apply_note(args.item_id, args.note_text)
+            print(f"{item.id} 叙述: {item.note}")
         return 0
 
     raise HarnessError(f"未知命令: {args.command}")
@@ -250,7 +287,10 @@ def _run_full(args, features_path: Path, progress_path: Path) -> int:
         regressed_ids = []
         for item in passed_items:
             result = verifier.verify(item)
-            updated = registry.record_verification(item.id, result.passed, result.to_evidence())
+            # 巡检非决策: record_decision=False, 不写决策日志防批量噪音
+            updated = registry.record_verification(item.id, result.passed, result.to_evidence(),
+                                                   metric_baseline=result.metric_baseline_run_id,
+                                                   record_decision=False)
             _print_verification(item.id, result, updated.state)
             if not result.passed:
                 regressed_ids.append(item.id)
@@ -279,7 +319,7 @@ def main(argv: list[str] | None = None, features_path: Path | None = None,
         progress_path: PROGRESS.md 路径, 测试注入用; 缺省由 __file__ 推导。
 
     Returns:
-        int: 进程退出码, 0=成功, 1=失败(非法转移/清单错误/验证未通过)。
+        int: 进程退出码, 0=成功, 1=失败 (非法转移/清单错误/验证未通过)。
     """
     parser = _build_parser()
     args = parser.parse_args(argv)
