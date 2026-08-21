@@ -4,11 +4,14 @@
 uv run python 覆盖退出码 0/1/2/5; pytest 空收集(退出码 5)视为失败; 真实
 gate 验证覆盖 cobertura xml 证据与 --cov-fail-under 门禁。
 """
+import os
+
 import pytest
 
+import config
 from harness.core.errors import HarnessError
 from harness.core.models import FeatureItem
-from harness.service.verifier import Verifier
+from harness.service.verifier import Verifier, _VERIFY_LOG_KEEP
 
 
 def _item(gate: str, e2e: str | None = None, timeout: float | None = None) -> FeatureItem:
@@ -111,3 +114,22 @@ class TestEvidence:
         evidence = result.to_evidence()
         assert evidence["exit_code"] == 0
         assert "tests" in evidence and "coverage" in evidence and "duration" in evidence
+
+
+class TestVerifyLogRetention:
+    def test_prunes_verify_logs_to_keep_cap(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(config, "OBS_LOG_DIR", str(tmp_path / "logs"))
+        verifier = _fake_verifier()
+        verify_dir = tmp_path / "logs" / "verify"
+        verify_dir.mkdir(parents=True, exist_ok=True)
+        # 预置 _VERIFY_LOG_KEEP+5 个旧日志, mtime 递增(索引越大越新)
+        base = 1_700_000_000
+        for index in range(_VERIFY_LOG_KEEP + 5):
+            path = verify_dir / f"verify-20260819-{index:06d}-F01.log"
+            path.write_text("old", encoding="utf-8")
+            os.utime(path, (base + index, base + index))
+        # 写一个新日志触发保留: 新文件 mtime 最新, 最旧的 5 个被裁掉
+        verifier._write_verify_log("F01", "new output")
+        remaining = list(verify_dir.glob("verify-*.log"))
+        assert len(remaining) == _VERIFY_LOG_KEEP
+        assert not (verify_dir / "verify-20260819-000000-F01.log").exists()  # 最旧者已删
