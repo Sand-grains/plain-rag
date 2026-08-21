@@ -1,4 +1,4 @@
-"""跨 run 指标持久化库(run 结束后 JSONL 落盘, 累计成历史): 把每次 eval run 的指标落成可查、可对比的指标库 (补"跑完即失"短板)。
+"""指标沉淀: 跨 run 指标持久化库 (run 结束后 JSONL 落盘, 累计成历史): 把每次 eval run 的指标落成可查、可对比的指标库 (补"跑完即失"短板)。
 
 核心特性:
     - JSONL 落盘 eval/results/metrics/metrics.jsonl, 每行一次 run 的记录(与 timeline/<ts>/ 并存:
