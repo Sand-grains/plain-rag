@@ -1,5 +1,5 @@
 schema: 1
-milestone: 009-observability
+milestone: 010-obs-hardening
 items:
 - id: F01
   behavior: 'harness-状态机: 编码转移表并拒绝非法转移'
@@ -13,12 +13,15 @@ items:
   state: passed
   note: '回归修复: 还原 F01 门禁'
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 8
     coverage: 100.0
-    duration: 1.62
+    duration: 1.78
     mode: gate
+    artifact: verify-20260819-095733-F01.log
 - id: F02
   behavior: 'harness-清单解析: features.yaml 解析/校验/渲染'
   behavior_hash: 9d2313a458fb
@@ -32,30 +35,36 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 23
-    coverage: 88.31
-    duration: 2.3
+    coverage: 81.94
+    duration: 2.77
     mode: gate
+    artifact: verify-20260819-095735-F02.log
 - id: F03
   behavior: 'harness-验证器: 退出码判定 + 两级验证'
   behavior_hash: 50487297081f
-  gate: uv run pytest harness/tests/test_verifier.py -q --cov=harness.service.verifier
-    --cov-fail-under=90
+  gate: uv run pytest harness/tests/test_verifier.py harness/tests/test_metric_gate.py
+    harness/tests/test_decision_record.py -q --cov=harness.service.verifier --cov-fail-under=90
   e2e: null
   precheck: null
   e2e_passed: false
-  finished_time: null
+  finished_time: 2026-08-19 09:52
   state: passed
-  note: null
+  note: F26/F27 给 verifier.py 增码, 门禁纳入 metric_gate/decision_record 测试补覆盖
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
-    tests: 13
-    coverage: 93.60000000000001
-    duration: 15.36
+    tests: 61
+    coverage: 95.02000000000001
+    duration: 16.55
     mode: gate
+    artifact: verify-20260819-095752-F03.log
 - id: F04
   behavior: 'harness-调度器: 只出候选'
   behavior_hash: e738a5a088e0
@@ -68,12 +77,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 4
     coverage: 100.0
-    duration: 1.64
+    duration: 1.74
     mode: gate
+    artifact: verify-20260819-095754-F04.log
 - id: F05
   behavior: 'harness-追踪器: 状态分布 + 健康度'
   behavior_hash: 29d00b96ac7a
@@ -86,12 +98,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 16
     coverage: 100.0
-    duration: 1.69
+    duration: 1.74
     mode: gate
+    artifact: verify-20260819-095756-F05.log
 - id: F06
   behavior: 'harness-报告器: PROGRESS.md 快照'
   behavior_hash: c7cf64bbff85
@@ -104,12 +119,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 4
     coverage: 88.89
-    duration: 2.38
+    duration: 2.25
     mode: gate
+    artifact: verify-20260819-095758-F06.log
 - id: F07a
   behavior: 'harness-CLI 核心: start/verify/reactivate/abandon/block/note 子命令, 不依赖 F04-F06'
   behavior_hash: 4fbfb7657e7f
@@ -121,12 +139,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 14
-    coverage: 62.580000000000005
-    duration: 17.3
+    coverage: 58.120000000000005
+    duration: 12.17
     mode: gate
+    artifact: verify-20260819-095810-F07a.log
 - id: F07b
   behavior: 'harness-CLI 完整: next/status/verify-all/report 子命令, 依赖 F04-F06'
   behavior_hash: 90cd38cc8a0e
@@ -138,32 +159,40 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 6
-    coverage: 65.64
-    duration: 9.45
+    coverage: 59.69
+    duration: 7.47
     mode: gate
+    artifact: verify-20260819-095818-F07b.log
 - id: F08
   behavior: 'harness-端到端验证: full 字段/--full 旗标改 e2e/--e2e, precheck 前置自检, 按功能项声明端到端测评命令
     (含eval --precheck/--smoke 模式)'
   behavior_hash: 6fe2d5ab8ca2
   gate: uv run pytest harness/tests/test_e2e.py tests/unit/test_eval_runner_modes.py
+    harness/tests/test_verifier.py harness/tests/test_metric_gate.py harness/tests/test_decision_record.py
+    harness/tests/test_registry.py harness/tests/test_cli_core.py harness/tests/test_cli_full.py
     -q --cov=harness.service.verifier --cov=harness.core.registry --cov=harness.cli
     --cov-fail-under=80
   e2e: null
   precheck: null
   e2e_passed: false
-  finished_time: null
+  finished_time: 2026-08-19 09:56
   state: passed
-  note: null
-  timeout: null
+  note: F26/F27 给 verifier/registry/cli 增码, 门禁纳入全模块测试补覆盖
+  timeout: 180
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
-    tests: 29
-    coverage: 85.03
-    duration: 38.34
+    tests: 136
+    coverage: 93.44
+    duration: 75.12
     mode: gate
+    artifact: verify-20260819-095933-F08.log
 - id: F09
   behavior: 'harness-完成时间与状态语义: FeatureItem 增 finished_time 字段(active->passed 记录/巡检不刷新/regressed
     清空/渲染展示), 状态 token passing 改 passed'
@@ -178,12 +207,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 35
-    coverage: 89.52
-    duration: 2.58
+    coverage: 82.35
+    duration: 2.66
     mode: gate
+    artifact: verify-20260819-095936-F09.log
 - id: F10
   behavior: 'obs-migrate: eval/monitor 迁入 obs(monitor_metrics/monitor_panel 逻辑与类名不变,
     MonitorMetrics 唯一真源保留), obs/_stats.py 复制 4 纯函数(avg_of/percentile/p95/format_time),
@@ -197,12 +229,15 @@ items:
   state: passed
   note: null
   timeout: 180
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
-    tests: 412
-    coverage: 81.51
-    duration: 89.27
+    tests: 565
+    coverage: null
+    duration: 68.7
     mode: gate
+    artifact: verify-20260819-100045-F10.log
 - id: F11
   behavior: 'obs-base: obs/logging_setup.py 落盘 logs/plain_rag.log(10MB x 5, request_id
     注入), config 增 OBS_LOG_DIR/OBS_ENABLED/OBS_SANITIZE, logs/ 入 .gitignore, 运行时链路
@@ -218,12 +253,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 10
     coverage: 95.12
-    duration: 28.42
+    duration: 28.02
     mode: gate
+    artifact: verify-20260819-100113-F11.log
 - id: F12
   behavior: 'obs-trace: RagTrace + ContextVar trace_scope + 装饰器(observe_stage/trace_rerank/observe_pipeline)
     + 业务模块 _diagnostics 诊断槽 + 检索/full 双模式 per-query hook + session 收集器 + trace.jsonl
@@ -238,12 +276,15 @@ items:
   state: passed
   note: null
   timeout: 600
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
-    tests: 19
-    coverage: 98.82
-    duration: 27.48
+    tests: 21
+    coverage: 97.77
+    duration: 34.62
     mode: gate
+    artifact: verify-20260819-100148-F12.log
 - id: F13
   behavior: 'obs-attribution: 归因器按序判定五类(rerank_fallback/empty_recall/recall_absent/rerank_drop/generation_error),
     recalled_ids 判据 + 多 expected any-miss + evidence.eval_diagnosis, finalize_traces
@@ -258,12 +299,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 14
     coverage: 97.83
-    duration: 26.33
+    duration: 32.38
     mode: gate
+    artifact: verify-20260819-100220-F13.log
 - id: F14
   behavior: 'obs-stdio-safe: setup_logging 对 sys.stdout/stderr reconfigure(errors=replace),
     防 GBK 重定向下不可编码字符(如 ¥ U+00A5)使 final_report 抛 UnicodeEncodeError 被裸 except 吞成面板截断'
@@ -276,12 +320,15 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 8
     coverage: 95.12
-    duration: 30.59
+    duration: 32.08
     mode: gate
+    artifact: verify-20260819-100252-F14.log
 - id: F15
   behavior: 'obs-retention: obs/retention_policy.prune_logs(trace>100 保留最近100, 总文件<=200
     硬上限) + scripts/prune_logs.py 计划任务入口(每3天) + trace 按天分包 logs/traces/YYYY-MM-DD/
@@ -296,15 +343,18 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
-    tests: 17
-    coverage: 94.32000000000001
-    duration: 26.27
+    tests: 19
+    coverage: 92.71000000000001
+    duration: 33.24
     mode: gate
+    artifact: verify-20260819-100326-F15.log
 - id: F16
   behavior: 'checkout-会话退出检查: scripts/exit_check.py 三档模式编排门禁+清洁+回归计数+退出码, 命令正文双写(.claude/commands/checkout.md
-    自包含 + instruction-set.md), CLAUDE.md 退出/开始约定与 note 连续性'
+    自包含 + instruction-set.md), AGENTS.md 退出/开始约定与 note 连续性'
   behavior_hash: 5e754c53a442
   gate: uv run pytest tests/unit/test_exit_check.py -q --cov=scripts.exit_check --cov-fail-under=80
   e2e: null
@@ -314,9 +364,279 @@ items:
   state: passed
   note: null
   timeout: null
+  metric_gate: null
+  baseline_run_id: null
   last_verify:
     exit_code: 0
     tests: 34
     coverage: 92.52
-    duration: 28.69
+    duration: 34.3
     mode: gate
+    artifact: verify-20260819-100400-F16.log
+- id: F17
+  behavior: 'obs-metrics-sink: record/list/get/load + query_signature + 落库往返'
+  behavior_hash: e2f78bbe0c62
+  gate: uv run pytest tests/unit/test_obs_metrics_sink.py tests/unit/test_obs_compare.py
+    -q --cov=obs.metrics_sink --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-18 21:35
+  state: passed
+  note: F18 往 metrics_sink 增 compare_runs(58→180 行) 稀释 F17 gate 覆盖率, gate 纳入 test_obs_compare.py
+    覆盖完整模块
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 27
+    coverage: 96.7
+    duration: 37.23
+    mode: gate
+    artifact: verify-20260819-100438-F17.log
+- id: F18
+  behavior: 'obs-align: compare_runs(Wilcoxon 配对 + 稳定子集, 仅 matched<6 或签名全不匹配退化 + corpus
+    可对比性校验)'
+  behavior_hash: f88ee3b1781f
+  gate: uv run pytest tests/unit/test_obs_compare.py tests/unit/test_obs_metrics_sink.py
+    -q --cov=obs.metrics_sink --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-18 20:59
+  state: passed
+  note: null
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 27
+    coverage: 96.7
+    duration: 33.94
+    mode: gate
+    artifact: verify-20260819-100512-F18.log
+- id: F19
+  behavior: 'obs-runner-sink: finalize 返 attribution + 双模式 record_run(smoke 不写, 失败
+    log-only) + _load_previous_run 改读 + reporter build_summary 抽取与序列化器(_serialize_*)转公开(共享
+    run_id 时间戳)'
+  behavior_hash: 3c39be9c8f7a
+  gate: uv run pytest tests/unit/test_obs_runner.py tests/unit/test_obs_trace.py tests/unit/test_eval_reporter.py
+    -q --cov=obs.lifecycle --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: uv run python -m eval.runner --precheck
+  e2e_passed: true
+  finished_time: 2026-08-18 21:13
+  state: passed
+  note: null
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 30
+    coverage: 94.92
+    duration: 33.72
+    mode: gate
+    artifact: verify-20260819-100545-F19.log
+- id: F20
+  behavior: 'obs-consume: run_compare 改读 + history 废止'
+  behavior_hash: b478c0dd0a03
+  gate: uv run pytest tests/unit/test_eval_utils.py tests/unit/test_obs_metrics_sink.py
+    -q --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-18 21:17
+  state: passed
+  note: 009-4 二期指标库完成(F17 metrics_sink/F18 compare_runs/F19 runner接线/F20 consume),
+    全量 460 passed + full 检查全绿。修 pytest-cov 坑(addopts 移除无参 --cov, 记入 AGENTS.md 必要说明)。F17
+    gate 纳入 test_obs_compare.py 防 F18 稀释覆盖率。未提交(用户 review 中), 指标库含 2 个 retrieval run
+    可 --compare
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 38
+    coverage: null
+    duration: 24.44
+    mode: gate
+    artifact: verify-20260819-100610-F20.log
+- id: F21
+  behavior: 'obs-health: obs/health 探针纯函数(cache 经 infra/cache + external 四件套 pgsql/es/milvus/redis,
+    TTL 缓存, 默认探针集按 STORAGE_BACKEND 推导) + CLI 全过返 0/任一失败返 1'
+  behavior_hash: 499cb9f44df5
+  gate: uv run pytest tests/unit/test_obs_health.py -q --cov=obs.health --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-19 07:16
+  state: passed
+  note: obs.health CLI 对真 infra(external 四件套 es/milvus/pgsql/redis)手动验证全 OK 退 0; e2e
+    置 null(纯内部逻辑)
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 18
+    coverage: 99.06
+    duration: 34.83
+    mode: gate
+    artifact: verify-20260819-100645-F21.log
+- id: F22
+  behavior: 'obs-exit-guard: obs/exit_guard.py atexit 兜底清空 session 收集器 + 日志 flush
+    + SIGINT/SIGTERM 最小化转 KeyboardInterrupt(幂等), eval/runner main() 注册'
+  behavior_hash: 874c76ad0cd5
+  gate: uv run pytest tests/unit/test_obs_exit_guard.py -q --cov=obs.exit_guard --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-19 07:30
+  state: passed
+  note: register_exit_guard 真进程冒烟(幂等 + SIGINT handler 生效); e2e 置 null(纯内部逻辑, signal
+    行为单测覆盖)
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 6
+    coverage: 96.67
+    duration: 31.38
+    mode: gate
+    artifact: verify-20260820-125441-F22.log
+- id: F23
+  behavior: 'obs-agent-trace: RagTrace 增 trace_type 判别(eval/agent) + finalize_traces
+    benchmark_items=None 跳过归因 + agent_pipeline 编排层开 trace_scope(trace_type=agent)
+    + atexit 收尾落 trace.jsonl + --query 单轮模式'
+  behavior_hash: 415806c0ba02
+  gate: uv run pytest tests/unit/test_obs_agent_trace.py tests/unit/test_obs_trace.py
+    tests/unit/test_agent_pipeline_entry.py -q --cov=obs.trace --cov=obs.lifecycle
+    --cov-fail-under=80
+  e2e: uv run python agent_pipeline.py --query '知识库包含什么内容'
+  precheck: null
+  e2e_passed: true
+  finished_time: 2026-08-19 08:23
+  state: passed
+  note: e2e 通过(agent_pipeline --query 单轮问答); agent trace 落盘 trace_type=agent 无 failure_attribution(跳过归因生效);
+    agent_intent/agent_tool 在 hello-agents 黑盒内打不细, 检索阶段由 retriever 装饰器记入, 自定义编排后可精确打点
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 23
+    coverage: 98.28
+    duration: 32.97
+    mode: gate
+    artifact: verify-20260819-100751-F23.log
+- id: F24
+  behavior: 'obs-stage-timing: obs/stage_report 跨 query 阶段计时聚合(每阶段 count/avg/p50/p95,
+    跳过 0 耗时) + retry 差额(fallback_required→rerank 求和) + error_code 聚合 + 落 logs/traces/step_timing-<ts>.jsonl
+    + eval runner 收尾接线, 只读不改链路(条例三)'
+  behavior_hash: 85e1cfbfc82a
+  gate: uv run pytest tests/unit/test_obs_stage_timing.py -q --cov=obs.stage_report
+    --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: true
+  finished_time: 2026-08-19 08:41
+  state: passed
+  note: '门禁 16 测试 100% 覆盖; e2e 通过(检索评估 110 query, step_timing 真落盘: embed/dense/sparse/retrieve_total/rerank
+    五阶段, retrieval 模式 generate 正确跳过); 只读聚合不改链路(条例三); 跳过 0 耗时阶段防缺失阶段污染延迟分布, trace_type
+    过滤防 agent 阶段污染 eval 统计, retry 差额 = fallback query 的 rerank 耗时求和'
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 16
+    coverage: 100.0
+    duration: 32.69
+    mode: gate
+    artifact: verify-20260819-100824-F24.log
+- id: F25
+  behavior: 'obs-evidence-coverage: obs/evidence compute_evidence_coverage(expected
+    在 recalled_ids/candidates_after_rerank 命中数 + lost_stage 判定 recall/rerank) + finalize_traces
+    归因循环并入 failure_attribution.evidence, 只读不改链路(条例三)'
+  behavior_hash: 9037c65c8bdc
+  gate: uv run pytest tests/unit/test_obs_evidence.py -q --cov=obs.evidence --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: true
+  finished_time: 2026-08-19 08:49
+  state: passed
+  note: 门禁 10 测试 100% 覆盖; e2e 通过(检索评估, trace.jsonl 6 条 query 带 evidence_coverage,
+    lost_stage 同时覆盖 recall/rerank 两种定位); 只读消费三视图不改链路(条例三); after_rerank 空退 retrieved_chunks(对齐
+    rerank_drop 判据), lost_stage 上游优先(recall 先于 rerank)
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 10
+    coverage: 100.0
+    duration: 32.45
+    mode: gate
+    artifact: verify-20260819-100857-F25.log
+- id: F26
+  behavior: 'harness-metric-gate: FeatureItem 增 metric_gate 可选字段(command/thresholds/delta)
+    + baseline_run_id 指针; verifier gate 通过后追加指标门(metrics_sink 消费最新 run 取 summary.aggregate,
+    阈值 min/max + delta 相对基线 drop 判定, 无基线只判阈值); 门禁报告落 logs/verify/metric_gate-<ts>.json;
+    基线仅门禁通过时更新'
+  behavior_hash: 48e44e8dca61
+  gate: uv run pytest harness/tests/test_metric_gate.py harness/tests/test_verifier.py
+    -q --cov=harness.service.verifier --cov=harness.core.models --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-19 09:05
+  state: passed
+  note: 门禁 45 测试(32 metric_gate + 13 verifier) 96.5% 覆盖; FeatureItem 增 metric_gate(command/thresholds/delta)
+    + baseline_run_id 指针; verifier gate 通过后追加指标门(消费 metrics_sink 最新 run 的 summary.aggregate,
+    阈值 min/max + delta drop 无基线只判阈值, 命令失败/无新 run/不达标均判 fail); 门禁报告落 logs/verify/metric_gate-<ts>.json;
+    基线仅整体通过时更新(失败保持上次 good run); 本期不接线真实功能项(C.1 成本/C.2 阈值待拍板); 门禁并入 test_verifier
+    因 metric_gate 单独测共享 verifier 模块不达标(既有 e2e/junit 路径由 F03 覆盖)
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 45
+    coverage: 95.19999999999999
+    duration: 15.03
+    mode: gate
+    artifact: verify-20260820-135936-F26.log
+- id: F27
+  behavior: 'harness-decision-record: 状态转移命令(start/verify/block/unblock/reactivate/abandon)在
+    转移锁内自动 append 决策到 harness/decisions.md(单源追加不重写, 每条 ts/action/item_id/user/reason/evidence,
+    user 默认 sca/env HARNESS_USER); verify 输出落 logs/verify/verify-<ts>-<ID>.log + last_verify.artifact;
+    note CLI 结构化输入(--action/--reason/--evidence); verify-all 巡检不写'
+  behavior_hash: fb9fabcd0070
+  gate: uv run pytest harness/tests/test_decision_record.py harness/tests/test_metric_gate.py
+    harness/tests/test_registry.py harness/tests/test_cli_core.py harness/tests/test_cli_full.py
+    harness/tests/test_verifier.py -q --cov=harness.core.registry --cov=harness.cli
+    --cov=harness.service.verifier --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-19 09:27
+  state: passed
+  note: '【会话交接】plan 010 obs-hardening 整线完成(F21-F27 全绿, 28 passed / 0 regressed); 010
+    文档已 □→√ + status done + finished-date 2026-08-19; 收尾修回归: F26/F27 给共享模块 verifier/registry/cli
+    增码, F03/F08 门禁扩展测试集补覆盖(F03 timeout null, F08 timeout 180); 未提交(用户明确不提交): F17-F20
+    metrics_sink + F21-F27 + 文档收尾 + harness/decisions.md 全部在工作树; 风险: harness/decisions.md
+    与 logs/verify/ 证据随 prune 可能悬空(A5 已接受)'
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 104
+    coverage: 90.72
+    duration: 31.08
+    mode: gate
+    artifact: verify-20260819-100944-F27.log
