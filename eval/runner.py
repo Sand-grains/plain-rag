@@ -8,7 +8,7 @@
     - --no-report：跳过 generate_report 与 timeline 落盘，保留终端报告（e2e 一律携带）
     - --compare RUN_A RUN_B：对比两次运行的指标差异
     - 外层 ThreadPoolExecutor（max_workers=EVAL_THREADPOOL_WORKERS）控 query 级并发，_evaluate_one 做 per-query 隔离
-    - _load_previous_run() 加载最近一次 per_query.json 作为 Delta 基线
+    - _load_previous_run() 从指标库加载最近一次 per_query 作为 Delta 基线
 
 默认读 benchmark/private_v6.json，可用 --benchmark 指定其他文件。
 结果写入 eval/results/timeline/<timestamp>/。
@@ -32,6 +32,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import logging
 import os
 import sys
@@ -42,7 +43,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from config import TOP_K, LLM_MODEL_ID, EVAL_LLM_MODEL_ID, EVAL_THREADPOOL_WORKERS, GENERATOR_TEMPERATURE, STORAGE_BACKEND
-from eval.utils import read_json
 from indexing.index_store import IndexStore
 from retrieval.retriever import Retriever
 from retrieval.generator import Generator
@@ -79,30 +79,110 @@ def _get_outer_pool() -> ThreadPoolExecutor:
 
 
 def _load_previous_run() -> dict[str, dict] | None:
-    """加载最近一次运行的 per_query.json（排除当前这次），按 query_id 索引。
+    """从指标库加载最近一次含 Layer 2 结果（faithfulness）的 run 的 per_query，按 query_id 索引。
+
+    指标库是唯一跨 run 数据源; record_run 在收尾才写, 当前 run 天然不在库中, 无需排除本次。
 
     Returns:
-        dict[str, dict] | None：最近一次含 Layer 2 结果（faithfulness）的 per_query 数据；无则 None。
+        dict[str, dict] | None：最近一次含 faithfulness 的 per_query 数据；无则 None。
     """
-    timeline = _PROJECT_ROOT / "eval" / "results" / "timeline"
-    if not timeline.exists():
-        return None
-    runs = sorted(
-        [directory for directory in timeline.iterdir() if directory.is_dir()],
-        reverse=True,
-    )
-    for run_dir in runs:
-        per_query_path = run_dir / "per_query.json"
-        if per_query_path.exists():
-            data = read_json(per_query_path)
-            if data is None:
-                continue
-            if data and any(
-                "faithfulness" in value for value in data.values()
-                if isinstance(value, dict)
-            ):
-                return data
+    from obs.metrics_sink import list_runs
+    for record in list_runs():
+        per_query = record.get("per_query", {}) or {}
+        if per_query and any(
+            isinstance(value, dict) and "faithfulness" in value
+            for value in per_query.values()
+        ):
+            return per_query
     return None
+
+
+# ---- 指标库收尾(metrics_sink record_run) ----
+
+# per_query 落指标库的白名单: 只留数值指标/verdict/延迟/诊断, 显式丢弃 final_context_text/query 等正文(回放归 trace.jsonl)
+_PER_QUERY_WHITELIST = (
+    "recall_at_k", "precision_at_k", "hit_at_k", "mrr", "map_at_k", "ndcg_at_k",
+    "child_hit_at_k", "child_recall_at_k",
+    "faithfulness", "answer_relevancy", "context_precision", "context_recall", "answer_correctness",
+    "verdict", "retrieve_ms", "generate_ms", "diagnosis",
+)
+
+
+def _resolve_corpus_signature(retriever) -> str:
+    """语料签名: 优先复用 retriever 懒计算的 _corpus_signature(内容强哈希), 否则由 chunk_ids 派生。
+
+    两条路径算法不同(内容 vs id 集合), 但 rerank 开关切换的跨模式比较本就该降 delta, 保守可接受。
+    """
+    signature = getattr(retriever, "_corpus_signature", None)
+    if signature:
+        return signature
+    store = getattr(retriever, "index_store", None)
+    chunk_ids = sorted(store.chunk_ids) if store is not None else []
+    material = "|".join(chunk_ids)
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()[:12]
+
+
+def _build_metrics_per_query(output, judge_results) -> dict:
+    """per_query 白名单瘦身: 复用 reporter 公开序列化器后按 _PER_QUERY_WHITELIST 提取, 只留纯指标。
+
+    Args:
+        output: Layer 1 评估输出(含逐 query 结果)。
+        judge_results: Layer 2 JudgeResult 列表(full 模式), 按 query_id 合并进对应记录。
+
+    Returns:
+        dict: query_id -> 纯指标记录(白名单子集)。
+    """
+    from eval.reporter import serialize_result, serialize_judge_result
+    judge_by_query = {result.query_id: result for result in (judge_results or [])}
+    per_query = {}
+    for result in output.results:
+        record = serialize_result(result)
+        judge = judge_by_query.get(result.query_id)
+        if judge is not None:
+            record.update(serialize_judge_result(judge))
+        per_query[result.query_id] = {
+            key: record[key] for key in _PER_QUERY_WHITELIST if key in record
+        }
+    return per_query
+
+
+def _record_run_metrics(*, run_id: str, benchmark_path: str, retriever, items, output,
+                        judge_results, metrics, attribution: dict, test_mode: str) -> None:
+    """收尾落指标库: 组装 summary/per_query/signatures 后 record_run。
+
+    指标库是旁路: 任何组装/落库异常只 log-only 警告, 不打断 eval 主流程; 与 --no-report 解耦恒写。
+
+    Args:
+        run_id: 共享时间戳(%Y-%m-%d_%H%M%S, 与 timeline 目录同名)。
+        benchmark_path: benchmark 文件路径。
+        retriever: 检索器(供语料签名)。
+        items: benchmark 条目列表(供 expected_parent_ids / num_queries)。
+        output: Layer 1 评估输出。
+        judge_results: Layer 2 JudgeResult 列表。
+        metrics: MonitorMetrics 单例(供 summary_dict 成本/token/缓存快照)。
+        attribution: finalize_traces 返回的归因表(query_id -> {failure_type, evidence})。
+        test_mode: retrieval / full。
+    """
+    from eval.reporter import build_run_info, build_summary
+    from obs.metrics_sink import record_run
+    try:
+        record_run(
+            run_id=run_id,
+            benchmark=benchmark_path,
+            config=build_run_info(benchmark_path, run_mode=test_mode),
+            corpus_signature=_resolve_corpus_signature(retriever),
+            test_mode=test_mode,
+            num_queries=len(items),
+            expected_parent_ids_by_query={
+                item.query_id: list(item.expected_parent_ids) for item in items
+            },
+            summary=build_summary(output, judge_results, metrics.summary_dict()),
+            per_query=_build_metrics_per_query(output, judge_results),
+            attribution=attribution,
+            timestamp=datetime.now().isoformat(),
+        )
+    except Exception as error:
+        logger.warning("指标库落库失败(旁路, 不打断): %s", error)
 
 
 # ---- 单条评估 ----
@@ -256,7 +336,8 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
     from obs import get_metrics, reset_metrics
     from obs import MonitorPanel
     from obs.lifecycle import reset_traces, finalize_traces
-    from obs.trace import trace_scope
+    from obs.stage_report import write_step_report
+    from obs.trace import session_traces, trace_scope
 
     reset_metrics()
     reset_traces()
@@ -279,11 +360,15 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
     panel.query_count = total
     panel.final_report()
 
-    finalize_traces(items, [], layer1_results=output.results)  # trace 落盘与 --no-report 解耦, 恒写
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")  # 共享 run_id: 同时喂 timeline 目录与指标库
+    write_step_report(session_traces(), trace_type="eval")  # 阶段计时报告(finalize 消费收集器前只读聚合)
+    _, attribution = finalize_traces(items, [], layer1_results=output.results, return_attribution=True)
+    _record_run_metrics(run_id=timestamp, benchmark_path=benchmark_path, retriever=retriever,
+                        items=items, output=output, judge_results=[], metrics=metrics,
+                        attribution=attribution, test_mode="retrieval")
 
     if no_report:
         return None
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     results_dir = str(_PROJECT_ROOT / "eval" / "results" / "timeline" / timestamp)
     run_info = build_run_info(benchmark_path)
     generate_report(output, results_dir, run_info)
@@ -306,6 +391,8 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     from obs import get_metrics, reset_metrics
     from obs import MonitorPanel, set_panel
     from obs.lifecycle import reset_traces, finalize_traces
+    from obs.stage_report import write_step_report
+    from obs.trace import session_traces
 
     reset_metrics()
     reset_traces()
@@ -377,12 +464,16 @@ def run_full_mode(benchmark_path: str, no_report: bool = False) -> str | None:
     # 最终报告（终端）
     panel.final_report()
 
-    finalize_traces(items, judge_results, layer1_results=layer1.results)  # trace 落盘与 --no-report 解耦, 恒写
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")  # 共享 run_id: 同时喂 timeline 目录与指标库
+    write_step_report(session_traces(), trace_type="eval")  # 阶段计时报告(finalize 消费收集器前只读聚合)
+    _, attribution = finalize_traces(items, judge_results, layer1_results=layer1.results, return_attribution=True)
+    _record_run_metrics(run_id=timestamp, benchmark_path=benchmark_path, retriever=retriever,
+                        items=items, output=layer1, judge_results=judge_results, metrics=metrics,
+                        attribution=attribution, test_mode="full")
 
     # 写入文件报告
     if no_report:
         return None
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     results_dir = str(_PROJECT_ROOT / "eval" / "results" / "timeline" / timestamp)
     run_info = build_run_info(benchmark_path, run_mode="full")
     generate_report(layer1, results_dir, run_info,
@@ -451,36 +542,78 @@ def run_smoke_mode(benchmark_path: str, limit: int = SMOKE_DEFAULT_LIMIT) -> Non
 
 
 def run_compare(run_a: str, run_b: str) -> None:
-    """对比两次运行的指标差异（终端表格输出）。
+    """对比两次运行的指标差异（终端分节表格, 数据源为指标库 metrics_sink）。
+
+    参数语义为 run_id(指标库记录); 查不到时区分"非法 run_id"与"legacy timeline run"
+    (存量 run 无 metrics 行, 升级后不可比, 提示需重跑 record_run 入库)。
 
     Args:
-        run_a: 第一次运行的 timeline 目录名。
-        run_b: 第二次运行的 timeline 目录名。
+        run_a: 第一次运行的 run_id。
+        run_b: 第二次运行的 run_id。
     """
-    base = str(_PROJECT_ROOT / "eval" / "results" / "timeline")
-    dir_a = os.path.join(base, run_a)
-    dir_b = os.path.join(base, run_b)
+    from obs.metrics_sink import compare_runs, get_run
 
-    summary_a = read_json(os.path.join(dir_a, "summary.json"))
-    summary_b = read_json(os.path.join(dir_b, "summary.json"))
-
-    if not summary_a or not summary_b:
-        logger.error("找不到 summary.json")
+    record_a = get_run(run_a)
+    record_b = get_run(run_b)
+    if record_a is None or record_b is None:
+        _report_missing_run(run_a, record_a)
+        _report_missing_run(run_b, record_b)
         sys.exit(1)
 
-    agg_a = summary_a["aggregate"]
-    agg_b = summary_b["aggregate"]
+    result = compare_runs(record_a, record_b)
+    _render_compare(result)
 
-    metrics_list = ["recall_at_k", "precision_at_k", "hit_at_k", "mrr", "map_at_k", "ndcg_at_k",
-                    "child_hit_at_k", "child_recall_at_k"]
-    logger.info("\n%s", f"{'Metric':<18} {'Run A':>10} {'Run B':>10} {'Delta':>10}")
-    logger.info("-" * 50)
-    for metric_name in metrics_list:
-        value_a = agg_a.get(metric_name, 0)
-        value_b = agg_b.get(metric_name, 0)
-        delta = value_b - value_a
-        arrow = "↑" if delta > 0 else ("↓" if delta < 0 else " ")
-        logger.info("%s", f"{metric_name:<18} {value_a:>10.4f} {value_b:>10.4f} {arrow} {abs(delta):>8.4f}")
+
+_LAYER2_METRICS = {"faithfulness", "answer_relevancy", "context_precision", "context_recall", "answer_correctness"}
+_SECTION_ORDER = ("Layer1", "Layer2", "延迟", "成本", "归因")
+
+
+def _report_missing_run(run_id: str, record) -> None:
+    """报错区分非法 run_id 与 legacy timeline run(存量 run 无 metrics 行, 升级后不可比)。"""
+    if record is not None:
+        return
+    legacy_dir = _PROJECT_ROOT / "eval" / "results" / "timeline" / run_id
+    if legacy_dir.exists():
+        logger.error("run_id %s 是 legacy timeline run(存量 run 无 metrics 行, 升级后不可比); 请重跑 record_run 入库", run_id)
+    else:
+        logger.error("run_id %s 不存在于指标库(非法 run_id)", run_id)
+
+
+def _compare_section(metric_name: str) -> str:
+    """指标归到输出分节: 归因/成本/Layer2/延迟/Layer1(诊断分布并入 Layer1)。"""
+    if metric_name.startswith("attribution."):
+        return "归因"
+    if metric_name.startswith("cost."):
+        return "成本"
+    if metric_name.startswith("verdict.") or metric_name in _LAYER2_METRICS:
+        return "Layer2"
+    if metric_name in ("retrieve_ms", "generate_ms") or metric_name.startswith("stage_"):
+        return "延迟"
+    return "Layer1"
+
+
+def _render_compare(result: dict) -> None:
+    """渲染 compare_runs 结果: 表头对齐信息 + 分节表格, paired 行附校正后 p 值 + "**"(p<0.05)。"""
+    logger.info("\n对比 %s vs %s", result["run_a"], result["run_b"])
+    logger.info("  对齐: %d/%d-%d matched | 可对比: %s | 退化: %s",
+                result["matched"], result["total_a"], result["total_b"],
+                result["comparable"], result["degenerated"])
+    if not result["comparable"]:
+        logger.warning("  语料签名不一致, 不报显著性(降 delta)")
+    grouped: dict[str, list[dict]] = {}
+    for metric in result["metrics"]:
+        grouped.setdefault(_compare_section(metric["name"]), []).append(metric)
+    for section in _SECTION_ORDER:
+        rows = grouped.get(section)
+        if not rows:
+            continue
+        logger.info("\n[%s]", section)
+        logger.info("%s", f"  {'Metric':<24}{'Run A':>10}{'Run B':>10}{'Delta':>12}  {'校正后 p':>11}")
+        for metric in rows:
+            p_label = "-"
+            if metric["p_value"] is not None:
+                p_label = f"{metric['p_value']:.4f}" + (" **" if metric["significant"] else "")
+            logger.info("%s", f"  {metric['name']:<24}{metric['a']:>10.4f}{metric['b']:>10.4f}{metric['delta']:>+12.4f}  {p_label:>11}")
 
 
 # ---- CLI 入口 ----
@@ -488,7 +621,9 @@ def run_compare(run_a: str, run_b: str) -> None:
 def main() -> None:
     """CLI 入口：路由 --mode / --compare 到对应执行函数。"""
     from obs.logging_setup import setup_logging
+    from obs.exit_guard import register_exit_guard
     setup_logging()
+    register_exit_guard()  # atexit 兜底清空 trace 收集器 + SIGINT/SIGTERM 收尾
     for noisy in ("httpx", "openai", "jieba", "sentence_transformers"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="plain-rag eval runner")
