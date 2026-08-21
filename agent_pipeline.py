@@ -14,6 +14,8 @@
     - main: 管线编排入口
 """
 
+import argparse
+import atexit
 import logging
 import sys
 from pathlib import Path
@@ -27,7 +29,10 @@ from retrieval.embedding import embed
 from indexing.index_store import IndexStore
 from retrieval.retriever import Retriever
 from agent.tools import RAGSearchTool
+from obs.lifecycle import finalize_traces
 from obs.logging_setup import setup_logging
+from obs.exit_guard import register_exit_guard
+from obs.trace import trace_scope
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +52,48 @@ SYSTEM_PROMPT = """
 """
 
 
+def _run_query(agent: SimpleAgent, query: str, seq: int) -> str:
+    """单条问答: 编排层开 trace_scope(trace_type="agent"), 复用收集器与既有装饰器。
+
+    不碰 agent/tools.py 业务工具内部(条例一): RAGSearchTool 内部检索若走既有
+    observe_stage/trace_rerank 装饰器, 自动计入本条 agent trace。
+
+    Args:
+        agent: SimpleAgent 实例。
+        query: 用户问题。
+        seq: 本轮序列号(作 agent trace 的 query_id, request_id 形如 agent-<seq>)。
+
+    Returns:
+        str: agent 回答。
+    """
+    query_id = str(seq)
+    with trace_scope(query_id, query, trace_type="agent"):
+        answer = agent.run(query)
+    logger.info("\n%s\n", answer)
+    return answer
+
+
+def _finalize_agent_traces() -> None:
+    """agent 路径收尾: 无 benchmark 上下文, finalize_traces() 跳过归因直接写 trace.jsonl。
+
+    幂等: 正常落盘后收集器已空, 异常退出时 F22 atexit 兜底清空仍生效; 写失败只告警不打断退出。
+    """
+    try:
+        path = finalize_traces()
+        if path is not None:
+            logger.info("agent trace 落盘: %s", path)
+    except Exception as error:
+        logger.warning("agent trace 落盘失败(不打断退出): %s", error)
+
+
 def main() -> None:
-    """Agent 管线编排入口：setup_logging → 索引 → 检索工具 → SimpleAgent → 交互式问答。"""
+    """Agent 管线编排入口：setup_logging → 索引 → 检索工具 → SimpleAgent → 交互/单轮问答。"""
     setup_logging()
+    register_exit_guard()
+    atexit.register(_finalize_agent_traces)  # 退出(含 Ctrl-C)时 agent trace 落盘, 注册晚于兜底清空 → LIFO 先跑
+    parser = argparse.ArgumentParser(description="plain-rag agent 管线")
+    parser.add_argument("--query", default=None, help="单轮问答后退出(不进入交互循环)")
+    args = parser.parse_args()
     data_dir = Path("data")
     docs = []
     for file_path in data_dir.rglob("*"):
@@ -104,17 +148,22 @@ def main() -> None:
         tool_registry=registry
     )
 
-    # ==================== 交互循环 ====================
+    # ==================== 交互/单轮循环 ====================
     logger.info("\n%s\nAgent 已就绪，输入问题开始对话（输入 exit 退出）\n%s\n", "=" * 50, "=" * 50)
 
+    if args.query:
+        _run_query(agent, args.query, 1)
+        return  # 单轮模式: main 返回后 atexit 落盘 agent trace
+
+    seq = 0
     while True:
         query = input(">>> ")
         if query.lower() in ("exit", "quit", "q"):
             break
         if not query.strip():
             continue
-        answer = agent.run(query)
-        logger.info("\n%s\n", answer)
+        seq += 1
+        _run_query(agent, query, seq)
 
 
 if __name__ == "__main__":
