@@ -159,6 +159,13 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("status", help="状态分布 + 健康度(只读)")
     subparsers.add_parser("verify-all", help="全部 passed 项跑门禁, 失败者转 regressed")
     subparsers.add_parser("report", help="重新生成 PROGRESS.md 快照")
+
+    parser_archive = subparsers.add_parser("archive", help="归档已 commit 的 passed/abandoned 到 history")
+    parser_archive.add_argument("--milestone", default=None, help="归档里程碑(缺省取 features.yaml 当前值)")
+    parser_archive.add_argument("--exclude", nargs="*", default=[],
+                                help="排除不归档的 id 白名单(如未提交工作集)")
+
+    subparsers.add_parser("history", help="列出 history 归档文件与条目数(只读)")
     return parser
 
 
@@ -236,9 +243,11 @@ def _run_core(args, features_path: Path) -> int:
 
 
 def _run_full(args, features_path: Path, progress_path: Path) -> int:
-    """完整子命令分发: next/status/verify-all/report, 返回进程退出码。
+    """完整子命令分发: next/status/verify-all/report/archive/history, 返回进程退出码。
 
-    verify-all 对全部 passed 项巡检, 任一失败者转 regressed 并返回 1。
+    status/verify-all/report 用 load_all() 读全量(features.yaml + history), 回归保护不降级;
+    next 用 load() 只从活跃集出候选; verify-all 对全量 passed 项巡检, 历史项失败时先 promote
+    回 features.yaml(state=passed) 再 record_verification(passed=False)。
 
     Args:
         args: 解析后的命令行参数。
@@ -264,7 +273,7 @@ def _run_full(args, features_path: Path, progress_path: Path) -> int:
         return 0
 
     if args.command == "status":
-        feature_list = registry.load()
+        feature_list = registry.load_all()
         health = judge_health(feature_list)
         print("状态分布:")
         for state in VALID_STATES:
@@ -279,20 +288,34 @@ def _run_full(args, features_path: Path, progress_path: Path) -> int:
 
     if args.command == "verify-all":
         verifier = Verifier()
-        feature_list = registry.load()
+        feature_list = registry.load_all()
         passed_items = [item for item in feature_list.items if item.state == PASSED]
         if not passed_items:
             print("无 passed 项可巡检")
             return 0
+        features_ids = {item.id for item in registry.load().items}
         regressed_ids = []
         for item in passed_items:
+            in_features = item.id in features_ids
             result = verifier.verify(item)
-            # 巡检非决策: record_decision=False, 不写决策日志防批量噪音
-            updated = registry.record_verification(item.id, result.passed, result.to_evidence(),
-                                                   metric_baseline=result.metric_baseline_run_id,
-                                                   record_decision=False)
-            _print_verification(item.id, result, updated.state)
-            if not result.passed:
+            if result.passed:
+                if in_features:
+                    # 巡检 features.yaml 中的 passed 项, 保持 passed(不刷新完成时间)
+                    updated = registry.record_verification(item.id, True, result.to_evidence(),
+                                                           metric_baseline=result.metric_baseline_run_id,
+                                                           record_decision=False)
+                    _print_verification(item.id, result, updated.state)
+                else:
+                    # 历史项通过: 保持归档, 不写回
+                    print(f"验证 {item.id}: 通过 (历史项保持归档)")
+            else:
+                if not in_features:
+                    # 历史项失败: 先 promote 回 features.yaml(state=passed) 再走状态机
+                    registry.promote(item.id)
+                updated = registry.record_verification(item.id, False, result.to_evidence(),
+                                                       metric_baseline=result.metric_baseline_run_id,
+                                                       record_decision=False)
+                _print_verification(item.id, result, updated.state)
                 regressed_ids.append(item.id)
         if regressed_ids:
             print(f"回归: {', '.join(regressed_ids)}")
@@ -300,10 +323,29 @@ def _run_full(args, features_path: Path, progress_path: Path) -> int:
         return 0
 
     if args.command == "report":
-        feature_list = registry.load()
+        full = registry.load_all()
+        active = registry.load()
         reporter = Reporter(features_path, progress_path)
-        reporter.write(feature_list, judge_health(feature_list))
+        reporter.write(active, judge_health(full))
         print(f"PROGRESS.md 已更新: {progress_path}")
+        return 0
+
+    if args.command == "archive":
+        result = registry.archive(milestone=args.milestone, excludes=set(args.exclude))
+        if not result["archived"]:
+            print("无已 commit 的 passed/abandoned 项可归档")
+        else:
+            print(f"已归档 {len(result['archived'])} 项: {', '.join(result['archived'])}")
+            print(f"归档文件: harness/history/archive-{result['batch']}.yaml")
+        return 0
+
+    if args.command == "history":
+        history = registry.history_files()
+        if not history:
+            print("无历史归档")
+        else:
+            for entry in history:
+                print(f"harness/history/{entry['name']}: {entry['count']} 项, 完成时间 {entry['time_range']}")
         return 0
 
     raise HarnessError(f"未知命令: {args.command}")
@@ -326,7 +368,7 @@ def main(argv: list[str] | None = None, features_path: Path | None = None,
     target = features_path if features_path is not None else _default_features_path()
     target_progress = progress_path if progress_path is not None else _default_progress_path()
     try:
-        if args.command in ("next", "status", "verify-all", "report"):
+        if args.command in ("next", "status", "verify-all", "report", "archive", "history"):
             return _run_full(args, target, target_progress)
         return _run_core(args, target)
     except HarnessError as exc:
