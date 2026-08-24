@@ -29,6 +29,7 @@ class DocMetadata:
     doc_type: str = ""           # .txt / .md / .pdf / .docx / .xlsx
     language: str = "zh"         # 语言（预留，当前默认中文）
     chunk_level: str = "child"   # "parent" / "child"（父块为检索的目标上下文，子块为检索目标）
+    protect_tables: bool = False # 是否开启表格保护 (仅新格式归一化 得出的md 置 True; 原 .md/.txt 保持 False 保 private_v6 字节级不变)
 
     # ---- 后续父子检索时新增 ----
     # page_number: int | None        # PDF 页码
