@@ -10,9 +10,11 @@ registry 是唯一写 features.yaml 的入口。而 features.yaml 是唯一权�
     - CRLF 保序: 首次读取探测换行风格, 写回时保持(Windows 上避免整文件改行)
     - 行为哈希: behavior 字段存 sha256 前缀, 行为描述变更 → 状态回退 not_started, 防"行为悄悄改窄, 测试跟着改窄"
     - milestone 是指针, items 跨 milestone 累积不清空, 任务返工用 abandoned 表达
+    - 上下文缩减: features.yaml 只保留活跃工作集, 已 commit 的 passed/abandoned 经 archive 归档到
+    harness/history/, 治理命令用 load_all() 读全量, 会话启动用 load() 读活跃集
 
 与上层的关系: cli 通过 apply_state/apply_note/record_verification 改动状态,
-只读命令 (调度/追踪/报告) 用 load() 读快照; 各组件不直接写 features.yaml。
+只读命令 (调度/追踪/报告) 用 load()/load_all() 读快照; 各组件不直接写 features.yaml。
 
 模块划分: 数据模型在 models, 文件锁/原子写在 persistence, 表格渲染在 render,
 本模块只保留 Registry 的清单语义操作。
@@ -29,7 +31,7 @@ from harness.core import persistence, render
 from harness.core.errors import HarnessError
 from harness.core.models import FeatureItem, FeatureList, behavior_hash
 from harness.core.state_machine import IllegalTransitionError, transition
-from harness.core.states import ACTIVE, NOT_STARTED, PASSED, REGRESSED, VALID_STATES
+from harness.core.states import ABANDONED, ACTIVE, NOT_STARTED, PASSED, REGRESSED, VALID_STATES
 
 # e2e 验证命令的最小超时(秒) floor: eval 类命令慢, 单一 floor 防超时诡异失败;
 # 不解析 e2e 命令串, registry 不耦合 eval.runner 语法, 具体值由 feature 声明。
@@ -37,11 +39,14 @@ E2E_MIN_TIMEOUT = 600
 
 logger = logging.getLogger(__name__)
 
-# 决策日志(harness/decisions.md, 单源): 每次状态转移在转移锁内 append 一条, 仅追加不重写。
+# 决策日志(harness/decisions.md, 单源): 每次状态转移在转移锁内 append 一条,
+# 主文件保留最近 DECISIONS_KEEP 条, 更早归档到 harness/history/(仅 archive 时裁剪)。
 # user 解析: env HARNESS_USER → 默认 "sca"(不读 git config, 避免落成机器本地 user.name)。
 DEFAULT_DECISION_USER = "sca"
 DECISION_ACTIONS = ("start", "verify", "block", "unblock", "reactivate", "abandon", "note")
-_DECISIONS_HEADER = "# harness 决策日志\n\n> 由状态转移命令自动追加, 勿手改(每条决策一个条目, 追加在末尾)\n\n"
+DECISIONS_KEEP = 50
+_DECISIONS_HEADER = ("# harness 决策日志\n\n"
+                     "> 由状态转移命令自动追加, 勿手改(主文件保留最近 50 条, 更早归档到 harness/history/)\n\n")
 
 
 def _now_minute() -> str:
@@ -85,16 +90,59 @@ class Registry:
         """读取并校验 features.yaml, 返回快照(行为哈希回退在内存生效)。"""
         return self._load_unlocked()
 
+    def load_all(self) -> FeatureList:
+        """读取 features.yaml + harness/history/*.yaml 全量, 合并 items 返回。
+
+        供治理命令(status/verify-all/report)巡检全量, 回归保护不降级;
+        同 id 以 features.yaml 为准(promote 后无冲突), milestone 取 features.yaml 当前值;
+        无 history 目录时退化为 load()。
+
+        Returns:
+            FeatureList: features.yaml 活跃集 + history 归档项合并后的全量快照。
+        """
+        feature_list = self._load_unlocked()
+        history_dir = self._history_dir()
+        if not history_dir.exists():
+            return feature_list
+        seen = {item.id for item in feature_list.items}
+        extra: list[FeatureItem] = []
+        for history_path in sorted(history_dir.glob("*.yaml")):
+            for item in self._load_yaml_unlocked(history_path).items:
+                if item.id not in seen:
+                    seen.add(item.id)
+                    extra.append(item)
+        return FeatureList(schema=feature_list.schema, milestone=feature_list.milestone,
+                           items=feature_list.items + extra)
+
     def _load_unlocked(self) -> FeatureList:
-        if not self._features_path.exists():
-            raise HarnessError(f"清单不存在: {self._features_path}")
-        with open(self._features_path, "r", encoding="utf-8") as handle:
+        """读取并校验 features.yaml(调用方必须已持锁或只读场景)。"""
+        return self._load_yaml_unlocked(self._features_path)
+
+    def _load_yaml_unlocked(self, path: Path) -> FeatureList:
+        """按 features.yaml 同 schema 解析任意清单文件(含 history 归档文件)。
+
+        history 文件与 features.yaml 同 schema, 每项额外记 archived_at/archived_milestone
+        供人读, 解析时忽略; 行为哈希归一与 features.yaml 一致。
+
+        Args:
+            path: 待解析的清单文件路径。
+
+        Returns:
+            FeatureList: 解析后的清单快照。
+
+        Raises:
+            HarnessError: 文件不存在。
+            ValidationError: 结构不合法。
+        """
+        if not path.exists():
+            raise HarnessError(f"清单不存在: {path}")
+        with open(path, "r", encoding="utf-8") as handle:
             data = yaml.safe_load(handle)
         if not isinstance(data, dict):
-            raise ValidationError("features.yaml 根节点必须是映射")
+            raise ValidationError("清单根节点必须是映射")
         for key in ("schema", "milestone", "items"):
             if key not in data:
-                raise ValidationError(f"features.yaml 缺字段: {key}")
+                raise ValidationError(f"清单缺字段: {key}")
 
         items: list[FeatureItem] = []
         seen: set[str] = set()
@@ -332,13 +380,13 @@ class Registry:
 
     def _append_decision(self, action: str, item_id: str, reason: str,
                          evidence: str | None = None, user: str | None = None) -> None:
-        """决策日志追加(harness/decisions.md, 单源, 追加不重写)。
+        """决策日志追加(harness/decisions.md, 单源, 主文件保留最近 N 条, 更早归档到 history)。
 
         调用点都在 _commit 的 mutate 内(持有文件锁, 与状态转移串行化, 防与 state 漂移);
-        失败只告警不打断状态转移。
+        失败只告警不打断状态转移。裁剪(保留最近 N 条)仅由 archive 触发, 见 _trim_decisions。
 
         Args:
-            action: 决策 action(start/verify/block/unblock/reactivate/abandon/note)。
+            action: 决策 action(start/verify/block/unblock/reactivate/abandon/note/archive)。
             item_id: 功能项 id。
             reason: 决策理由(必填)。
             evidence: 可选证据引用(如 verify 日志文件名)。
@@ -369,10 +417,228 @@ class Registry:
         with persistence._FileLock(self._lock_path):
             self._save_unlocked(feature_list)
 
+    # ----feature.yaml 归档 / 提升 / 历史 ----
+    def archive(self, milestone: str | None = None, excludes: set[str] | None = None) -> dict:
+        """把已 commit 的 passed + abandoned 项(排除 excludes)移出 features.yaml 到 history。
+
+        归档边界 = 已 commit 的 passed + abandoned, 显式命令不自动; excludes 是白名单,
+        用于初始迁移排除未提交工作集(本次任务 + 最近一次未提交任务)。写 history 用独立锁 +
+        原子写, 写回 features.yaml 后重建 features.md 视图, 追加一条决策并裁剪 decisions 保留最近 N 条。
+
+        Args:
+            milestone: 归档里程碑, 缺省取 features.yaml 当前值。
+            excludes: 排除不归档的 id 集合(白名单)。
+
+        Returns:
+            dict: {"archived": [归档的 id], "batch": 批次名}。
+        """
+        excludes = set(excludes or [])
+        with persistence._FileLock(self._lock_path):
+            feature_list = self._load_unlocked()
+            milestone = milestone or feature_list.milestone
+            to_archive = [item for item in feature_list.items
+                          if item.state in (PASSED, ABANDONED) and item.id not in excludes]
+            if not to_archive:
+                return {"archived": [], "batch": None}
+            keep = [item for item in feature_list.items if item not in to_archive]
+            batch = datetime.now().strftime("%Y%m%d-%H%M%S")
+            self._write_history_batch(batch, to_archive, milestone)
+            self._save_unlocked(FeatureList(schema=feature_list.schema,
+                                            milestone=feature_list.milestone, items=keep))
+            self._append_decision("archive", ",".join(item.id for item in to_archive),
+                                  f"归档到 harness/history/archive-{batch}.yaml")
+            self._trim_decisions(batch)
+            return {"archived": [item.id for item in to_archive], "batch": batch}
+
+    def promote(self, item_id: str) -> FeatureItem:
+        """把 history 中某 passed 项移回 features.yaml 并保持 state=passed(不标 regressed)。
+
+        从 history 文件移除并原子写回两处; 后续由 verify-all 的 record_verification(passed=False)
+        走状态机 passed->regressed。
+
+        Args:
+            item_id: 功能项 id。
+
+        Returns:
+            FeatureItem: 移回 features.yaml 的功能项(保持 passed)。
+
+        Raises:
+            ItemNotFoundError: history 中不存在该 id。
+            HarnessError: 该 id 已在 features.yaml。
+        """
+        history_dir = self._history_dir()
+        if not history_dir.exists():
+            raise ItemNotFoundError(f"功能项不存在于 history: {item_id}")
+        found: FeatureItem | None = None
+        for history_path in sorted(history_dir.glob("*.yaml")):
+            for item in self._load_yaml_unlocked(history_path).items:
+                if item.id == item_id:
+                    found = item
+                    break
+            if found is not None:
+                break
+        if found is None:
+            raise ItemNotFoundError(f"功能项不存在于 history: {item_id}")
+        with persistence._FileLock(self._lock_path):
+            feature_list = self._load_unlocked()
+            if any(item.id == item_id for item in feature_list.items):
+                raise HarnessError(f"{item_id} 已在 features.yaml")
+            found.state = PASSED
+            feature_list.items.append(found)
+            self._save_unlocked(feature_list)
+        self._remove_from_history(item_id)
+        return found
+
+    def history_files(self) -> list[dict]:
+        """列出 history 归档文件摘要(只读): 文件名 + 项数 + 完成时间范围。
+
+        Returns:
+            list[dict]: 每项 {"name", "count", "time_range"}; 无 history 目录时返回空列表。
+        """
+        history_dir = self._history_dir()
+        if not history_dir.exists():
+            return []
+        result: list[dict] = []
+        for path in sorted(history_dir.glob("*.yaml")):
+            try:
+                feature_list = self._load_yaml_unlocked(path)
+                times = [item.finished_time for item in feature_list.items if item.finished_time]
+                time_range = f"{min(times)} ~ {max(times)}" if times else "-"
+                result.append({"name": path.name, "count": len(feature_list.items),
+                               "time_range": time_range})
+            except Exception as error:  # 单个归档文件损坏不阻断整体摘要
+                logger.warning("history 文件读取失败(跳过): %s: %s", path.name, error)
+                result.append({"name": path.name, "count": 0, "time_range": "-"})
+        return result
+
+    def _history_dir(self) -> Path:
+        """history 归档目录: 与 features.yaml 同目录的 history/。"""
+        return self._features_path.parent / "history"
+
+    def _write_history_batch(self, batch: str, items: list[FeatureItem], milestone: str) -> Path:
+        """把归档项写入 harness/history/archive-<batch>.yaml(独立锁 + 原子写)。
+
+        文件不存在则新建, 存在则合并(同 id 去重, 以新为准); 每项记 archived_at + archived_milestone
+        供人读, 解析时忽略。
+
+        Args:
+            batch: 批次名(时间戳)。
+            items: 待归档的功能项。
+            milestone: 归档里程碑。
+
+        Returns:
+            Path: 写入的 history 文件路径。
+        """
+        history_dir = self._history_dir()
+        history_dir.mkdir(parents=True, exist_ok=True)
+        path = history_dir / f"archive-{batch}.yaml"
+        lock_path = Path(str(path) + ".lock")
+        with persistence._FileLock(lock_path):
+            existing: dict[str, dict] = {}
+            if path.exists():
+                with open(path, "r", encoding="utf-8") as handle:
+                    data = yaml.safe_load(handle)
+                if isinstance(data, dict) and isinstance(data.get("items"), list):
+                    for raw in data["items"]:
+                        if isinstance(raw, dict) and "id" in raw:
+                            existing[str(raw["id"])] = raw
+            for item in items:
+                record = self._item_to_dict(item)
+                record["archived_at"] = _now_minute()
+                record["archived_milestone"] = milestone
+                existing[item.id] = record
+            payload = {
+                "schema": 1,
+                "milestone": milestone,
+                "archived_at": _now_minute(),
+                "archived_milestone": milestone,
+                "items": list(existing.values()),
+            }
+            text = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+            newline = persistence.detect_newline(path)
+            persistence.atomic_write(text, path, newline)
+        return path
+
+    def _remove_from_history(self, item_id: str) -> None:
+        """从包含该 id 的 history 文件移除该项(独立锁 + 原子写), 幂等。"""
+        history_dir = self._history_dir()
+        if not history_dir.exists():
+            return
+        for history_path in sorted(history_dir.glob("*.yaml")):
+            lock_path = Path(str(history_path) + ".lock")
+            with persistence._FileLock(lock_path):
+                if not history_path.exists():
+                    continue
+                with open(history_path, "r", encoding="utf-8") as handle:
+                    data = yaml.safe_load(handle)
+                if not isinstance(data, dict) or not isinstance(data.get("items"), list):
+                    continue
+                remaining = [raw for raw in data["items"]
+                             if not (isinstance(raw, dict) and raw.get("id") == item_id)]
+                if len(remaining) == len(data["items"]):
+                    continue  # 该项不在此文件
+                data["items"] = remaining
+                text = yaml.safe_dump(data, allow_unicode=True, sort_keys=False)
+                newline = persistence.detect_newline(history_path)
+                persistence.atomic_write(text, history_path, newline)
+                return
+
+    def _trim_decisions(self, batch: str) -> None:
+        """archive 时裁剪 decisions.md: 保留最近 DECISIONS_KEEP 条, 更早归档到 history。
+
+        归档文件与 archive 同批次命名(decisions-<batch>.md), 归档失败只告警不打断
+        (与既有决策日志旁路语义一致)。
+
+        Args:
+            batch: 本次 archive 的批次名(时间戳), 用于 decisions 归档文件命名。
+        """
+        try:
+            path = self._decisions_path()
+            if not path.exists():
+                return
+            text = path.read_text(encoding="utf-8")
+            marker = "## "
+            index = text.find(marker)
+            if index == -1:
+                return
+            header = text[:index]
+            body = text[index:]
+            entries = [entry for entry in body.split(marker) if entry.strip()]
+            if len(entries) <= DECISIONS_KEEP:
+                return
+            keep = entries[-DECISIONS_KEEP:]
+            older = entries[:-DECISIONS_KEEP]
+            history_dir = self._history_dir()
+            history_dir.mkdir(parents=True, exist_ok=True)
+            older_path = history_dir / f"decisions-{batch}.md"
+            older_text = header + marker + marker.join(older)
+            older_path.write_text(older_text, encoding="utf-8")
+            path.write_text(header + marker + marker.join(keep), encoding="utf-8")
+        except Exception as error:  # 决策归档是旁路, 失败不打断 archive
+            logger.warning("决策归档失败(不打断 archive): %s", error)
+
+    def _sort_for_write(self, items: list[FeatureItem]) -> list[FeatureItem]:
+        """写回前排序: 非 passed 置顶(保持原序), passed 按 finished_time 升序, null-finished 垫底。
+
+        排序只在写回时生效, load()/load_all() 读序保持文件序; 稳定排序保证非 passed 相对顺序不变。
+
+        Args:
+            items: 待写回的功能项列表。
+
+        Returns:
+            list[FeatureItem]: 排序后的功能项列表。
+        """
+        def sort_key(item: FeatureItem) -> tuple:
+            if item.state == PASSED:
+                return (1, item.finished_time is None, item.finished_time or "")
+            return (0, False, "")
+        return sorted(items, key=sort_key)
+
     def _save_unlocked(self, feature_list: FeatureList) -> None:
-        """无锁写回: 归一化 + 校验 + 原子落盘 + 重建渲染视图(调用方必须已持锁)。"""
+        """无锁写回: 归一化 + 校验 + 排序 + 原子落盘 + 重建渲染视图(调用方必须已持锁)。"""
         normalized = [self._reconcile_item(item) for item in feature_list.items]
         self._validate(normalized)
+        normalized = self._sort_for_write(normalized)
         newline = persistence.detect_newline(self._features_path)
         text = self._to_yaml(feature_list.schema, feature_list.milestone, normalized)
         persistence.atomic_write(text, self._features_path, newline)
