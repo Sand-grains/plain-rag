@@ -40,5 +40,6 @@ plain_rag.egg-info/
 .synthetic_cache/
 
 
-
+# archify generated diagrams (internal)
+archify/
 
