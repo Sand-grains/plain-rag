@@ -1,5 +1,7 @@
 """报告器: 从清单 + 健康度生成 PROGRESS.md 快照。
 
+主表(功能项状态表/活跃与阻塞叙述/验证结果)只渲染活跃集(features.yaml 项),
+状态分布/健康度按 load_all 全量统计(回归率/通过率不降级), 历史归档只出摘要一行。
 叙述字段只来自 features.yaml 的 note, 报告器本身绝不自己造句;
 <!-- manual --> 之后为人工保护区, 每次重写原样保留(供手写说明/临时路由入口)。
 """
@@ -25,13 +27,15 @@ class Reporter:
 
     def render(self, feature_list: FeatureList, health: HealthMetrics,
                generated_at: str | None = None) -> str:
-        """渲染和组装 PROGRESS.md 快照文本: 自动区(点位/状态分布/健康度/状态表/叙述/验证结果)以人工保护区标记收尾。
+        """渲染和组装 PROGRESS.md 快照文本: 自动区(点位/状态分布/健康度/状态表/叙述/验证结果/历史归档)以人工保护区标记收尾。
 
+        主表只渲染活跃集(feature_list 即 features.yaml 项), 健康度按全量统计(由调用方传入);
+        历史归档小节每文件一行(路由 + 项数 + 完成时间范围), 不展开全量。
         叙述列只取 item.note, 报告器不自行造句; 健康度缺失的可疑/未验列表整行省略。
 
         Args:
-            feature_list: 清单快照(registry.load() 的结果)。
-            health: 健康度快照(judge_health 的结果)。
+            feature_list: 活跃集清单快照(registry.load() 的结果)。
+            health: 健康度快照(judge_health(registry.load_all()) 的结果)。
             generated_at: 生成时间字符串, 缺省取当前时间。
 
         Returns:
@@ -77,6 +81,12 @@ class Reporter:
                 lines.append(f"- {item.id}: {self._evidence_text(item)}")
         else:
             lines.append("(无)")
+        history = self._registry.history_files()
+        if history:
+            lines += ["", "## 历史归档", ""]
+            for entry in history:
+                lines.append(f"- `harness/history/{entry['name']}`: {entry['count']} 项, "
+                             f"完成时间 {entry['time_range']}")
         lines += ["", _MANUAL_MARKER, ""]
         return "\n".join(lines)
 
