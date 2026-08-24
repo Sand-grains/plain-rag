@@ -32,7 +32,7 @@ cuda = ["torch", "torchvision"]
 cpu = ["torch", "torchvision"]
 
 [tool.setuptools.packages.find]
-include = ["indexing*", "retrieval*", "agent*", "preprocess*", "harness*", "obs*"]
+include = ["indexing*", "retrieval*", "agent*", "preprocess*", "harness*", "obs*", "eval*", "infra*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "harness/tests"]
