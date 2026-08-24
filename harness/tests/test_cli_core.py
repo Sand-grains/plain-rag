@@ -137,3 +137,44 @@ class TestAbandonAndNote:
         item = Registry(path).load().items[0]
         assert item.note == "卡点说明"
         assert item.state == ACTIVE
+
+
+class TestArchiveHistory:
+    def test_archive_via_cli(self, tmp_path):
+        path = tmp_path / "features.yaml"
+        Registry(path).save(FeatureList(
+            schema=1, milestone="007-harness-governance",
+            items=[
+                FeatureItem(id="F01", behavior="b1", gate=PASSED_GATE, state=PASSED),
+                FeatureItem(id="F02", behavior="b2", gate=PASSED_GATE, state=ACTIVE),
+            ],
+        ))
+        assert main(["archive"], features_path=path) == 0
+        assert {item.id for item in Registry(path).load().items} == {"F02"}
+
+    def test_archive_exclude_via_cli(self, tmp_path):
+        path = tmp_path / "features.yaml"
+        Registry(path).save(FeatureList(
+            schema=1, milestone="007-harness-governance",
+            items=[
+                FeatureItem(id="F01", behavior="b1", gate=PASSED_GATE, state=PASSED),
+                FeatureItem(id="F02", behavior="b2", gate=PASSED_GATE, state=PASSED),
+            ],
+        ))
+        assert main(["archive", "--exclude", "F01"], features_path=path) == 0
+        assert {item.id for item in Registry(path).load().items} == {"F01"}
+
+    def test_history_via_cli(self, tmp_path, capsys):
+        path = tmp_path / "features.yaml"
+        Registry(path).save(FeatureList(
+            schema=1, milestone="007-harness-governance",
+            items=[FeatureItem(id="F01", behavior="b1", gate=PASSED_GATE, state=PASSED)],
+        ))
+        main(["archive"], features_path=path)
+        assert main(["history"], features_path=path) == 0
+        assert "archive-" in capsys.readouterr().out
+
+    def test_history_empty(self, tmp_path, capsys):
+        path = _write_features(tmp_path, state=ACTIVE)
+        assert main(["history"], features_path=path) == 0
+        assert "无历史归档" in capsys.readouterr().out

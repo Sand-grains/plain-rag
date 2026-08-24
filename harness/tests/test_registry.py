@@ -3,18 +3,41 @@
 features.yaml 解析/校验/原子改写/渲染/行为哈希回退/CRLF 保序。只 import 公开接口
 Registry/FeatureItem/FeatureList/behavior_hash, 不依赖其它 harness 组件实现内部符号。
 """
+import yaml
 import pytest
 
 from harness.core.models import FeatureItem, FeatureList, behavior_hash
 from harness.core.registry import ItemNotFoundError, Registry, ValidationError
 from harness.core.state_machine import IllegalTransitionError
-from harness.core.states import ACTIVE, BLOCKED, NOT_STARTED, PASSED, REGRESSED
+from harness.core.states import ABANDONED, ACTIVE, BLOCKED, NOT_STARTED, PASSED, REGRESSED
 
 
 def _write_features(tmp_path, yaml_text: str) -> Registry:
     path = tmp_path / "features.yaml"
     path.write_text(yaml_text, encoding="utf-8")
     return Registry(path)
+
+
+def _write_items(tmp_path, items) -> Registry:
+    """用公开 save 接口写 features.yaml(写回时按活跃集排序)。"""
+    path = tmp_path / "features.yaml"
+    registry = Registry(path)
+    registry.save(FeatureList(schema=1, milestone="010-obs-hardening", items=items))
+    return registry
+
+
+def _write_history_file(tmp_path, items, name="archive-test.yaml") -> None:
+    """直接写一个 history 归档文件(与 features.yaml 同 schema)。"""
+    history_dir = tmp_path / "history"
+    history_dir.mkdir(exist_ok=True)
+    path = history_dir / name
+    payload = {
+        "schema": 1,
+        "milestone": "010-obs-hardening",
+        "items": [{"id": item.id, "behavior": item.behavior, "gate": item.gate,
+                   "state": item.state, "finished_time": item.finished_time} for item in items],
+    }
+    path.write_text(yaml.safe_dump(payload, allow_unicode=True, sort_keys=False), encoding="utf-8")
 
 
 def _sample_yaml(state=NOT_STARTED, behavior="harness-状态机",
@@ -224,3 +247,137 @@ class TestRender:
         assert "由 harness 自动生成, 勿手改" in rendered
         assert "| ID | 行为 | 门禁验证 | 端到端验证 | 状态 | 完成时间 | 叙述 |" in rendered
         assert "| F01 | harness-状态机 | `uv run pytest -q` | `-` | not_started | - | - |" in rendered
+
+
+class TestLoadAll:
+    def test_load_all_merges_features_and_history(self, tmp_path):
+        registry = _write_items(tmp_path, [
+            FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED),
+            FeatureItem(id="F02", behavior="b2", gate="g", state=ACTIVE),
+        ])
+        registry.archive()  # F01(passed) 归档, F02(active) 保留
+        feature_list = registry.load()
+        feature_list.items.append(FeatureItem(id="F03", behavior="b3", gate="g", state=NOT_STARTED))
+        registry.save(feature_list)
+
+        full = registry.load_all()
+        assert {item.id for item in full.items} == {"F01", "F02", "F03"}
+        assert full.milestone == "010-obs-hardening"
+
+    def test_load_all_features_wins_on_same_id(self, tmp_path):
+        registry = _write_items(tmp_path, [
+            FeatureItem(id="F01", behavior="b1", gate="g", state=ACTIVE),
+        ])
+        _write_history_file(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED)])
+        full = registry.load_all()
+        assert full.items[0].state == ACTIVE  # 同 id 以 features.yaml 为准
+
+    def test_load_all_no_history_dir_degrades_to_load(self, tmp_path):
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=ACTIVE)])
+        full = registry.load_all()
+        assert [item.id for item in full.items] == ["F01"]
+
+
+class TestArchive:
+    def test_archive_moves_passed_and_abandoned_keeps_rest(self, tmp_path):
+        registry = _write_items(tmp_path, [
+            FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED, finished_time="2026-08-01 10:00"),
+            FeatureItem(id="F02", behavior="b2", gate="g", state=ABANDONED),
+            FeatureItem(id="F03", behavior="b3", gate="g", state=ACTIVE),
+            FeatureItem(id="F04", behavior="b4", gate="g", state=NOT_STARTED),
+        ])
+        result = registry.archive()
+        assert set(result["archived"]) == {"F01", "F02"}
+        assert {item.id for item in registry.load().items} == {"F03", "F04"}
+        history = registry.history_files()
+        assert len(history) == 1
+        assert history[0]["count"] == 2
+
+    def test_archive_exclude_keeps_excluded(self, tmp_path):
+        registry = _write_items(tmp_path, [
+            FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED),
+            FeatureItem(id="F02", behavior="b2", gate="g", state=PASSED),
+        ])
+        result = registry.archive(excludes={"F01"})
+        assert result["archived"] == ["F02"]
+        assert {item.id for item in registry.load().items} == {"F01"}
+
+    def test_archive_nothing_to_archive(self, tmp_path):
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=ACTIVE)])
+        result = registry.archive()
+        assert result["archived"] == []
+        assert result["batch"] is None
+        assert registry.history_files() == []
+
+    def test_archive_appends_decision(self, tmp_path):
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED)])
+        registry.archive()
+        text = (tmp_path / "decisions.md").read_text(encoding="utf-8")
+        assert "archive F01" in text
+
+    def test_archive_history_records_archived_fields(self, tmp_path):
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED)])
+        registry.archive()
+        history_path = list((tmp_path / "history").glob("archive-*.yaml"))[0]
+        text = history_path.read_text(encoding="utf-8")
+        assert "archived_at:" in text and "archived_milestone:" in text
+
+
+class TestPromote:
+    def test_promote_moves_back_to_features_passed(self, tmp_path):
+        registry = _write_items(tmp_path, [
+            FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED),
+        ])
+        registry.archive()
+        assert registry.load().items == []
+        promoted = registry.promote("F01")
+        assert promoted.state == PASSED
+        assert {item.id for item in registry.load().items} == {"F01"}
+        assert registry.history_files()[0]["count"] == 0
+
+    def test_promote_unknown_id_raises(self, tmp_path):
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED)])
+        registry.archive()
+        with pytest.raises(ItemNotFoundError):
+            registry.promote("F99")
+
+
+class TestSortForWrite:
+    def test_non_passed_top_passed_by_finished_time(self, tmp_path):
+        registry = _write_items(tmp_path, [
+            FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED, finished_time="2026-08-02 10:00"),
+            FeatureItem(id="F02", behavior="b2", gate="g", state=ACTIVE),
+            FeatureItem(id="F03", behavior="b3", gate="g", state=PASSED, finished_time=None),
+            FeatureItem(id="F04", behavior="b4", gate="g", state=PASSED, finished_time="2026-08-01 10:00"),
+        ])
+        order = [item.id for item in registry.load().items]
+        assert order == ["F02", "F04", "F01", "F03"]
+
+
+class TestDecisionsTrim:
+    def test_archive_trims_decisions_keeps_last_n(self, tmp_path, monkeypatch):
+        monkeypatch.setattr("harness.core.registry.DECISIONS_KEEP", 2)
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=PASSED)])
+        header = "# harness 决策日志\n\n> 由状态转移命令自动追加, 勿手改(主文件保留最近 50 条, 更早归档到 harness/history/)\n\n"
+        entries = "".join(f"## 2026-08-0{i} 10:00 — verify F0{i}\nuser: sca\nreason: r\n"
+                          for i in range(1, 4))
+        (tmp_path / "decisions.md").write_text(header + entries, encoding="utf-8")
+
+        registry.archive()
+
+        text = (tmp_path / "decisions.md").read_text(encoding="utf-8")
+        assert "verify F01" not in text and "verify F02" not in text
+        assert "verify F03" in text and "archive" in text
+        older_files = list((tmp_path / "history").glob("decisions-*.md"))
+        assert len(older_files) == 1
+        older = older_files[0].read_text(encoding="utf-8")
+        assert "verify F01" in older and "verify F02" in older
+
+    def test_trim_not_triggered_without_archive(self, tmp_path):
+        registry = _write_items(tmp_path, [FeatureItem(id="F01", behavior="b1", gate="g", state=NOT_STARTED)])
+        header = "# harness 决策日志\n\n> 由状态转移命令自动追加, 勿手改(主文件保留最近 50 条, 更早归档到 harness/history/)\n\n"
+        (tmp_path / "decisions.md").write_text(header + "## 2026-08-01 10:00 — start F01\nuser: sca\nreason: r\n",
+                                               encoding="utf-8")
+        registry.apply_state("F01", ACTIVE)  # 非 archive 不裁剪
+        text = (tmp_path / "decisions.md").read_text(encoding="utf-8")
+        assert "start F01" in text

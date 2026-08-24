@@ -1,5 +1,6 @@
-"""unit：报告器(F06), PROGRESS.md 快照 golden 对比 + 人工保护区保留。"""
+"""unit：报告器(F06), PROGRESS.md 快照 golden 对比 + 人工保护区保留 + 历史归档摘要。"""
 from harness.core.models import FeatureItem, FeatureList
+from harness.core.registry import Registry
 from harness.service.reporter import Reporter
 from harness.core.states import ACTIVE, BLOCKED, NOT_STARTED, PASSED
 from harness.service.tracker import judge_health
@@ -73,3 +74,36 @@ class TestWriteManualZone:
         content = progress_path.read_text(encoding="utf-8")
         assert "# 旧内容" not in content
         assert "<!-- manual -->" in content
+
+
+class TestHistorySummary:
+    def test_render_history_summary(self, tmp_path):
+        features_path = tmp_path / "features.yaml"
+        registry = Registry(features_path)
+        registry.save(FeatureList(schema=1, milestone="007-harness-governance", items=[
+            FeatureItem(id="F01", behavior="b1", gate="g", state=ACTIVE),
+        ]))
+        history_dir = tmp_path / "history"
+        history_dir.mkdir(exist_ok=True)
+        (history_dir / "archive-test.yaml").write_text(
+            "schema: 1\nmilestone: 007-harness-governance\n"
+            "items:\n"
+            "  - id: F02\n    behavior: b2\n    gate: g\n    state: passed\n"
+            "    finished_time: '2026-08-01 10:00'\n",
+            encoding="utf-8",
+        )
+        reporter = Reporter(features_path, tmp_path / "PROGRESS.md")
+        rendered = reporter.render(registry.load(), judge_health(registry.load_all()), FIXED_TIME)
+        assert "## 历史归档" in rendered
+        assert "archive-test.yaml" in rendered and "1 项" in rendered
+        assert "2026-08-01 10:00" in rendered  # 完成时间范围
+
+    def test_no_history_no_section(self, tmp_path):
+        features_path = tmp_path / "features.yaml"
+        registry = Registry(features_path)
+        registry.save(FeatureList(schema=1, milestone="007-harness-governance", items=[
+            FeatureItem(id="F01", behavior="b1", gate="g", state=ACTIVE),
+        ]))
+        reporter = Reporter(features_path, tmp_path / "PROGRESS.md")
+        rendered = reporter.render(registry.load(), judge_health(registry.load_all()), FIXED_TIME)
+        assert "## 历史归档" not in rendered
