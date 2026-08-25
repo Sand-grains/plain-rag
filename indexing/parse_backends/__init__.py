@@ -2,9 +2,9 @@
 
 定义抽象接口 ParseBackend + ParseResult + 注册表 + 配置门控。
 轻量后端（pdfplumber/bs4/python-docx/python-pptx）在 indexing/loaders 真接入；
-重型后端（Docling/MinerU/Marker/LlamaParse/VLM/ColPali）本期只做协议与门控，
+重型后端（Docling/MinerU/Marker/LlamaParse/VLM/ColPali）(当前只做了协议与门控, v2 逐个接入)，
 默认全关，门控关时桩只返回"未启用/降级"信号，不写任何 fake 实现。
-v2 逐个接入。
+
 """
 from dataclasses import dataclass, field
 from typing import Any, Protocol
