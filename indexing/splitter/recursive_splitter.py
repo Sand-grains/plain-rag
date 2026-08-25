@@ -9,10 +9,20 @@ RecursiveCharacterTextSplitter：按优先级从高到低的分隔符栈，把�
 """
 from typing import Sequence
 
-from config import SEPARATORS
+from config import (
+    EMBEDDING_MODEL_TOKEN_CONSTRAINT,
+    PROTECT_TABLES,
+    SEPARATORS,
+    TABLE_ATOMIC_MAX_CHARS,
+)
 from indexing.chunk import Chunk
 from .base import BaseSplitter
-from .utils import _HEADING_REGEX, find_fenced_block_ranges, overlaps_code
+from .utils import (
+    _HEADING_REGEX,
+    find_fenced_block_ranges,
+    find_protected_table_ranges,
+    overlaps_code,
+)
 
 
 class RecursiveCharacterTextSplitter(BaseSplitter):
@@ -39,7 +49,7 @@ class RecursiveCharacterTextSplitter(BaseSplitter):
                 f"{doc_id}:{i}"（i 为顺序下标），chunk_level 写入
                 origin_metadata。
         """
-        code_ranges = find_fenced_block_ranges(text)
+        code_ranges = self._protected_ranges(text, metadata)
         pieces = self._split_text(text, code_ranges)
         pieces = self._merge_isolated_headings(pieces)
         pieces = self._merge_code_adjacent_micro_ws(pieces, code_ranges)
@@ -53,6 +63,22 @@ class RecursiveCharacterTextSplitter(BaseSplitter):
         return chunks
 
     # ---- 核心切分逻辑 ----
+
+    def _protected_ranges(self, text: str, metadata: dict) -> list[tuple[int, int]]:
+        """构建不可切分区间：fenced code block（恒保护）+ 表格（仅 protect_tables 开启）。
+
+        表格保护只对新格式归一化 MD 开启（doc_meta.protect_tables=True）；
+        .md/.txt 默认 False → 仅 code block 保护，分块字节级不变。
+        超限大表 / 受保护后仍超 token 预算的表由 find_protected_table_ranges 剔除（按行切分）。
+        """
+        code_ranges = find_fenced_block_ranges(text) # 代码块, 恒保护
+        doc_meta = metadata.get("doc_meta")
+        if PROTECT_TABLES and doc_meta is not None and getattr(doc_meta, "protect_tables", False): # 表格: 仅新格式开
+            protected_tables, _ = find_protected_table_ranges(
+                text, TABLE_ATOMIC_MAX_CHARS, EMBEDDING_MODEL_TOKEN_CONSTRAINT
+            )
+            return code_ranges + protected_tables
+        return code_ranges # .md/.txt 只保护代码块
 
     def _split_text(self, text: str, code_ranges: list[tuple[int, int]]) -> list[tuple[str, int]]:
         """用分隔符栈把长文本迭代切分到不超过 chunk_size 的片段。
