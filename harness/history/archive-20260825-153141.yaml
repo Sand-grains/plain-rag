@@ -1,0 +1,161 @@
+schema: 1
+milestone: 008-multiformat-parsing
+archived_at: 2026-08-25 15:31
+archived_milestone: 008-multiformat-parsing
+items:
+- id: F16
+  behavior: 'checkout-会话退出检查: scripts/exit_check.py 三档模式编排门禁+清洁+回归计数+退出码, 命令正文双写(.claude/commands/checkout.md
+    自包含 + instruction-set.md), AGENTS.md 退出/开始约定与 note 连续性'
+  behavior_hash: abc738907e91
+  gate: uv run pytest tests/unit/test_exit_check.py -q --cov=scripts.exit_check --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-24 15:21
+  state: passed
+  note: null
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 34
+    coverage: 92.52
+    duration: 27.69
+    mode: gate
+    artifact: verify-20260824-152136-F16.log
+  archived_at: 2026-08-25 15:31
+  archived_milestone: 008-multiformat-parsing
+- id: F24
+  behavior: 'obs-stage-timing: obs/trace_stage_report 跨 query 阶段计时聚合(每阶段 count/avg/p50/p95,
+    跳过 0 耗时) + retry 差额(fallback_required→rerank 求和) + error_code 聚合 + 落 logs/traces/step_timing-<ts>.jsonl
+    + eval runner 收尾接线, 只读不改链路(条例三)'
+  behavior_hash: af7b392399bf
+  gate: uv run pytest tests/unit/test_obs_stage_timing.py -q --cov=obs.trace_stage_report
+    --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-24 15:22
+  state: passed
+  note: '门禁 16 测试 100% 覆盖; e2e 通过(检索评估 110 query, step_timing 真落盘: embed/dense/sparse/retrieve_total/rerank
+    五阶段, retrieval 模式 generate 正确跳过); 只读聚合不改链路(条例三); 跳过 0 耗时阶段防缺失阶段污染延迟分布, trace_type
+    过滤防 agent 阶段污染 eval 统计, retry 差额 = fallback query 的 rerank 耗时求和'
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 16
+    coverage: 100.0
+    duration: 31.22
+    mode: gate
+    artifact: verify-20260824-152237-F24.log
+  archived_at: 2026-08-25 15:31
+  archived_milestone: 008-multiformat-parsing
+- id: F22
+  behavior: 'obs-exit-guard: obs/trace_exit_guard.py atexit 兜底清空 session 收集器 + 日志
+    flush + SIGINT/SIGTERM 最小化转 KeyboardInterrupt(幂等), eval/runner main() 注册'
+  behavior_hash: 6ffa7a4a176f
+  gate: uv run pytest tests/unit/test_obs_exit_guard.py -q --cov=obs.trace_exit_guard
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-24 15:22
+  state: passed
+  note: register_exit_guard 真进程冒烟(幂等 + SIGINT handler 生效); e2e 置 null(纯内部逻辑, signal
+    行为单测覆盖)
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 6
+    coverage: 96.67
+    duration: 28.94
+    mode: gate
+    artifact: verify-20260824-152205-F22.log
+  archived_at: 2026-08-25 15:31
+  archived_milestone: 008-multiformat-parsing
+- id: F29
+  behavior: '008-3 cleaner + 字段拆解: preprocess/cleaner 确定性幂等清洗(样板行/URL截断/邮箱小写/HTML残留/控制字符,
+    不做跨页去重); md_diagnosis heading_connection_standard 拆为 heading_continuous + heading_density_ok
+    两字段, Router 取两者都真(路由结果不变); config 新增 CLEAN_PLAIN_TEXT(默认False)/CLEAN_NEW_FORMAT(默认True)'
+  behavior_hash: 248d88b0fe9a
+  gate: uv run pytest tests/unit/test_cleaner.py tests/unit/test_md_diagnosis.py -q
+    --cov=preprocess.cleaner --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-24 15:36
+  state: passed
+  note: 008-3 cleaner+字段拆解完成, 开始门禁验证
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 13
+    coverage: 100.0
+    duration: 27.19
+    mode: gate
+    artifact: verify-20260825-112004-F29.log
+  archived_at: 2026-08-25 15:31
+  archived_milestone: 008-multiformat-parsing
+- id: F30
+  behavior: '008-2 loader + splitter 表格保护: indexing/loaders 四格式归一化 MD(pdf/html/docx/pptx
+    loader 按 doc_decision 分派, 逐页/逐slide自判图文分类, PPTX ## 边界); splitter protected_ranges
+    小表保护+超限降级(DocMetadata 增 protect_tables 并同步 splitter.split 调用点 agent_pipeline/needle_test/conftest);
+    indexing/parse_backends adapter 桩+注册表+门控; 表格保护只对新格式开, .md/.txt 字节级不变'
+  behavior_hash: e7c8b56aa62f
+  gate: uv run pytest tests/unit/test_loaders.py tests/unit/test_splitter_table_protection.py
+    tests/regression/test_splitter_byte_invariance.py -q --cov=indexing.loaders --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: true
+  finished_time: 2026-08-24 15:57
+  state: passed
+  note: '门禁 18 测试 92.9% 覆盖; 动了 splitter 表格保护, 按用户要求 retrieval e2e 至少跑一次: --mode retrieval
+    --no-report 通过(110 query, Recall@5 0.9606 / Hit@5 0.9909 / MRR 0.9480 / NDCG@5
+    0.9383, exit 0), e2e_passed 已记录; .md/.txt 字节级不变(test_splitter_byte_invariance
+    通过)'
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 24
+    coverage: 93.33
+    duration: 31.73
+    mode: gate
+    artifact: verify-20260825-144248-F30.log
+  archived_at: 2026-08-25 15:31
+  archived_milestone: 008-multiformat-parsing
+- id: F28
+  behavior: '008-1 precheck: preprocess/format_precheck 四格式采样统计与分流决策(PrecheckResult:
+    doc_decision/empty_page_ratio/vlm_candidate_count/degraded_flags/sampling_format_stats;
+    DispatchDecision WHOLE_TEXT_PIPELINE/HTML_TEXT/SKIP_TEXT_PIPELINE; PDF 首/中/尾采样、HTML
+    text_tag_ratio、DOCX/PPTX 自判; 质量档位 degraded_flags 非决策值), config 新增 PDF_SAMPLE_PAGES/PDF_TEXT_THRESHOLD/PDF_IMAGE_AREA_RATIO/PDF_TEXT_PAGE_RATIO/HTML_MIN_TEXT/PPTX_SLIDE_TEXT_THRESHOLD
+    与各格式开关'
+  behavior_hash: fdd541fc908c
+  gate: uv run pytest tests/unit/test_precheck.py -q --cov=preprocess.format_precheck
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-25 10:36
+  state: passed
+  note: sampling_stats 改名 sampling_format_stats, 复验
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 18
+    coverage: 92.46
+    duration: 31.45
+    mode: gate
+    artifact: verify-20260825-111936-F28.log
+  archived_at: 2026-08-25 15:31
+  archived_milestone: 008-multiformat-parsing
