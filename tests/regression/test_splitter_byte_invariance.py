@@ -15,6 +15,8 @@
 import hashlib
 from pathlib import Path
 
+import pytest
+
 from indexing.loader import load
 from indexing.router import Router
 from preprocess.md_diagnosis import diagnose
@@ -31,6 +33,14 @@ def _real_corpus(root: Path = Path("data")) -> list[Path]:
         p for p in root.rglob("*")
         if p.is_file() and p.suffix.lower() in _SUPPORTED_SUFFIXES
     )
+
+
+# data/ 是 gitignored 输出, CI 全新 checkout 无此目录 -> 语料为空时跳过
+# (本地有 data/ 时照常跑, 守住 private_v6 字节级不变承诺)
+pytestmark = pytest.mark.skipif(
+    not _real_corpus(),
+    reason="data/ 语料缺失(gitignored, CI 无此目录), 跳过字节级不变回归",
+)
 
 
 def _fingerprint() -> str:
