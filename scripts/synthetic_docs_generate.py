@@ -290,7 +290,8 @@ def passes_quality(text: str) -> bool:
     report = diagnose(text)
     return (
         report.has_h1
-        and report.heading_connection_standard
+        and report.heading_continuous
+        and report.heading_density_ok
         and not report.too_fragmented
         and report.text_ratio >= TEXT_RATIO_WARN_THRESHOLD
         and not report.has_encoding_issues
