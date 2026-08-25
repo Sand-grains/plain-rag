@@ -10,40 +10,7 @@ from pathlib import Path
 
 from config import PPTX_SLIDE_TEXT_THRESHOLD
 from .result import DispatchDecision, PrecheckResult
-
-_PICTURE_TYPES = {13}  # MSO_SHAPE_TYPE.PICTURE; 仅真图片计入图占比(文本框/占位符/表格是文本内容, 不计)
-
-
-def slide_text(slide) -> str:
-    """聚合 slide 内所有文本形状的字符。"""
-    parts = []
-    for shape in slide.shapes:
-        if getattr(shape, "has_text_frame", False):
-            parts.append(shape.text_frame.text)
-        if getattr(shape, "has_table", False):
-            for row in shape.table.rows:
-                for cell in row.cells:
-                    parts.append(cell.text)
-    return "".join(parts)
-
-
-def image_area_ratio(slide, slide_area: float) -> float:
-    """slide 内图/图表形状面积和 / 版面积（0.0 ~ 1.0）。
-
-    只统计真图片(MSO_SHAPE_TYPE.PICTURE=13)与图表(has_chart)；
-    文本框/占位符/表格是文本内容，不占图占比（避免大文本框 slide 被误判"图主导"）。
-    """
-    if not slide_area:
-        return 0.0
-    total_area = 0.0
-    for shape in slide.shapes:
-        is_visual = (
-            getattr(shape, "shape_type", None) in _PICTURE_TYPES
-            or getattr(shape, "has_chart", False)
-        )
-        if is_visual:
-            total_area += (shape.width or 0) * (shape.height or 0)
-    return total_area / slide_area
+from .shared import pptx_image_area_ratio, slide_text
 
 
 def precheck_pptx(path: Path) -> PrecheckResult:
@@ -68,7 +35,7 @@ def precheck_pptx(path: Path) -> PrecheckResult:
 
     for slide in presentation.slides:
         text = slide_text(slide)
-        area_ratio = image_area_ratio(slide, slide_area)
+        area_ratio = pptx_image_area_ratio(slide, slide_area)
         if len(text) >= PPTX_SLIDE_TEXT_THRESHOLD and area_ratio <= 0.5:
             text_slides += 1
         else:

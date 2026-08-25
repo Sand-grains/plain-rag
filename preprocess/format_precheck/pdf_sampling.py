@@ -17,6 +17,7 @@ from config import (
     PDF_TEXT_THRESHOLD,
 )
 from .result import DispatchDecision, PrecheckResult
+from .shared import pdf_image_area_ratio
 
 
 def _sample_indices(total_pages: int, sample_n: int) -> list[int]:
@@ -27,19 +28,6 @@ def _sample_indices(total_pages: int, sample_n: int) -> list[int]:
     if n == 1:
         return [0]
     return sorted(round(i * (total_pages - 1) / (n - 1)) for i in range(n))
-
-
-def image_area_ratio(page) -> float:
-    """页面图片面积占比：图片 bbox 面积和 / 页面积（0.0 ~ 1.0）。"""
-    page_area = (page.width or 0) * (page.height or 0)
-    if not page_area:
-        return 0.0
-    total_area = 0.0
-    for image in page.images:
-        width = (image.get("x1", 0) or 0) - (image.get("x0", 0) or 0)
-        height = (image.get("bottom", 0) or 0) - (image.get("top", 0) or 0)
-        total_area += max(width, 0) * max(height, 0)
-    return total_area / page_area
 
 
 def _is_multi_column(page) -> bool:
@@ -83,7 +71,7 @@ def precheck_pdf(path: Path) -> PrecheckResult:
             sampled += 1
             if not text:
                 empty_pages += 1
-            area_ratio = image_area_ratio(page)
+            area_ratio = pdf_image_area_ratio(page)
             if len(text) >= PDF_TEXT_THRESHOLD and area_ratio <= PDF_IMAGE_AREA_RATIO:
                 text_pages += 1
             else:
