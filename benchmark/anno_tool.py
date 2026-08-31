@@ -5,9 +5,9 @@
 特性：
   - 启动时可指定从第 N 条开始（断点续标）
   - 逐块展示父块全文（structured 文档渲染 section_path，flat 显示 "—"），Enter 标注 / e 跳过 / m 结束本条
-  - argparse：--source 默认 benchmark/private_v5.json，--output 默认 benchmark/private_v6.json
+  - argparse：--source 默认 benchmark/private_builtin.json，--output 默认 benchmark/private_builtin.json
 
-用法: uv run python benchmark/anno_tool.py --source benchmark/private_v6.json
+用法: uv run python benchmark/anno_tool.py --source benchmark/private_builtin.json
 
 说明:
   当前 relevance 只能按父块打，子块轨 `expected_child_ids` 是纯二元"证据子块"勾选
@@ -46,8 +46,8 @@ DONE_KEY = "m"
 VALID_DIFFICULTY = ["single_chunk", "multi_chunk"]
 
 # 默认 source 与 output 路径
-_DEFAULT_SOURCE = os.path.join(_PROJECT_DIR, "benchmark", "private_v6.json") # 当前正在标注版本
-_DEFAULT_OUTPUT = os.path.join(_PROJECT_DIR, "benchmark", "private_v6.json") # 设置为当前版本
+_DEFAULT_SOURCE = os.path.join(_PROJECT_DIR, "benchmark", "private_builtin.json") # 当前正在标注版本
+_DEFAULT_OUTPUT = os.path.join(_PROJECT_DIR, "benchmark", "private_builtin.json") # 设置为当前版本
 
 
 # ---- 加载 / 保存 benchmark----
@@ -313,8 +313,8 @@ def annotate_entry(
 def main() -> None:
     """标注工具主流程：加载索引 → 逐条标注 → 增量保存。"""
     parser = argparse.ArgumentParser(description="Benchmark 父块标注工具")
-    parser.add_argument("--source", default=_DEFAULT_SOURCE, help="输入 benchmark 文件（默认 benchmark/private_v5.json）")
-    parser.add_argument("--output", default=_DEFAULT_OUTPUT, help="输出 benchmark 文件（默认 benchmark/private_v6.json）")
+    parser.add_argument("--source", default=_DEFAULT_SOURCE, help="输入 benchmark 文件（默认 benchmark/private_builtin.json）")
+    parser.add_argument("--output", default=_DEFAULT_OUTPUT, help="输出 benchmark 文件（默认 benchmark/private_builtin.json）")
     args = parser.parse_args()
 
     if not os.path.exists(args.source):
