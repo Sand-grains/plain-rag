@@ -4,7 +4,7 @@ version = "0.3.0"
 description = "从零构建的原生 RAG 系统，支持 Agent 编排与多层评估"
 requires-python = ">=3.11"
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "AGPL-3.0" }
 authors = [{ name = "Sand_grains" , email = "2298581658@qq.com"}]
 
 dependencies = [
@@ -34,6 +34,14 @@ dependencies = [
 # CPU only:   pip install -e ".[cpu]" --index-url https://download.pytorch.org/whl/cpu
 cuda = ["torch", "torchvision"]
 cpu = ["torch", "torchvision"]
+# 012 heavy 解析链(parse_backends 重型后端; 版本冻结, 升级触发重标见 012 条例五)
+parse-heavy = [
+    "docling==2.123.1",
+    "mineru==3.4.5",
+    "markitdown==0.1.7",
+    "pymupdf==1.28.2",
+    "trafilatura==2.2.0",
+]
 
 [tool.setuptools.packages.find]
 include = ["indexing*", "retrieval*", "agent*", "preprocess*", "harness*", "obs*", "eval*", "infra*"]
