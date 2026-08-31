@@ -48,4 +48,4 @@ class RAGSearchTool(Tool):
         chunks = self.retriever.retrieve(query)                                   # 检索委托给 Retriever（内部处理向量化+相似度计算）
         if not chunks:
             return "知识库中未检索到相关文档片段"
-        return _build_context(chunks)                                             # 格式化为带来源标记的上下文字符串
+        return f"<context>\n{_build_context(chunks)}\n</context>"
