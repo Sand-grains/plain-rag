@@ -1,10 +1,11 @@
-"""Benchmark 标注工具：逐块标注 expected_chunk_ids (expected_parent_ids, expected_child_ids) + relevance + difficulty。
+"""Benchmark 标注工具：逐块标注 expected_chunk_ids (expected_parent_ids, expected_child_ids) + relevance + difficulty + question_type。
 
 检索/benchmark 单元为**父块**，标注父块 id。展示父块全文 + section_path。
 
 特性：
   - 启动时可指定从第 N 条开始（断点续标）
   - 逐块展示父块全文（structured 文档渲染 section_path，flat 显示 "—"），Enter 标注 / e 跳过 / m 结束本条
+  - 每条标注 difficulty(single_chunk/multi_chunk) 与 question_type(f/c/d/h)
   - argparse：--source 默认 benchmark/private_builtin.json，--output 默认 benchmark/private_builtin.json
 
 用法: uv run python benchmark/anno_tool.py --source benchmark/private_builtin.json
@@ -20,6 +21,11 @@
   子块级切碎是切块产物、算不改变检索难度，算 single 才避免"所有长答案都被标成 multi"的标签稀释
   另外注意 difficulty 属于 纯描述性分组字段 （eval模块中 retrieval_layer 仅用于 by_difficulty 分组统计），不影响任何实际指标计算
 
+  question_type 字母映射(comparison/conditional 首字母冲突, 改 conditional 用 d):
+    f=factual  c=comparison  d=conditional  h=multi_hop
+
+Warning:
+    跑 anno_tool 前必须验证索引状态; 如过期, 必须为文档重建索引并持久化入库
 """
 from __future__ import annotations
 
@@ -44,6 +50,15 @@ EXIT_KEY = "e"
 DONE_KEY = "m"
 
 VALID_DIFFICULTY = ["single_chunk", "multi_chunk"]
+
+# question_type 标注: 字母 → 类型(comparison/conditional 首字母冲突, conditional 用 d 区分)
+VALID_QUESTION_TYPE = ["factual", "comparison", "conditional", "multi_hop"]
+QUESTION_TYPE_KEYS = {
+    "f": "factual",
+    "c": "comparison",
+    "d": "conditional",
+    "h": "multi_hop",
+}
 
 # 默认 source 与 output 路径
 _DEFAULT_SOURCE = os.path.join(_PROJECT_DIR, "benchmark", "private_builtin.json") # 当前正在标注版本
@@ -295,17 +310,76 @@ def annotate_entry(
     elif user_input and user_input not in VALID_DIFFICULTY:
         print(f"  ⚠ 无效值: '{user_input}'，保留 '{current_diff}'")
 
+    # ---- 步骤 5: 询问 question_type ----
+    current_qt = entry.get("question_type", "factual")
+    if current_qt not in VALID_QUESTION_TYPE:
+        current_qt = "factual"
+    qt_hint = " ".join(f"{key}={qt}" for key, qt in QUESTION_TYPE_KEYS.items())
+    user_input = input(f"\n  Question type? ({qt_hint}, 空=保留 '{current_qt}')\n  > ").strip().lower()
+    if user_input in QUESTION_TYPE_KEYS:
+        current_qt = QUESTION_TYPE_KEYS[user_input]
+    elif user_input and user_input not in QUESTION_TYPE_KEYS:
+        print(f"  ⚠ 无效值: '{user_input}'，保留 '{current_qt}'")
+
     # ---- 写入 ----
     entry["expected_parent_ids"] = new_chunk_ids
     entry["expected_child_ids"] = expected_child_ids
     entry["relevance"] = new_relevance
     entry["difficulty"] = current_diff
+    entry["question_type"] = current_qt
     entry.pop("expected_chunk_ids", None)  # 迁移清理：删除旧 key，避免新旧不一致残留
     if "query_id" not in entry:
         entry["query_id"] = "Q0000"
 
-    print(f"\n  ✓ [{query_id}] 标注完成: {len(new_chunk_ids)} chunks, difficulty={current_diff}\n")
+    print(f"\n  ✓ [{query_id}] 标注完成: {len(new_chunk_ids)} chunks, difficulty={current_diff}, question_type={current_qt}\n")
     return True
+
+
+# ---- 索引覆盖校验 ----
+
+def _resolve_doc_chunks(doc_index: dict[str, list[Chunk]], source_doc: str) -> tuple[list[Chunk] | None, str | None]:
+    """按 source_doc 解析父块列表: 先精确匹配, 再子串模糊匹配。
+
+    Args:
+        doc_index: doc_id → 父块列表。
+        source_doc: benchmark 条目的来源文档名。
+
+    Returns:
+        tuple[list[Chunk] | None, str | None]: (命中的父块列表, 命中的 doc_id);
+            未命中返回 (None, None)。
+    """
+    chunks = doc_index.get(source_doc)
+    if chunks is not None:
+        return chunks, source_doc
+    for doc_id, candidate_chunks in doc_index.items():
+        if doc_id in source_doc or source_doc in doc_id:
+            return candidate_chunks, doc_id
+    return None, None
+
+
+def check_index_coverage(doc_index: dict[str, list[Chunk]], items: list[dict]) -> list[dict]:
+    """校验索引对 benchmark source_doc 的覆盖, 返回无法解析的条目列表。
+
+    把 docstring 的 Warning("跑 anno_tool 前必须验证索引状态")落为运行时机制:
+    索引过期(data/ 重组/重嵌后未重建)时, 大量 source_doc 无法在索引中解析,
+    此时继续标注会静默跳过这些条目, 造成标注缺失。
+
+    Args:
+        doc_index: doc_id → 父块列表。
+        items: benchmark 条目列表。
+
+    Returns:
+        list[dict]: source_doc 无法在索引中解析的条目。
+    """
+    missing: list[dict] = []
+    for entry in items:
+        source_doc = entry.get("source_doc", "")
+        if not source_doc:
+            continue
+        chunks, _ = _resolve_doc_chunks(doc_index, source_doc)
+        if chunks is None:
+            missing.append(entry)
+    return missing
 
 
 # ---- main ----
@@ -329,6 +403,20 @@ def main() -> None:
 
     doc_index = build_doc_index(store)
     items = load_benchmark(args.source)
+
+    # 索引覆盖校验: 把 docstring Warning 落为运行时机制
+    missing_entries = check_index_coverage(doc_index, items)
+    if missing_entries:
+        print(f"\n⚠ 索引覆盖校验: {len(missing_entries)}/{len(items)} 条 source_doc 无法在索引中解析")
+        print("  可能原因: data/ 重组/重嵌后未重建索引(需先跑 agent_pipeline.py)")
+        for entry in missing_entries[:5]:
+            print(f"    - {entry.get('query_id', '?')}  source_doc={entry.get('source_doc', '')}")
+        if len(missing_entries) > 5:
+            print(f"    ... 等 {len(missing_entries)} 条")
+        user_input = input("  索引可能过期, 继续标注会跳过这些条目。继续? (y=继续 / n=退出)\n  > ").strip().lower()
+        if user_input != "y":
+            print("已退出: 请先运行 agent_pipeline.py 重建索引。")
+            sys.exit(1)
 
     total = len(items)
     unannotated = sum(1 for entry in items if not entry.get("relevance"))
@@ -354,17 +442,12 @@ def main() -> None:
         query_id = entry.get("query_id", f"Q{index+1:04d}")
         source_doc = entry.get("source_doc", "")
 
-        chunks = doc_index.get(source_doc)
-        if chunks is None:
-            for doc_id, candidate_chunks in doc_index.items():
-                if doc_id in source_doc or source_doc in doc_id:
-                    chunks = candidate_chunks
-                    print(f"  匹配: source_doc='{source_doc}' → doc_id='{doc_id}'")
-                    break
-
+        chunks, matched_doc = _resolve_doc_chunks(doc_index, source_doc)
         if chunks is None:
             print(f"\n  ⚠ [{query_id}] 未找到 source_doc='{source_doc}' 的 chunk，跳过")
             continue
+        if matched_doc != source_doc:
+            print(f"  匹配: source_doc='{source_doc}' → doc_id='{matched_doc}'")
 
         print(f"\n{'#' * 60}")
         print(f"# [{index + 1}/{total}]  {query_id}  source_doc: {source_doc}")
