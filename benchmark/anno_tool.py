@@ -33,7 +33,9 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 from collections import defaultdict
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 _PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # benchmark/ → 项目根
@@ -81,14 +83,25 @@ def load_benchmark(path: str) -> list[dict]:
 
 
 def save_benchmark(items: list[dict], path: str) -> None:
-    """写回 benchmark 文件（缩进 2, ensure_ascii=False）。
+    """写回 benchmark 文件（缩进 2, ensure_ascii=False, 原子替换）。
 
     Args:
         items: benchmark 条目列表。
         path: 输出文件路径。
     """
-    with open(path, "w", encoding="utf-8") as file_handle:
-        json.dump(items, file_handle, ensure_ascii=False, indent=2)
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(target.parent), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as file_handle:
+            json.dump(items, file_handle, ensure_ascii=False, indent=2)
+        # 原子替换: 避免 IDE 的 git diff 预览(untracked 文件)对目标文件加读锁,
+        # 使 open(path,'w') 的 O_TRUNC 抛 OSError(22) EINVAL
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
     print(f"  [已保存] {path}\n")
 
 
