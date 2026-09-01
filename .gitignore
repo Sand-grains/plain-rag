@@ -39,7 +39,11 @@ plain_rag.egg-info/
 !.claude/commands/
 .synthetic_cache/
 
+# crawled benchmark annotations (local-only, copyright boundary)
+benchmark/private_crawler.json
+benchmark/route_sample
+# private_builtin 标注中间工作态(最终冻结的 private_builtin.json 保留跟踪)
+benchmark/private_builtin.checkpoint.json
 
-# archify generated diagrams (internal)
-archify/
-
+# 011/012 解析评测生成产物(整目录忽略, 可重生成)
+artifacts/
