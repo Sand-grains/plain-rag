@@ -1,0 +1,5119 @@
+[
+  {
+    "query_id": "Q0001",
+    "query": "AgentScope的架构从底层到顶层包括哪些层次？",
+    "reference_facts": "AgentScope的架构自下而上依次由基础组件层、Agent基础设施层、多智能体协作层以及部署与开发层这四个层级构成。",
+    "source_doc": "Agent/AgentScope中的工程思想",
+    "category": "Agent",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "Agent/AgentScope中的工程思想:1": 2,
+      "Agent/AgentScope中的工程思想:2": 2
+    },
+    "expected_files": [
+      "AgentScope中的工程思想.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/AgentScope中的工程思想:1",
+      "Agent/AgentScope中的工程思想:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0002",
+    "query": "Agentic System与Workflow相比，在复杂度和成本上有什么特点？",
+    "reference_facts": "Agentic System使用延迟和成本换质量，其中Agents的复杂度和成本都在Workflow之上",
+    "source_doc": "Agent/Agentic系统理解",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Agentic系统理解:0": 3,
+      "Agent/Agentic系统理解:1": 2
+    },
+    "expected_files": [
+      "Agentic系统理解.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Agentic系统理解:0",
+      "Agent/Agentic系统理解:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0003",
+    "query": "在工具调用过程中，由谁来决定何时调用工具以及何时停止？代码在其中扮演什么角色？",
+    "reference_facts": "工具调用与停止的时机均由模型来裁定，代码只负责遵照模型的指令行事。",
+    "source_doc": "Agent/Agent主循环",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Agent主循环:p0": 3,
+      "Agent/Agent主循环:p1": 2
+    },
+    "expected_files": [
+      "Agent主循环.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Agent主循环:p0",
+      "Agent/Agent主循环:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Agent主循环:p0:c0",
+      "Agent/Agent主循环:p1:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0004",
+    "query": "CoT（思维链）方法通过暴露每一步推理过程，对错误发现和纠正有什么好处？",
+    "reference_facts": "CoT首先让每一步推理都暴露出来，无论它是正确的还是错误的，都可以方便模型或人发现和纠正",
+    "source_doc": "Agent/CoT",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/CoT:0": 3,
+      "Agent/CoT:1": 3
+    },
+    "expected_files": [
+      "CoT.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/CoT:0",
+      "Agent/CoT:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0005",
+    "query": "处理长时程任务时，当前有哪些直接针对约束的工程手段？",
+    "reference_facts": "压缩整合、结构化笔记与子代理架构——这是当前应对长时程任务时，直接面向这些约束的三种主要工程手段。",
+    "source_doc": "Agent/Context Engineering",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Context Engineering:p1": 3
+    },
+    "expected_files": [
+      "Context Engineering.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Context Engineering:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Context Engineering:p1:c0",
+      "Agent/Context Engineering:p1:c1",
+      "Agent/Context Engineering:p1:c2",
+      "Agent/Context Engineering:p1:c3"
+    ],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0006",
+    "query": "当对话接近上下文上限时，如何维持长程连贯性？",
+    "reference_facts": "当对话即将达到上下文限制时，压缩整合会执行一次高保真总结，并借助这份摘要重新启动新的上下文窗口，以此保障长时间交流的连贯性。",
+    "source_doc": "Agent/Context Engineering",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Context Engineering:p1": 3
+    },
+    "expected_files": [
+      "Context Engineering.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Context Engineering:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Context Engineering:p1:c1"
+    ],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0007",
+    "query": "Function Calling中tools参数的作用是什么？如果不传tools会怎样？",
+    "reference_facts": "所谓Function Calling，指的是让LLM调用函数的一套机制。其入口为tools参数：若不传tool，本次LLM调用就只是纯对话；若传tool，则构成一次Function Calling。",
+    "source_doc": "Agent/Function Calling",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Function Calling:p0": 3
+    },
+    "expected_files": [
+      "Function Calling.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Function Calling:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Function Calling:p0:c1",
+      "Agent/Function Calling:p0:c2",
+      "Agent/Function Calling:p0:c4"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0008",
+    "query": "在LLM的Function Calling中，完整的调用过程涉及两次LLM调用。请具体说明第一次和第二次调用分别需要传入哪些上下文，以及LLM分别返回什么内容？",
+    "reference_facts": "一次Function Calling夹在两次LLM调用中：第一次发[system + user] + tools作为上下文，LLM返回含tool_calls的assistant消息；第二次发[system + user + assistant + tool(result)]作为上下文，LLM返回assistant消息。",
+    "source_doc": "Agent/Function Calling",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Function Calling:p0": 3
+    },
+    "expected_files": [
+      "Function Calling.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Function Calling:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Function Calling:p0:c4"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0009",
+    "query": "在Python-Agent代码中，Tool的具体表现形式是什么？",
+    "reference_facts": "在Python代码中，Tool以函数的形式存在，它正是被实际调用的对象。",
+    "source_doc": "Agent/Function Calling",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Function Calling:p0": 3
+    },
+    "expected_files": [
+      "Function Calling.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Function Calling:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Function Calling:p0:c0",
+      "Agent/Function Calling:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0010",
+    "query": "Langchain中 RunnablePassthrough 的assign()方法在处理输入字典时有什么核心特点？",
+    "reference_facts": "RunnablePassthrough的assign()方法会在原始输入字典保持不变的前提下，实时计算出新的键值对并追加进去，其核心特征在于“扩充”而绝非“替换”。",
+    "source_doc": "Agent/LCEL",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LCEL:10": 3,
+      "Agent/LCEL:11": 2
+    },
+    "expected_files": [
+      "LCEL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LCEL:10",
+      "Agent/LCEL:11"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0011",
+    "query": "Langchain中 Runnable 接口作为核心组件的共同交互标准，提供了哪些调用方法，它们各有什么用途？",
+    "reference_facts": "Runnable接口构成了所有核心组件统一遵循的交互规范，其上定义了五种调用方式：.invoke(input)用于执行一次性的同步调用，.batch(inputs)负责对输入集合进行并发的批量处理，.stream(input)则支持以流式方式产生输出，.ainvoke(input)提供异步场景下的单次调用能力，而.astream(input)实现了异步的流式输出。",
+    "source_doc": "Agent/LCEL",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LCEL:4": 3
+    },
+    "expected_files": [
+      "LCEL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LCEL:4"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0012",
+    "query": "在LCEL(Langchain)中，使用 | 操作符链接Runnable组件时，如果右侧是一个普通函数或字典怎么办",
+    "reference_facts": "LCEL通过 **|** 操作符将多个Runnable组件链接成RunnableSequence线性处理管道；当|的右侧是一个非Runnable对象时，LCEL会将其自动转换为一个合适的Runnable类型，比如函数包装为RunnableLambda，字典被包装为RunnableParallel。",
+    "source_doc": "Agent/LCEL",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LCEL:5": 3
+    },
+    "expected_files": [
+      "LCEL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LCEL:5"
+    ],
+    "expected_child_ids": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0013",
+    "query": "以LLM为核心的智能体为什么被视为人工智能领域的新范式？",
+    "reference_facts": "以大语言模型为中心的智能体，正逐渐成为人工智能研究中的一种全新范式。这类智能体可与周围环境持续互动，并独立完成对信息的感知、方案的设计、行动的抉择以及任务的落实。",
+    "source_doc": "Agent/LLM基础",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LLM基础:p0": 3
+    },
+    "expected_files": [
+      "LLM基础.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LLM基础:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/LLM基础:p0:c4",
+      "Agent/LLM基础:p0:c5"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0014",
+    "query": "工具执行后，智能体的观察和记忆分别会发生怎样的变化？",
+    "reference_facts": "工具执行后会返回工具结果给LLM，同时智能体的行动改变环境产生新的环境状态，这个工具结果和新的环境状态共同构成一轮全新的观察，被感知模块再次捕获，同时LLM会根据行动结果更新记忆。",
+    "source_doc": "Agent/LLM基础",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LLM基础:p1": 3
+    },
+    "expected_files": [
+      "LLM基础.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LLM基础:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/LLM基础:p1:c2"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0015",
+    "query": "感知模块、规划模块和LLM在智能体系统中是如何协作完成决策的？",
+    "reference_facts": "感知部分依靠各类传感器自外部环境采集基础数据，进而构建出观察结果。而规划部分则借助反思、自我批判等方式，把宏观目标拆解为更明确且可实际施行的子步骤。大语言模型在收到指令后，与记忆模块协作展开深入推理，最终确定接下来应当采取的具体动作——这一动作往往体现为一次工具调用。",
+    "source_doc": "Agent/LLM基础",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LLM基础:p1": 3
+    },
+    "expected_files": [
+      "LLM基础.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LLM基础:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/LLM基础:p1:c0",
+      "Agent/LLM基础:p1:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0016",
+    "query": "在LangGraph中，图的执行过程时是如何定义的？",
+    "reference_facts": "整个图的执行过程都围绕一个共享的状态对象进行，这个状态通常被定义为一个TypedDict类体，所有的节点都能读取和更新这个该结构中的数据",
+    "source_doc": "Agent/LangGraph框架入门",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/LangGraph框架入门:p0": 3
+    },
+    "expected_files": [
+      "LangGraph框架入门.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/LangGraph框架入门:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/LangGraph框架入门:p0:c1",
+      "Agent/LangGraph框架入门:p0:c3"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0017",
+    "query": "我们应该以何种尺度引入Langchain?",
+    "reference_facts": "Langchain的设计是模块化的，使用者只需安装自己实际需要的包即可。",
+    "source_doc": "Agent/Langchain框架",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Langchain框架:p0": 3
+    },
+    "expected_files": [
+      "Langchain框架.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Langchain框架:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Langchain框架:p0:c2"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0018",
+    "query": "对于Langchain，是应该全面采用还是只作为工具箱使用？",
+    "reference_facts": "与其完全照搬Langchain，不如将其视为一个工具箱, 按需引入所需的模块",
+    "source_doc": "Agent/Langchain框架",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Langchain框架:p0": 3
+    },
+    "expected_files": [
+      "Langchain框架.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Langchain框架:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Langchain框架:p0:c2"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0019",
+    "query": "MCP客户端连接到服务器后，如何获取可用工具？",
+    "reference_facts": "在MCP客户端与服务器建立连接之后，程序会率先执行list_tools()方法，借此获得全部可用工具的描述资料，具体涵盖各工具的名称、用途说明以及参数定义。",
+    "source_doc": "Agent/MCP",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/MCP:3": 3
+    },
+    "expected_files": [
+      "MCP.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/MCP:3"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0020",
+    "query": "MCP中, 当LLM决定调用工具时，工具的执行和最终回答的生成过程是怎样的？",
+    "reference_facts": "LLM分析用户问题和可用工具，决定是否需要调用工具以及调用哪个工具；如果LLM决定使用工具，Client通过MCP Server执行所选工具，获取结果后LLM整合结果生成最终回答。",
+    "source_doc": "Agent/MCP",
+    "category": "Agent",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "Agent/MCP:3": 2,
+      "Agent/MCP:4": 3,
+      "Agent/MCP:5": 2
+    },
+    "expected_files": [
+      "MCP.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/MCP:3",
+      "Agent/MCP:4",
+      "Agent/MCP:5"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0021",
+    "query": "LLM提示词中通常可以包含哪些类型的要素？",
+    "reference_facts": "提示词可由以下任意要素构成：角色、任务、背景、约束及格式。",
+    "source_doc": "Agent/Prompt Engineering",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Prompt Engineering:p0": 3
+    },
+    "expected_files": [
+      "Prompt Engineering.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Prompt Engineering:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Prompt Engineering:p0:c1",
+      "Agent/Prompt Engineering:p0:c2"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0022",
+    "query": "在知识库检索中，进行Query改写的主要目标是什么？",
+    "reference_facts": "对查询（Query）进行改写，其核心目的是使问题更易于被知识库所检索和命中。",
+    "source_doc": "Agent/Query改写",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Query改写:p0": 3
+    },
+    "expected_files": [
+      "Query改写.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Query改写:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Query改写:p0:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0023",
+    "query": "如果知识库里没有答案、知识过时或知识冲突，分别会导致LLM出现什么错误？",
+    "reference_facts": "当知识库中缺乏答案时，LLM只能依靠猜测；若库内知识已陈旧，模型给出的回答也会相应过时；当知识间存在冲突时，即便模型成功检索到，也可能产生错误答案。",
+    "source_doc": "Agent/RAG优化与选型",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/RAG优化与选型:p3": 3
+    },
+    "expected_files": [
+      "RAG优化与选型.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/RAG优化与选型:p3"
+    ],
+    "expected_child_ids": [
+      "Agent/RAG优化与选型:p3:c4"
+    ],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0024",
+    "query": "在RAG系统中，召回质量具体受到哪些因素的共同影响？",
+    "reference_facts": "召回质量在很大程度上决定了线上RAG的优劣，而Embedding、文本分块、元数据、度量方式（Metric）、ANN参数以及Rerank等因素，又共同影响着最终的召回效果。",
+    "source_doc": "Agent/RAG优化与选型",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/RAG优化与选型:p0": 3
+    },
+    "expected_files": [
+      "RAG优化与选型.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/RAG优化与选型:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/RAG优化与选型:p0:c2"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0025",
+    "query": "RAG如果未做数据预处理和查询改写可能引发哪些具体问题？",
+    "reference_facts": "最初的RAG在数据预处理、查询改写以及分块策略方面均有所欠缺，因而导致了多项缺陷：例如语义对不上、检索结果不够精细、存在冗余与噪声、上下文信息不完整，以及对复杂问题的处理能力不足。",
+    "source_doc": "Agent/RAG前沿架构与高级模式",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/RAG前沿架构与高级模式:1": 3
+    },
+    "expected_files": [
+      "RAG前沿架构与高级模式.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/RAG前沿架构与高级模式:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0026",
+    "query": "BGE-Reranker-v2-M3作为开源重排序模型，在RAG工程实践中为什么使用率最高？",
+    "reference_facts": "BGE-Reranker-v2-M3是目前开源模型中综合表现最强的模型之一，支持多语言、长文本，中文效果顶尖，可本地部署，在国内RAG工程实践中使用率最高。",
+    "source_doc": "Agent/Rerank",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Rerank:p0": 3
+    },
+    "expected_files": [
+      "Rerank.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Rerank:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Rerank:p0:c4"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0027",
+    "query": "Reranker在模型架构上的本质是什么？它如何处理Query和Document？",
+    "reference_facts": "本质上，Reranker采用Cross-Encoder架构，其做法是把Query与Document拼接起来，再整体送入Transformer进行处理。",
+    "source_doc": "Agent/Rerank",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Rerank:p1": 3
+    },
+    "expected_files": [
+      "Rerank.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Rerank:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Rerank:p1:c2"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0028",
+    "query": "当工具数量超过20个时，大工具集路由的主要瓶颈是什么？",
+    "reference_facts": "当工具数量达到20个以上时，工具路由的核心症结已不再是LLM选错工具，而是提示内容过度膨胀、相似工具容易彼此干扰，以及延迟随着规模呈线性上升。",
+    "source_doc": "Agent/Tools,FC设计",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/Tools,FC设计:1": 3
+    },
+    "expected_files": [
+      "Tools,FC设计.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/Tools,FC设计:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0029",
+    "query": "在RAG系统中，chunk的大小设置是越大越好还是越小越好？",
+    "reference_facts": "chunk的大小取舍，并不在于越小越好或越大越好，而在于每个chunk都必须保持相对完整的语义单元。",
+    "source_doc": "Agent/chunk切分后优化",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/chunk切分后优化:p0": 3
+    },
+    "expected_files": [
+      "chunk切分后优化.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/chunk切分后优化:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/chunk切分后优化:p0:c0",
+      "Agent/chunk切分后优化:p0:c2"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0030",
+    "query": "哪些类型的知识库特别适合利用元数据来提升检索精度？",
+    "reference_facts": "借助元数据（metadata），检索的精确度能够得到大幅提升，这一优势在企业知识库、规则知识库和产品知识库等场景中表现得尤为突出。",
+    "source_doc": "Agent/元数据Tag优化",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/元数据Tag优化:p0": 3
+    },
+    "expected_files": [
+      "元数据Tag优化.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/元数据Tag优化:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/元数据Tag优化:p0:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0031",
+    "query": "RAG系统中的Planning模块是通过什么机制来提升能力的？",
+    "reference_facts": "Planning模块的本质是降低单步难度，而不是让模型变聪明",
+    "source_doc": "Agent/单看Agents",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/单看Agents:0": 3
+    },
+    "expected_files": [
+      "单看Agents.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/单看Agents:0"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0032",
+    "query": "ANN（近似最近邻）算法的核心优化目标是什么？",
+    "reference_facts": "对于ANN（近似最近邻）而言，其核心挑战在于如何在召回率、延迟、内存占用以及构建成本这几个维度之间达成最优的平衡取舍。",
+    "source_doc": "Agent/向量数据库",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/向量数据库:1": 3,
+      "Agent/向量数据库:2": 3
+    },
+    "expected_files": [
+      "向量数据库.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/向量数据库:1",
+      "Agent/向量数据库:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0033",
+    "query": "为什么线上向量检索不能直接对全部向量逐一计算距离？",
+    "reference_facts": "在每次查询中，若将查询请求与全部向量逐一进行距离计算，理论上的准确性固然很高，但在线上环境中，这一方式既耗时又昂贵，难以支撑高并发服务。",
+    "source_doc": "Agent/向量数据库",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/向量数据库:2": 3
+    },
+    "expected_files": [
+      "向量数据库.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/向量数据库:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0034",
+    "query": "向量数据库中的ANN索引是在什么阶段构建的？",
+    "reference_facts": "ANN索引的构建在数据写入之后、首次检索之前",
+    "source_doc": "Agent/向量数据库",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/向量数据库:3": 3
+    },
+    "expected_files": [
+      "向量数据库.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/向量数据库:3"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0035",
+    "query": "在RAG系统中处理表格数据时，如何确保检索到的内容能够还原出对应的字段名？",
+    "reference_facts": "表格的表头(schema)必须与每个数据行绑定, 任何时候检索到表格内容, 都必须能还原出这是什么字段",
+    "source_doc": "Agent/多模态的基本处理",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/多模态的基本处理:p1": 3
+    },
+    "expected_files": [
+      "多模态的基本处理.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/多模态的基本处理:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/多模态的基本处理:p1:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0036",
+    "query": "在RAG系统中，如果检索到的文档正确但截断策略不当，会对最终答案产生什么影响？",
+    "reference_facts": "答案质量的高低直接取决于截断策略。即便召回环节做得准确无误，截断阶段一旦出现偏差，最终给出的答案同样会是错误的。",
+    "source_doc": "Agent/截断策略",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/截断策略:p0": 3
+    },
+    "expected_files": [
+      "截断策略.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/截断策略:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/截断策略:p0:c0",
+      "Agent/截断策略:p0:c1"
+    ],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0037",
+    "query": "在LLM调用中，工具声明的tools参数是放在messages里还是独立参数？",
+    "reference_facts": "在工具声明中，`tools` 参数作为一个独立参数存在，它并不位于 `messages` 内部，其作用是定义可供调用的函数类工具。",
+    "source_doc": "Agent/提示词示例",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/提示词示例:p1": 3
+    },
+    "expected_files": [
+      "提示词示例.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/提示词示例:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/提示词示例:p1:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0038",
+    "query": "当助手消息的content字段为None时，这条消息代表什么？",
+    "reference_facts": "若某条助手消息中的content等于None，则表明该消息不存在任何文本输出，只表达了工具调用的意图；tool_calls为独立的字段。",
+    "source_doc": "Agent/提示词示例",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/提示词示例:p1": 3
+    },
+    "expected_files": [
+      "提示词示例.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/提示词示例:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/提示词示例:p1:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0039",
+    "query": "异构数据源到策略路由的转换流程是什么？",
+    "reference_facts": "整个流程包含四个环节：先将异构数据源接入，随后统一转换成 Markdown 格式，接着进行质量诊断，最后执行策略路由。",
+    "source_doc": "Agent/数据预处理",
+    "category": "Agent",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "Agent/数据预处理:p0": 3,
+      "Agent/数据预处理:p4": 2
+    },
+    "expected_files": [
+      "数据预处理.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/数据预处理:p0",
+      "Agent/数据预处理:p4"
+    ],
+    "expected_child_ids": [
+      "Agent/数据预处理:p0:c0",
+      "Agent/数据预处理:p0:c1",
+      "Agent/数据预处理:p0:c4",
+      "Agent/数据预处理:p4:c3"
+    ],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0040",
+    "query": "RAG中文档质量评判可以从哪些维度看？",
+    "reference_facts": "文档质量的评判分为结构质量和内容质量两个维度; 结构质量完全可以使用程序判断",
+    "source_doc": "Agent/数据预处理",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/数据预处理:p0": 3
+    },
+    "expected_files": [
+      "数据预处理.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/数据预处理:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/数据预处理:p0:c4",
+      "Agent/数据预处理:p0:c5"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0041",
+    "query": "在RAG系统中确定文本分块大小（chunk_size）时，需要综合考虑哪些关键因素？",
+    "reference_facts": "chunk_size的设定需全面权衡Embedding模型的token上限、检索准确度以及LLM的上下文窗口容量。",
+    "source_doc": "Agent/文本分块",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/文本分块:1": 3,
+      "Agent/文本分块:2": 3,
+      "Agent/文本分块:3": 3
+    },
+    "expected_files": [
+      "文本分块.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/文本分块:1",
+      "Agent/文本分块:2",
+      "Agent/文本分块:3"
+    ],
+    "expected_child_ids": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0042",
+    "query": "在RAG系统中，如果文本分块过大，会带来哪些具体问题？",
+    "reference_facts": "分块设置过大可能引发若干问题：主题混杂导致语义被稀释，进而使文本与任何单一查询的匹配度都不理想；超出Embedding模型的处理上限，多余内容遭截断，造成语义信息不完整；同时会无谓消耗LLM的上下文空间；还会引入大量无关内容，使检索时的干扰显著上升。",
+    "source_doc": "Agent/文本分块",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/文本分块:2": 3
+    },
+    "expected_files": [
+      "文本分块.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/文本分块:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0043",
+    "query": "将文档切分成太小的文本块会带来哪些负面影响？",
+    "reference_facts": "当分块设定得过小时，容易引发以下问题：一是语义被割裂，单个句子碎片难以拼凑出完整答案；二是上下文信息缺失，导致对象和背景描述不完整；三是检索过程不够稳定，同一概念的信息被拆散到多个小块，必须借助较大的top-k值才能覆盖齐全；四是索引成本大幅上升，块数量急剧增加，意味着向量数据库要消耗更多存储资源，同时检索延迟也会随之升高。",
+    "source_doc": "Agent/文本分块",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/文本分块:2": 3
+    },
+    "expected_files": [
+      "文本分块.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/文本分块:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0044",
+    "query": "处理PDF文档时，在分块之前需要先做什么操作？",
+    "reference_facts": "对于PDF文档，需要先做布局解析，提取表格和图片后再分块。",
+    "source_doc": "Agent/文本分块面试题",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/文本分块面试题:0": 3
+    },
+    "expected_files": [
+      "文本分块面试题.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/文本分块面试题:0"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0045",
+    "query": "LLM驱动的智能体通常通过哪些方式来工作？",
+    "reference_facts": "LLM驱动智能体的工作方式主要有规划、工具使用、动态修正",
+    "source_doc": "Agent/智能体概念与发展史",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/智能体概念与发展史:1": 2,
+      "Agent/智能体概念与发展史:2": 3
+    },
+    "expected_files": [
+      "智能体概念与发展史.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/智能体概念与发展史:1",
+      "Agent/智能体概念与发展史:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0046",
+    "query": "基于目标的智能体在行动选择上有什么特点，又存在哪些问题？",
+    "reference_facts": "目标驱动的智能体会主动且有远见地挑选那些能通向未来目标状态的行为，然而其缺陷在于只能实现单一目标，难以同时满足多方面的需求。",
+    "source_doc": "Agent/智能体概念与发展史",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/智能体概念与发展史:1": 3
+    },
+    "expected_files": [
+      "智能体概念与发展史.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/智能体概念与发展史:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0047",
+    "query": "学习型智能体中的学习元件是如何不断修正性能元件的决策策略的？",
+    "reference_facts": "学习型智能体中的学习元件，会以性能元件在环境中行动所产生的效果为依据，持续对性能元件的决策策略进行修正。",
+    "source_doc": "Agent/智能体概念与发展史",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/智能体概念与发展史:1": 3
+    },
+    "expected_files": [
+      "智能体概念与发展史.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/智能体概念与发展史:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0048",
+    "query": "在没有通信协议之前，软件开发会面临哪些问题？",
+    "reference_facts": "在通信协议问世前，开发过程中经常面临代码冗余、维护不易、复用困难以及扩展能力不足等种种问题。",
+    "source_doc": "Agent/智能体通信协议",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/智能体通信协议:2": 3
+    },
+    "expected_files": [
+      "智能体通信协议.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/智能体通信协议:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0049",
+    "query": "通信协议在智能体访问外部服务时起到了什么作用？",
+    "reference_facts": "通信协议的价值在于提供一套标准化的接口规范，让智能体以统一的方式访问各种外部服务，而无需为每个服务编写专门的适配器。",
+    "source_doc": "Agent/智能体通信协议",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/智能体通信协议:2": 3,
+      "Agent/智能体通信协议:3": 2
+    },
+    "expected_files": [
+      "智能体通信协议.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/智能体通信协议:2",
+      "Agent/智能体通信协议:3"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0050",
+    "query": "在检索中遇到专有名词查询效果不佳时，有哪些改进策略？",
+    "reference_facts": "当专有名词的检索效果不理想时，可考虑增大稀疏权重，或采用RRF替代线性加权方式。",
+    "source_doc": "Agent/检索召回",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/检索召回:p2": 3
+    },
+    "expected_files": [
+      "检索召回.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/检索召回:p2"
+    ],
+    "expected_child_ids": [
+      "Agent/检索召回:p2:c3"
+    ],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0051",
+    "query": "与BM25相对的线性加权融合策略中, α调优方法论具体包含哪几个步骤？",
+    "reference_facts": "α调优方法论由四个环节构成：准备测评集、粗调整、精细调整以及验证稳定性。",
+    "source_doc": "Agent/线性加权融合",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/线性加权融合:4": 3
+    },
+    "expected_files": [
+      "线性加权融合.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/线性加权融合:4"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0052",
+    "query": "自动化知识生产包含哪些关键模块或组件？",
+    "reference_facts": "自动化知识生产包含知识缺口检测器、知识草稿生成器、校验Agent、冲突治理与版本管理、评测集回归。",
+    "source_doc": "Agent/自动化知识生产",
+    "category": "Agent",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "Agent/自动化知识生产:p0": 2,
+      "Agent/自动化知识生产:p1": 2
+    },
+    "expected_files": [
+      "自动化知识生产.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/自动化知识生产:p0",
+      "Agent/自动化知识生产:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/自动化知识生产:p0:c0",
+      "Agent/自动化知识生产:p0:c2",
+      "Agent/自动化知识生产:p0:c3",
+      "Agent/自动化知识生产:p1:c0",
+      "Agent/自动化知识生产:p1:c1"
+    ],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0053",
+    "query": "在RAG系统中，自定义分词器的主要用途是什么？",
+    "reference_facts": "RAG中, 自定义分词只涉及中文分词器（稀疏检索使用）, 用来优化稀疏检索路的倒排索引质量",
+    "source_doc": "Agent/自定义分词",
+    "category": "Agent",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Agent/自定义分词:p0": 3
+    },
+    "expected_files": [
+      "自定义分词.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Agent/自定义分词:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/自定义分词:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0054",
+    "query": "SQL是什么语言?",
+    "reference_facts": "SQL是操作关系型数据库的编程语言，定义了一套操作关系型数据库的统一标准",
+    "source_doc": "MySQL 基础",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL 基础:p0": 3
+    },
+    "expected_files": [
+      "MySQL 基础.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL 基础:p0"
+    ],
+    "expected_child_ids": [
+      "MySQL 基础:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0055",
+    "query": "SQL的全称是什么？",
+    "reference_facts": "Structured Query Language 简称SQL",
+    "source_doc": "MySQL 基础",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL 基础:p0": 3
+    },
+    "expected_files": [
+      "MySQL 基础.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL 基础:p0"
+    ],
+    "expected_child_ids": [
+      "MySQL 基础:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0056",
+    "query": "使用什么编程语言操作主流关系型数据库？",
+    "reference_facts": "对于大多数主流的关系型数据库而言，其操作语言为SQL。",
+    "source_doc": "MySQL 基础",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL 基础:p0": 3
+    },
+    "expected_files": [
+      "MySQL 基础.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL 基础:p0"
+    ],
+    "expected_child_ids": [
+      "MySQL 基础:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0057",
+    "query": "MySQL数据库当前默认的存储引擎是哪个？",
+    "reference_facts": "当前MySQL默认采用的存储引擎为InnoDB。",
+    "source_doc": "MySQL-进阶",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL-进阶:p0": 3
+    },
+    "expected_files": [
+      "MySQL-进阶.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL-进阶:p0"
+    ],
+    "expected_child_ids": [
+      "MySQL-进阶:p0:c1",
+      "MySQL-进阶:p0:c2"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0058",
+    "query": "MySQL数据库的体系结构由哪些层次组成？",
+    "reference_facts": "MySQL体系结构包括连接层、服务层、引擎层和存储层",
+    "source_doc": "MySQL-进阶",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL-进阶:p0": 3
+    },
+    "expected_files": [
+      "MySQL-进阶.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL-进阶:p0"
+    ],
+    "expected_child_ids": [
+      "MySQL-进阶:p0:c0",
+      "MySQL-进阶:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0059",
+    "query": "同一个数据库中的不同表能否选择不同的存储引擎，存储引擎是基于表还是基于库？",
+    "reference_facts": "存储引擎的作用对象是表而不是库，每张表都能单独选用不同的存储引擎。",
+    "source_doc": "MySQL-进阶",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL-进阶:p0": 3
+    },
+    "expected_files": [
+      "MySQL-进阶.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL-进阶:p0"
+    ],
+    "expected_child_ids": [
+      "MySQL-进阶:p0:c1",
+      "MySQL-进阶:p0:c2"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0060",
+    "query": "在数据库中，索引是在哪一层实现实现的？",
+    "reference_facts": "不同存储引擎对索引的实现方式各不相同，其索引结构也会有所差异，而这一机制正是位于存储引擎层完成的。",
+    "source_doc": "MySQL-进阶",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "MySQL-进阶:p2": 3
+    },
+    "expected_files": [
+      "MySQL-进阶.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "MySQL-进阶:p2"
+    ],
+    "expected_child_ids": [
+      "MySQL-进阶:p2:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0061",
+    "query": "PgSQL和MySQL中的TRUNCATE在事务回滚方面有什么区别？",
+    "reference_facts": "PgSQL的TRUNCATE是事务安全的，可以和ROLLBACK配合；MySQL的TRUNCATE在某些引擎下不可回滚",
+    "source_doc": "PostgreSQL",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "PostgreSQL:p0": 3
+    },
+    "expected_files": [
+      "PostgreSQL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "PostgreSQL:p0"
+    ],
+    "expected_child_ids": [
+      "PostgreSQL:p0:c1"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0062",
+    "query": "PostgreSQL中的实例通常是由什么组成的？",
+    "reference_facts": "postgres进程组和共享内存共同组成一个实例。",
+    "source_doc": "PostgreSQL",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "PostgreSQL:p1": 3
+    },
+    "expected_files": [
+      "PostgreSQL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "PostgreSQL:p1"
+    ],
+    "expected_child_ids": [
+      "PostgreSQL:p1:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0063",
+    "query": "PostgreSQL和MySQL的DDL语句在事务行为上有何不同？",
+    "reference_facts": "PgSQL对DDL操作同样具备事务支持能力——完全可以在一个事务中执行CREATE TABLE或ALTER TABLE等操作，并且一旦出现错误，可以通过ROLLBACK来撤销这些变更。相比之下，MySQL中的DDL语句大多数情况下会隐式提交，因此无法进行回滚操作。",
+    "source_doc": "PostgreSQL",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "PostgreSQL:p0": 3
+    },
+    "expected_files": [
+      "PostgreSQL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "PostgreSQL:p0"
+    ],
+    "expected_child_ids": [
+      "PostgreSQL:p0:c0",
+      "PostgreSQL:p0:c1",
+      "PostgreSQL:p0:c2"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0064",
+    "query": "PostgreSQL的逻辑结构从大到小包含哪些层级？",
+    "reference_facts": "在PgSQL中，逻辑层次由高至低可排列为：实例（Instance）、数据库（Database）、模式（Schema）、表（Table）以及行/列（Row/Column）。",
+    "source_doc": "PostgreSQL",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "PostgreSQL:p1": 3
+    },
+    "expected_files": [
+      "PostgreSQL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "PostgreSQL:p1"
+    ],
+    "expected_child_ids": [
+      "PostgreSQL:p1:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0065",
+    "query": "很多AI项目底层存储选择PgSQL的最直接原因是什么？",
+    "reference_facts": "pgvector是Embedding向量存储和检索的原生支持，这是很多AI项目底层存储选择PgSQL的最直接原因",
+    "source_doc": "PostgreSQL",
+    "category": "Database",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "PostgreSQL:p0": 3
+    },
+    "expected_files": [
+      "PostgreSQL.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "PostgreSQL:p0"
+    ],
+    "expected_child_ids": [
+      "PostgreSQL:p0:c4"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0066",
+    "query": "RPC 的核心设计目标是什么？它在带来便利的同时是否了引入某些问题？",
+    "reference_facts": "RPC旨在让调用远程服务上的函数像调用本地函数一样(抽象对象是函数/方法)，把网络通信的细节(序列化, 传输, 路由)隐藏起来, 但也因此引入了网络延迟、失败语义等分布式系统的固有问题。",
+    "source_doc": "RPC范式与REST架构约束",
+    "category": "Distributed",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "RPC范式与REST架构约束:0": 3,
+      "RPC范式与REST架构约束:3": 2
+    },
+    "expected_files": [
+      "RPC范式与REST架构约束.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "RPC范式与REST架构约束:0",
+      "RPC范式与REST架构约束:3"
+    ],
+    "expected_child_ids": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0067",
+    "query": "RPC主要解决的是什么问题？",
+    "reference_facts": "RPC解决的是与业务逻辑无关的通信的机械性工作",
+    "source_doc": "RPC范式与REST架构约束",
+    "category": "Distributed",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "RPC范式与REST架构约束:0": 3,
+      "RPC范式与REST架构约束:1": 3,
+      "RPC范式与REST架构约束:2": 3
+    },
+    "expected_files": [
+      "RPC范式与REST架构约束.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "RPC范式与REST架构约束:0",
+      "RPC范式与REST架构约束:1",
+      "RPC范式与REST架构约束:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0068",
+    "query": "为什么需要RPC？",
+    "reference_facts": "在RPC问世前，两台机器进行通信时，开发人员必须手动完成一系列工作：先构建TCP或UDP连接，接着把数据序列化成字节流，然后执行发送、接收及解析响应等操作，同时还要自行应对网络超时、重新连接和粘包问题。",
+    "source_doc": "RPC范式与REST架构约束",
+    "category": "Distributed",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "RPC范式与REST架构约束:1": 3
+    },
+    "expected_files": [
+      "RPC范式与REST架构约束.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "RPC范式与REST架构约束:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0069",
+    "query": "远程过程调用（RPC）在网络通信中的本质是什么？",
+    "reference_facts": "从本质上看，远程过程调用（Remote Procedure Call，简称RPC）是一种通信模式，它将网络通信进行了抽象层面的封装处理。",
+    "source_doc": "RPC范式与REST架构约束",
+    "category": "Distributed",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "RPC范式与REST架构约束:0": 3
+    },
+    "expected_files": [
+      "RPC范式与REST架构约束.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "RPC范式与REST架构约束:0"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0070",
+    "query": "网关服务能否当作普通SpringBootWeb应用来使用？",
+    "reference_facts": "不可将网关服务与普通SpringBootWeb应用混为一谈。",
+    "source_doc": "Java/Gateway",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/Gateway:p0": 3
+    },
+    "expected_files": [
+      "Gateway.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/Gateway:p0"
+    ],
+    "expected_child_ids": [
+      "Java/Gateway:p0:c2"
+    ],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0071",
+    "query": "JDK 1.2之前Java的线程是如何实现的，为什么不依赖操作系统？",
+    "reference_facts": "在JDK 1.2之前的版本中，Java线程依赖绿色线程来实现，这类线程属于用户线程，由JVM自行模拟多线程的执行过程，并不需要操作系统的参与。",
+    "source_doc": "Java/JUC",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/JUC:p2": 3
+    },
+    "expected_files": [
+      "JUC.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/JUC:p2"
+    ],
+    "expected_child_ids": [
+      "Java/JUC:p2:c0",
+      "Java/JUC:p2:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0072",
+    "query": "在操作系统中，为什么说进程是动态的？",
+    "reference_facts": "程序的一次执行便构成了一个进程，它作为系统运作程序的基本单元，因而具有动态特性。",
+    "source_doc": "Java/JUC",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/JUC:p1": 3
+    },
+    "expected_files": [
+      "JUC.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/JUC:p1"
+    ],
+    "expected_child_ids": [
+      "Java/JUC:p1:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0073",
+    "query": "线程和进程相比，哪个是更小的执行单位？",
+    "reference_facts": "线程是一个比进程更小的执行单位。",
+    "source_doc": "Java/JUC",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/JUC:p1": 3
+    },
+    "expected_files": [
+      "JUC.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/JUC:p1"
+    ],
+    "expected_child_ids": [
+      "Java/JUC:p1:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0074",
+    "query": "Java虚拟机在运行Java程序时，是怎样管理内存的？",
+    "reference_facts": "Java虚拟机在执行Java程序的过程中，会将把它管理的内存划分为若干不同的数据区域。内存一共分为：虚拟机栈，堆，元空间，程序计数器，本地方法栈五个部分",
+    "source_doc": "Java/JVM",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/JVM:p2": 3
+    },
+    "expected_files": [
+      "JVM.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/JVM:p2"
+    ],
+    "expected_child_ids": [
+      "Java/JVM:p2:c0",
+      "Java/JVM:p2:c3",
+      "Java/JVM:p2:c4",
+      "Java/JVM:p2:c5",
+      "Java/JVM:p2:c6"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0075",
+    "query": "Java运行时管理的内存区域具体分为哪几个部分？",
+    "reference_facts": "Java运行时管理的内存一共包含五个区域，分别是：程序计数器、虚拟机栈、本地方法栈、堆和元空间。",
+    "source_doc": "Java/JVM",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/JVM:p2": 3
+    },
+    "expected_files": [
+      "JVM.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/JVM:p2"
+    ],
+    "expected_child_ids": [
+      "Java/JVM:p2:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0076",
+    "query": "什么是程序计数器？",
+    "reference_facts": "程序计数器是当前线程正在执行的字节码行号的行号指示器",
+    "source_doc": "Java/JVM",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/JVM:p3": 3
+    },
+    "expected_files": [
+      "JVM.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/JVM:p3"
+    ],
+    "expected_child_ids": [
+      "Java/JVM:p3:c3"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0077",
+    "query": "Nacos的控制台UI默认监听在哪个端口？",
+    "reference_facts": "Nacos服务端默认监听8848端口，不过其管理界面则运行在8080端口。",
+    "source_doc": "Java/Nacos",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/Nacos:2": 3
+    },
+    "expected_files": [
+      "Nacos.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/Nacos:2"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0078",
+    "query": "在Spring Cloud项目中引入OpenFeign需要添加哪个依赖？",
+    "reference_facts": "要在项目中集成OpenFeign，就必须添加spring-cloud-starter-openfeign依赖。",
+    "source_doc": "Java/OpenFeign",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/OpenFeign:1": 3
+    },
+    "expected_files": [
+      "OpenFeign.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/OpenFeign:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0079",
+    "query": "触发熔断需要满足哪些条件？熔断时长内的请求会如何处理？",
+    "reference_facts": "单位统计时长内请求数目大于最小请求数，且慢调用比例超过阈值 -> 熔断(熔断时长内请求自动拒绝)",
+    "source_doc": "Java/熔断降级",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/熔断降级:0": 3,
+      "Java/熔断降级:1": 2
+    },
+    "expected_files": [
+      "熔断降级.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/熔断降级:0",
+      "Java/熔断降级:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0080",
+    "query": "CPU密集型、IO密集型和混合型任务分别应该如何设置线程池的corePoolSize？",
+    "reference_facts": "在设定线程池核心线程数时：若任务属于计算密集型，建议设为CPU核心数加一；若属于输入输出密集型，则设为CPU核心数乘以两倍的（一加平均等待时间与平均计算时间之比）；对于混合型任务，应对两类情况分别估算，再取一个折中值，并通过压力测试来调整优化。",
+    "source_doc": "Java/线程池参数设置决策",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/线程池参数设置决策:p0": 3
+    },
+    "expected_files": [
+      "线程池参数设置决策.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/线程池参数设置决策:p0"
+    ],
+    "expected_child_ids": [
+      "Java/线程池参数设置决策:p0:c0",
+      "Java/线程池参数设置决策:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0081",
+    "query": "Java线程池参数设置性能调优中，参数最终值的确定可以只靠公式计算吗",
+    "reference_facts": "经验值仅作为初始参考，最终取值则依据具体项目对延迟与吞吐量的要求而定。也就是说，参数的最终确定依靠压测来寻找拐点，而非通过公式推导。",
+    "source_doc": "Java/线程池参数设置决策",
+    "category": "Java",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/线程池参数设置决策:p0": 3
+    },
+    "expected_files": [
+      "线程池参数设置决策.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/线程池参数设置决策:p0"
+    ],
+    "expected_child_ids": [
+      "Java/线程池参数设置决策:p0:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0082",
+    "query": "RocketMQ是否需要独立部署？",
+    "reference_facts": "RocketMQ是一个独立部署的中间件，就像MySQL和Redis一样。",
+    "source_doc": "RocketMQ",
+    "category": "Middleware",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "RocketMQ:p3": 3
+    },
+    "expected_files": [
+      "RocketMQ.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "RocketMQ:p3"
+    ],
+    "expected_child_ids": [
+      "RocketMQ:p3:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0083",
+    "query": "操作系统中时间片的实际分配策略是什么？",
+    "reference_facts": "在实际分配时间片的过程中，运行耗时较短的线程会得到优先处理，以此保障分配的充分性与公正性。",
+    "source_doc": "Java/CPU的分配",
+    "category": "OS",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/CPU的分配:p0": 3
+    },
+    "expected_files": [
+      "CPU的分配.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/CPU的分配:p0"
+    ],
+    "expected_child_ids": [
+      "Java/CPU的分配:p0:c0",
+      "Java/CPU的分配:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0084",
+    "query": "线程的时间片用完后，操作系统是如何将CPU从当前线程切换到另一个线程的？",
+    "reference_facts": "时间片用完后，寄存器存储线程A的当前执行位置，线程A回到就绪队列的末尾，调度器选择另一个线程B",
+    "source_doc": "Java/CPU的分配",
+    "category": "OS",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/CPU的分配:p0": 3
+    },
+    "expected_files": [
+      "CPU的分配.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/CPU的分配:p0"
+    ],
+    "expected_child_ids": [
+      "Java/CPU的分配:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0085",
+    "query": "结构化编程为什么被称为面向过程编程？它的核心特征是什么？",
+    "reference_facts": "结构化编程也叫面向过程编程，以流程为中心，强调执行顺序与操作步骤，用计算机的思维方式去处理问题。",
+    "source_doc": "三大编程范式",
+    "category": "Programming",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "三大编程范式:p0": 3,
+      "三大编程范式:p1": 2
+    },
+    "expected_files": [
+      "三大编程范式.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "三大编程范式:p0",
+      "三大编程范式:p1"
+    ],
+    "expected_child_ids": [
+      "三大编程范式:p0:c5",
+      "三大编程范式:p1:c0",
+      "三大编程范式:p1:c1",
+      "三大编程范式:p1:c2"
+    ],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0086",
+    "query": "结构化编程的主要观点是什么？",
+    "reference_facts": "结构化编程的核心思想可概括为：采用自顶向下、逐层细化的方式推进开发；将系统划分为若干独立模块；每个模块内部的语句仅能包含顺序、选择与循环这三种基本流程结构。",
+    "source_doc": "三大编程范式",
+    "category": "Programming",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "三大编程范式:p1": 3
+    },
+    "expected_files": [
+      "三大编程范式.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "三大编程范式:p1"
+    ],
+    "expected_child_ids": [
+      "三大编程范式:p1:c0",
+      "三大编程范式:p1:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0087",
+    "query": "Python中以async def声明的函数是什么意味？它返回的是什么东西？",
+    "reference_facts": "以 async def 声明的函数被称作协程函数；它描述的是一项协程流程，调用后得到的是协程对象，并不会真正执行函数体内的代码。",
+    "source_doc": "Python/Coroutine",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/Coroutine:p0": 3
+    },
+    "expected_files": [
+      "Coroutine.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/Coroutine:p0"
+    ],
+    "expected_child_ids": [
+      "Python/Coroutine:p0:c0",
+      "Python/Coroutine:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0088",
+    "query": "协程的底层实现本质是什么？",
+    "reference_facts": "协程的实质是一个状态机，既能够挂起，也能够恢复，并且会在挂起点处把当时的执行上下文保留下来。",
+    "source_doc": "Python/Coroutine",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/Coroutine:p0": 3
+    },
+    "expected_files": [
+      "Coroutine.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/Coroutine:p0"
+    ],
+    "expected_child_ids": [
+      "Python/Coroutine:p0:c0",
+      "Python/Coroutine:p0:c1",
+      "Python/Coroutine:p0:c2",
+      "Python/Coroutine:p0:c3",
+      "Python/Coroutine:p0:c4"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0089",
+    "query": "asyncio能提高程序的运算速度吗？",
+    "reference_facts": "asyncio本质上还是一段单进程单线程的程序,并不能提升运算速度",
+    "source_doc": "Python/asyncio",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/asyncio:0": 3
+    },
+    "expected_files": [
+      "asyncio.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/asyncio:0"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0090",
+    "query": "为什么管道能使代码兼具可读性和可理解性？",
+    "reference_facts": "管道(pipeline)之所以能同时提升代码的可读性与易理解性，原因在于它们清晰地呈现出数据在每一步操作之间流转的过程。",
+    "source_doc": "Python/pipeline",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/pipeline:1": 3
+    },
+    "expected_files": [
+      "pipeline.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/pipeline:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0091",
+    "query": "在Python中，`yield from sub_gen` 的等价写法是什么？",
+    "reference_facts": "`yield from sub_gen` 的功能与 `for i in sub_gen: yield i` 完全一致。",
+    "source_doc": "Python/生成器",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/生成器:p0": 3
+    },
+    "expected_files": [
+      "生成器.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/生成器:p0"
+    ],
+    "expected_child_ids": [
+      "Python/生成器:p0:c0",
+      "Python/生成器:p0:c1",
+      "Python/生成器:p0:c2",
+      "Python/生成器:p0:c3",
+      "Python/生成器:p0:c4",
+      "Python/生成器:p0:c5"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0092",
+    "query": "在Python中，yield只可以向外部传值吗?",
+    "reference_facts": "yield 不仅可以往外传值，还可以从外部往里接值，使用send()方法。",
+    "source_doc": "Python/生成器",
+    "category": "Python",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "Python/生成器:p0": 3,
+      "Python/生成器:p1": 3
+    },
+    "expected_files": [
+      "生成器.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/生成器:p0",
+      "Python/生成器:p1"
+    ],
+    "expected_child_ids": [
+      "Python/生成器:p0:c0",
+      "Python/生成器:p0:c1",
+      "Python/生成器:p0:c2",
+      "Python/生成器:p0:c3",
+      "Python/生成器:p0:c4",
+      "Python/生成器:p0:c5",
+      "Python/生成器:p1:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0093",
+    "query": "类型注解有什么作用, 它是用来声明哪些内容的？",
+    "reference_facts": "类型注解是一种语法，用于声明变量、参数及返回值的预期数据类型。\n\n2. 声明变量、参数和返回值预期类型时所采用的语法，便是类型注解。\n\n3. 类型注解的作用，是以语法形式标明变量、参数以及返回值应当具备的数据类型。\n\n4. 所谓类型注解，是给预期类型做声明的句法规则，适用于变量、参数与返回值。",
+    "source_doc": "Python/类型注解与Pydantic BaseModel",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/类型注解与Pydantic BaseModel:p0": 3
+    },
+    "expected_files": [
+      "类型注解与Pydantic BaseModel.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/类型注解与Pydantic BaseModel:p0"
+    ],
+    "expected_child_ids": [
+      "Python/类型注解与Pydantic BaseModel:p0:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0094",
+    "query": "Python中Callable对象的主要特点是什么？",
+    "reference_facts": "所有函数对象均为Callable，Callable这一类型的特征在于其后方可附带小括号，从而对该对象进行调用。",
+    "source_doc": "Python/装饰器",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/装饰器:p0": 3
+    },
+    "expected_files": [
+      "装饰器.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/装饰器:p0"
+    ],
+    "expected_child_ids": [
+      "Python/装饰器:p0:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0095",
+    "query": "在Python中定义函数时实际发生了什么？",
+    "reference_facts": "在Python中，函数本身也是对象。当我们定义一个函数时，实际上只是创建了一个变量，而这个变量存放的就是该函数对象。",
+    "source_doc": "Python/装饰器",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/装饰器:p0": 3
+    },
+    "expected_files": [
+      "装饰器.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/装饰器:p0"
+    ],
+    "expected_child_ids": [
+      "Python/装饰器:p0:c0",
+      "Python/装饰器:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0096",
+    "query": "Python中一个函数要构成闭包，必须同时满足哪三个条件？",
+    "reference_facts": "闭包的形成条件: 1.存在嵌套函数 2.内层函数引用了外层函数的变量(非全局变量) 3.外层函数将内层函数作为返回值返回, 导致内层函数的生命周期超出外层函数的调用周期",
+    "source_doc": "Python/闭包",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/闭包:p0": 3
+    },
+    "expected_files": [
+      "闭包.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/闭包:p0"
+    ],
+    "expected_child_ids": [
+      "Python/闭包:p0:c0",
+      "Python/闭包:p0:c1"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0097",
+    "query": "在Python中，闭包由哪两部分组成？常见的形成方式有哪些？",
+    "reference_facts": "闭包 = 函数 + 它捕获的外层变量绑定, '作为返回值'或回调注册是形成闭包的常见方式",
+    "source_doc": "Python/闭包",
+    "category": "Python",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Python/闭包:p0": 3
+    },
+    "expected_files": [
+      "闭包.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Python/闭包:p0"
+    ],
+    "expected_child_ids": [
+      "Python/闭包:p0:c0"
+    ],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0098",
+    "query": "HTTP状态码2XX代表什么？常见的200、201、204分别表示什么含义？",
+    "reference_facts": "HTTP 状态码中的 2XX 类别均代表请求已成功处理。具体来说，200 意味着操作成功，201 表示新资源创建成功，而 204 则表明请求成功执行，但响应中不包含任何实体内容。",
+    "source_doc": "Java/HTTP响应的构成",
+    "category": "Web",
+    "difficulty": "single_chunk",
+    "relevance": {
+      "Java/HTTP响应的构成:1": 3
+    },
+    "expected_files": [
+      "HTTP响应的构成.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/HTTP响应的构成:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0099",
+    "query": "HTTP请求行（Request Line）由哪几部分组成？",
+    "reference_facts": "Request Line由Method + URI + HTTP协议版本组成",
+    "source_doc": "Java/HTTP请求的构成",
+    "category": "Web",
+    "difficulty": "multi_chunk",
+    "relevance": {
+      "Java/HTTP请求的构成:0": 3,
+      "Java/HTTP请求的构成:1": 2
+    },
+    "expected_files": [
+      "HTTP请求的构成.md"
+    ],
+    "expected_pages": [],
+    "expected_parent_ids": [
+      "Java/HTTP请求的构成:0",
+      "Java/HTTP请求的构成:1"
+    ],
+    "expected_child_ids": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0100",
+    "query": "在RAG系统中，如果最终答案错误，应该如何定位问题环节？",
+    "reference_facts": "可将RAG链路拆分为10阶段，分阶段测评，让实验周期从天级压缩为分钟级，通过保存中间产物来定位瓶颈。",
+    "source_doc": "Agent/10阶段测评",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/10阶段测评:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/10阶段测评:p0:c0",
+      "Agent/10阶段测评:p0:c1",
+      "Agent/10阶段测评:p0:c2",
+      "Agent/10阶段测评:p0:c3"
+    ],
+    "relevance": {
+      "Agent/10阶段测评:p0": 3
+    },
+    "expected_files": [
+      "Agent/10阶段测评"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0101",
+    "query": "在A2A协议中，一个Task的生命周期如何？",
+    "reference_facts": "Task生命周期：submitted → processing → completed/failed/canceled",
+    "source_doc": "Agent/A2A四个核心原语解释",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/A2A四个核心原语解释:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/A2A四个核心原语解释:p0:c0"
+    ],
+    "relevance": {
+      "Agent/A2A四个核心原语解释:p0": 3
+    },
+    "expected_files": [
+      "Agent/A2A四个核心原语解释"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0102",
+    "query": "一次 Agent Loop 包含哪些步骤？",
+    "reference_facts": "一次循环包括 Thought → Action → Observation，其中 Thought 是 LLM 推理，Action 是执行工具调用，Observation 是工具结果反馈给 LLM。",
+    "source_doc": "Agent/Agent Loop概念",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent Loop概念:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Agent Loop概念:0": 3
+    },
+    "expected_files": [
+      "Agent/Agent Loop概念"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0103",
+    "query": "请描述Agent循环的完整流程，并指出其中涉及LLM调用的步骤，同时解释单次LLM调用的具体过程。",
+    "reference_facts": "Agent循环包括Thought、Action、Observation三个步骤，其中只有第一步Thought涉及LLM调用。单次LLM调用是指发一次请求，模型做一轮完整的自回归生成，返回一段响应文本，作为下一次调用的上下文。",
+    "source_doc": "Agent/Agent Loop概念",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent Loop概念:0",
+      "Agent/Agent Loop概念:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Agent Loop概念:0": 3,
+      "Agent/Agent Loop概念:1": 3
+    },
+    "expected_files": [
+      "Agent/Agent Loop概念"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0104",
+    "query": "AgentScope的架构设计采用了哪些核心模式？",
+    "reference_facts": "AgentScope选择了组合式架构和消息驱动模式，并采用了清晰的分层模块化设计。",
+    "source_doc": "Agent/AgentScope中的工程思想",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/AgentScope中的工程思想:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/AgentScope中的工程思想:0": 3
+    },
+    "expected_files": [
+      "Agent/AgentScope中的工程思想"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0105",
+    "query": "AgentScope的架构中，基础组件层包含哪些核心构建块，它们如何支持消息驱动模式？",
+    "reference_facts": "AgentScope选择了组合式架构和消息驱动模式。基础组件层为整个框架提供了核心的构建块，包括Message组件定义了统一的消息格式，Memory组件提供短期和长期记忆管理，Model API层抽象了对不同大语言模型的调用，Tool组件封装了智能体与外部世界交互的能力。这些组件共同支持了消息驱动模式，其中Message组件是消息传递的基础。",
+    "source_doc": "Agent/AgentScope中的工程思想",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/AgentScope中的工程思想:0",
+      "Agent/AgentScope中的工程思想:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/AgentScope中的工程思想:0": 2,
+      "Agent/AgentScope中的工程思想:1": 3
+    },
+    "expected_files": [
+      "Agent/AgentScope中的工程思想"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0106",
+    "query": "在agent模式中，如果LLM的stop_reason是'tool_use'，系统接下来会执行什么操作？",
+    "reference_facts": "当stop_reason为'tool_use'时，系统会执行工具，将结果追加到messages，然后循环回messages继续处理。",
+    "source_doc": "Agent/Agent主循环",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent主循环:p0",
+      "Agent/Agent主循环:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Agent主循环:p0:c0",
+      "Agent/Agent主循环:p1:c0"
+    ],
+    "relevance": {
+      "Agent/Agent主循环:p0": 3,
+      "Agent/Agent主循环:p1": 2
+    },
+    "expected_files": [
+      "Agent/Agent主循环"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0107",
+    "query": "在Agent循环中，当LLM返回tool_calls时，代码是如何执行工具并将结果回填到对话历史的？请结合循环流程和代码实现说明。",
+    "reference_facts": "Agent循环中，LLM返回响应后，若stop_reason为'tool_use'，则执行工具并追加结果，然后循环回传。当finish_reason为'tool_calls'时，遍历tool_calls，通过TOOL_DISPATCH映射执行对应函数，将输出以'role':'tool'形式追加到messages，并携带tool_call_id，然后继续循环。",
+    "source_doc": "Agent/Agent主循环",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent主循环:p0",
+      "Agent/Agent主循环:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Agent主循环:p0:c0",
+      "Agent/Agent主循环:p1:c0"
+    ],
+    "relevance": {
+      "Agent/Agent主循环:p0": 2,
+      "Agent/Agent主循环:p1": 2
+    },
+    "expected_files": [
+      "Agent/Agent主循环"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0108",
+    "query": "在什么情况下不应该使用Agent Loop？",
+    "reference_facts": "当任务一次就能搞定时，不要塞进Loop。",
+    "source_doc": "Agent/Agent循环设计",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent循环设计:0",
+      "Agent/Agent循环设计:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Agent循环设计:0": 3,
+      "Agent/Agent循环设计:1": 3
+    },
+    "expected_files": [
+      "Agent/Agent循环设计"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0109",
+    "query": "Agent Loop的本质是什么，其代价有哪些，以及什么情况下应该使用Loop？",
+    "reference_facts": "Agent Loop的本质是用多次LLM调用和工具调用，使Agent迭代逼近目标。其代价包括延迟累积、成本翻倍、错误传播和用户感知差。应该使用Loop的情况是需要外部信息（需要工具调用）且步骤实现未知，可能需要根据中间结果调整。",
+    "source_doc": "Agent/Agent循环设计",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent循环设计:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Agent循环设计:0": 3
+    },
+    "expected_files": [
+      "Agent/Agent循环设计"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0110",
+    "query": "在Agent系统设计中，为了确保安全，文档提到了哪4层防御机制？",
+    "reference_facts": "Input/Pre-LLM/Post-LLM/Output",
+    "source_doc": "Agent/Agent架构设计",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent架构设计:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Agent架构设计:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Agent架构设计:p0": 3
+    },
+    "expected_files": [
+      "Agent/Agent架构设计"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0111",
+    "query": "在Agent系统中，如何结合离线评估集和trace_id来确保模型质量并快速定位问题？",
+    "reference_facts": "【质量】部分提到：>= 500case offline评估集 + 回归集; CI/CD集成 eval, 不达标阻断merge; 质量飞轮: 失败case自动入候选库。【可观测性】部分提到：所有请求有trace_id, 每次LLM/tool/subagent是独立的span；成本按照模型/工具/用户/功能作多维度区分和分解；对单trace高成本, 长延迟有自动告警。",
+    "source_doc": "Agent/Agent架构设计",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Agent架构设计:p0",
+      "Agent/Agent架构设计:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Agent架构设计:p0:c3",
+      "Agent/Agent架构设计:p0:c4",
+      "Agent/Agent架构设计:p1:c1"
+    ],
+    "relevance": {
+      "Agent/Agent架构设计:p0": 2,
+      "Agent/Agent架构设计:p1": 1
+    },
+    "expected_files": [
+      "Agent/Agent架构设计"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0112",
+    "query": "在Rerank优化场景中，增大batch_size对推理时间和显存占用分别有什么影响？",
+    "reference_facts": "越大的batch利用GPU并行能力越充分，推理时间短但显存占用就高。",
+    "source_doc": "Agent/batch_size",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/batch_size:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/batch_size:0": 3
+    },
+    "expected_files": [
+      "Agent/batch_size"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0113",
+    "query": "在RAG检索中，为什么通常先用Bi-Encoder初筛再用Cross-Encoder精排，而不是直接用Cross-Encoder？",
+    "reference_facts": "Bi-Encoder牺牲语义细粒度交互信息来换取速度，而Cross-Encoder保留token级语义交互但牺牲速度，因此RAG管线用Embedding模型初筛、Reranker细筛。",
+    "source_doc": "Agent/Bi-Encoder和Cross-Encoder",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Bi-Encoder和Cross-Encoder:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Bi-Encoder和Cross-Encoder:p0:c0",
+      "Agent/Bi-Encoder和Cross-Encoder:p0:c1",
+      "Agent/Bi-Encoder和Cross-Encoder:p0:c2",
+      "Agent/Bi-Encoder和Cross-Encoder:p0:c3"
+    ],
+    "relevance": {
+      "Agent/Bi-Encoder和Cross-Encoder:p0": 3
+    },
+    "expected_files": [
+      "Agent/Bi-Encoder和Cross-Encoder"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0114",
+    "query": "在什么情况下应该启用BM25算法进行检索？",
+    "reference_facts": "如果文档含大量型号、编号、API名、人名、缩写(即精确术语, 特定名词匹配)，这时候才值得开BM25。",
+    "source_doc": "Agent/BM25算法",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/BM25算法:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/BM25算法:0": 3
+    },
+    "expected_files": [
+      "Agent/BM25算法"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0115",
+    "query": "在什么情况下应该使用BM25算法，并且如何调整其核心参数k1和b来优化短文本搜索？",
+    "reference_facts": "BM25算法适用于文档含大量型号、编号、API名、人名、缩写等场景，此时值得开启BM25。其核心参数k1控制词频饱和度，b控制文档长度归一化。对于短文本（如标题搜索），词频通常很低，k1的影响较小，因此调整k1可能效果不明显，而b参数对短文本的归一化作用更关键。",
+    "source_doc": "Agent/BM25算法",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/BM25算法:0",
+      "Agent/BM25算法:1",
+      "Agent/BM25算法:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/BM25算法:0": 3,
+      "Agent/BM25算法:1": 3,
+      "Agent/BM25算法:2": 2
+    },
+    "expected_files": [
+      "Agent/BM25算法"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0116",
+    "query": "在RAG的chunk优化中，如何根据质量诊断结果选择不同的切分策略？请结合LLM语义切分、过长片段拆分和过短片段合并的触发条件来说明。",
+    "reference_facts": "chunk优化包括四个模块：质检、过长片段二次切分、过短片段合并、LLM语义切分。质检检测过长/过短chunk数量和占比，过长片段用RecursiveCharacterTextSplitter二次切分，过短片段合并到相邻chunk（优先向后合并，直到达到合理长度）。LLM语义切分在标题密度不达标（heading_density_ok = False）或标题不连续（heading_continuous = False）时触发，将整篇文档喂给LLM，在语义主题转换处插入切分标记。这些策略共同确保每个chunk保持相对完整的语义单元，避免chunk太碎或太长。",
+    "source_doc": "Agent/chunk切分后优化",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/chunk切分后优化:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/chunk切分后优化:p0:c1",
+      "Agent/chunk切分后优化:p0:c2",
+      "Agent/chunk切分后优化:p0:c5"
+    ],
+    "relevance": {
+      "Agent/chunk切分后优化:p0": 3
+    },
+    "expected_files": [
+      "Agent/chunk切分后优化"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0117",
+    "query": "Context Engineering与Prompt Engineering的主要区别是什么？",
+    "reference_facts": "Context Engineering不仅包含提示指令本身, 还包含一切其他会进入上下文窗口的信息，而Prompt Engineering专指编写LLM的提示指令。",
+    "source_doc": "Agent/Context Engineering",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Context Engineering:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Context Engineering:p0:c1",
+      "Agent/Context Engineering:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Context Engineering:p0": 3
+    },
+    "expected_files": [
+      "Agent/Context Engineering"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0118",
+    "query": "在长时程任务中，上下文工程如何维持智能体和任务的连贯性？请结合上下文窗口的有限性说明。",
+    "reference_facts": "上下文必须被视作一种有限资源，且具有边际收益递减。压缩整合是在对话接近上下文上限时，对其进行高保真总结，并用该摘要重启一个新的上下文窗口，以维持长程连贯性。子代理架构中，主代理负责高层规划与综合，多个专长子代理在干净的上下文窗口中各自深挖，最后仅回传凝练摘要。这两种手段都是应对上下文窗口限制的工程方法。",
+    "source_doc": "Agent/Context Engineering",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Context Engineering:p0",
+      "Agent/Context Engineering:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Context Engineering:p0:c2",
+      "Agent/Context Engineering:p0:c3",
+      "Agent/Context Engineering:p1:c0",
+      "Agent/Context Engineering:p1:c1",
+      "Agent/Context Engineering:p1:c2",
+      "Agent/Context Engineering:p1:c3"
+    ],
+    "relevance": {
+      "Agent/Context Engineering:p0": 3,
+      "Agent/Context Engineering:p1": 3
+    },
+    "expected_files": [
+      "Agent/Context Engineering"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0119",
+    "query": "为什么CoT（思维链）是有效的？",
+    "reference_facts": "CoT首先让每一步推理都暴露出来，无论它是正确的还是错误的，都可以方便模型或人发现和纠正。",
+    "source_doc": "Agent/CoT",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/CoT:0",
+      "Agent/CoT:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/CoT:0": 3,
+      "Agent/CoT:1": 1
+    },
+    "expected_files": [
+      "Agent/CoT"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0120",
+    "query": "CoT（思维链）为什么能提升LLM的推理能力，同时它又存在哪些局限性？",
+    "reference_facts": "CoT本质上是提示技术，是Agents Planning模块的实现手段。它通过让每一步推理暴露出来，方便模型或人发现和纠正错误；同时，复杂的中间状态可以显式输出作为下一次生成的上文，减轻模型推理负担；此外，CoT激活了模型在预训练时从大量推理型文本中学到的推理模式。然而，CoT也存在局限：它改善了推理过程，但无法保证推理的正确性，存在幻觉问题，因为单纯的CoT不查外部信息；如果推理链出了问题，后续生成就会错误累计传导。",
+    "source_doc": "Agent/CoT",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/CoT:0",
+      "Agent/CoT:1",
+      "Agent/CoT:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/CoT:0": 2,
+      "Agent/CoT:1": 3,
+      "Agent/CoT:2": 2
+    },
+    "expected_files": [
+      "Agent/CoT"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0121",
+    "query": "在RAG系统中，开源Embedding模型相比闭源模型有哪些优势？为什么选择开源Embedding模型",
+    "reference_facts": "开源Embedding模型权重公开下载，可在自己的GPU/CPU上本地推理，且数据不离开网络，可微调，在特定领域数据上继续训练可能反超通用闭源模型；闭源模型只能通过API调用，无法控制模型版本、推理参数和数据流向。",
+    "source_doc": "Agent/Embedding",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Embedding:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Embedding:p0:c2",
+      "Agent/Embedding:p0:c3"
+    ],
+    "relevance": {
+      "Agent/Embedding:p0": 3
+    },
+    "expected_files": [
+      "Agent/Embedding"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0122",
+    "query": "在RAG系统中，使用BGE模型时，为什么必须保证离线索引和在线查询使用同一个Embedding模型，并且查询时需要添加特定的指令前缀？",
+    "reference_facts": "离线索引和在线查询召回必须使用同一个Embedding模型，如果模型不一致，查询向量和文档向量处于不同的语义空间，检索结果将无意义。另外，有些模型（如BGE）在生成向量时，需要加一个特定的前缀字符串，比如查询时需加上'为这个句子生成表示以用于检索相关文章'，如果忘记加这个前缀，检索效果会大打折扣。",
+    "source_doc": "Agent/Embedding",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Embedding:p0",
+      "Agent/Embedding:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Embedding:p0:c1",
+      "Agent/Embedding:p0:c2",
+      "Agent/Embedding:p1:c0"
+    ],
+    "relevance": {
+      "Agent/Embedding:p0": 2,
+      "Agent/Embedding:p1": 2
+    },
+    "expected_files": [
+      "Agent/Embedding"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0123",
+    "query": "在Function Calling中，如果模型决定调用函数，它会返回什么字段来表示这个决策？",
+    "reference_facts": "如果模型确定应该调用一个函数，它将返回一个tool_calls字段，并且基于parameters定义生成调用的参数。",
+    "source_doc": "Agent/Function Calling",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Function Calling:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Function Calling:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Function Calling:p0": 3
+    },
+    "expected_files": [
+      "Agent/Function Calling"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0124",
+    "query": "在Function Calling中，如果模型在一次响应中决定调用多个工具，那么总共需要多少次LLM调用？",
+    "reference_facts": "Function Calling的生命周期中，一次函数调用夹在两次LLM调用之间：第一次发送system+user和tools，LLM返回含tool_calls的assistant消息；第二次发送system+user+assistant+tool结果，LLM返回最终回答。如果LLM有k次函数调用的意图，就对应k+1次LLM调用。因此，即使一次响应中模型决定调用多个工具（即tool_calls包含多个条目），这些工具调用仍然在第一次LLM调用中一并返回，然后所有工具结果在第二次LLM调用中一起作为上下文，所以总共仍需要2次LLM调用（k=多个工具时，k+1次，但这里k是工具调用次数，若一次响应有多个工具，则k>1，但生命周期中第二次调用会包含所有工具结果，所以总调用次数为k+1，但通常一次响应中多个工具调用会合并为一次第二次调用，所以实际是2次LLM调用，但严格按公式是k+1次）。",
+    "source_doc": "Agent/Function Calling",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Function Calling:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Function Calling:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Function Calling:p0": 3
+    },
+    "expected_files": [
+      "Agent/Function Calling"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0125",
+    "query": "Git提交的粒度应该是什么？",
+    "reference_facts": "Git提交的粒度是完成单次最小逻辑单元。",
+    "source_doc": "Agent/Git提交的一点细节",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Git提交的一点细节:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Git提交的一点细节:0": 3
+    },
+    "expected_files": [
+      "Agent/Git提交的一点细节"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0126",
+    "query": "Harness 在控制 Agent 权限时采取了哪些具体措施？",
+    "reference_facts": "沙箱化文件访问，对破坏性操作要求审批，在agent和外部系统之间实施建立信任边界。",
+    "source_doc": "Agent/Harness工程引入",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Harness工程引入:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Harness工程引入:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Harness工程引入:p0": 3
+    },
+    "expected_files": [
+      "Agent/Harness工程引入"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0127",
+    "query": "在什么情况下HyDE会失效，以及如何通过提示词设计来缓解这种失效？",
+    "reference_facts": "当大模型对目标领域完全不知道，连相关术语都不知道时，HyDE会失效；可以在提示词中加入目标领域的用词和句式示例来缓解。",
+    "source_doc": "Agent/HyDE生成的假设性文档是错的怎么办",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/HyDE生成的假设性文档是错的怎么办:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/HyDE生成的假设性文档是错的怎么办:0": 3
+    },
+    "expected_files": [
+      "Agent/HyDE生成的假设性文档是错的怎么办"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0128",
+    "query": "在Langgraph状态机模型中，全局状态（State）是什么？",
+    "reference_facts": "全局状态通常被定义为一个TypedDict类体，其中可以包含对话历史、中间结果、迭代次数等信息。",
+    "source_doc": "Agent/LangGraph框架入门",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/LangGraph框架入门:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/LangGraph框架入门:p0:c0",
+      "Agent/LangGraph框架入门:p0:c1"
+    ],
+    "relevance": {
+      "Agent/LangGraph框架入门:p0": 3
+    },
+    "expected_files": [
+      "Agent/LangGraph框架入门"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0129",
+    "query": "将Agent执行流程建模为状态机时，全局状态、节点和边分别是什么？它们如何共同定义工作流的执行路径？请结合文档中的示例说明。",
+    "reference_facts": "全局状态是一个共享的状态对象，通常定义为TypedDict，包含对话历史、当前任务、最终答案等信息，所有节点都能读取和更新它。节点是接收当前状态并返回处理后状态的函数，例如planner_node和executor_node。边定义了节点之间的跳转逻辑，分为常规边和条件边，条件边通过函数根据状态动态决定下一步跳转。这些要素共同构成工作流，通过定义状态、创建节点、构建图、运行应用来执行。",
+    "source_doc": "Agent/LangGraph框架入门",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/LangGraph框架入门:p0",
+      "Agent/LangGraph框架入门:p1",
+      "Agent/LangGraph框架入门:p2"
+    ],
+    "expected_child_ids": [
+      "Agent/LangGraph框架入门:p0:c0",
+      "Agent/LangGraph框架入门:p0:c1",
+      "Agent/LangGraph框架入门:p0:c3",
+      "Agent/LangGraph框架入门:p1:c1",
+      "Agent/LangGraph框架入门:p1:c2",
+      "Agent/LangGraph框架入门:p1:c4",
+      "Agent/LangGraph框架入门:p2:c0"
+    ],
+    "relevance": {
+      "Agent/LangGraph框架入门:p0": 2,
+      "Agent/LangGraph框架入门:p1": 2,
+      "Agent/LangGraph框架入门:p2": 2
+    },
+    "expected_files": [
+      "Agent/LangGraph框架入门"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0130",
+    "query": "LCEL与传统构建链的方法相比有哪些优势？",
+    "reference_facts": "LCEL采用声明式语法，代码简洁，逻辑流清晰，易于组合和定制，而传统方法代码冗长、逻辑流难以追踪。",
+    "source_doc": "Agent/LCEL",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/LCEL:0",
+      "Agent/LCEL:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/LCEL:0": 2,
+      "Agent/LCEL:1": 2
+    },
+    "expected_files": [
+      "Agent/LCEL"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0131",
+    "query": "与传统命令式构建链相比，LCEL的声明式组合方法如何解决代码冗长和逻辑流难以追踪的问题？",
+    "reference_facts": "传统构建链的流程是命令式或面向对象式的，需要实例化类、配置参数并显式调用执行方法，这会导致代码冗长、逻辑流难以追踪，且深度定制化困难。LCEL引入声明式组合方法，开发者只需描述数据如何在组件网络中流动，无需详细描述执行步骤，框架自动决定高效执行策略，并提供统一接口.invoke()执行。",
+    "source_doc": "Agent/LCEL",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/LCEL:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/LCEL:1": 3
+    },
+    "expected_files": [
+      "Agent/LCEL"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0132",
+    "query": "在Transformer架构中，Self-Attention和Mask Self-Attention的主要区别是什么？",
+    "reference_facts": "Self-Attention允许每个位置关注序列中的所有位置，而Mask Self-Attention在解码器中通过掩码机制使每个位置只能关注其之前的位置，从而保证自回归生成。",
+    "source_doc": "Agent/LLM基础",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/LLM基础:p5"
+    ],
+    "expected_child_ids": [
+      "Agent/LLM基础:p5:c0",
+      "Agent/LLM基础:p5:c2",
+      "Agent/LLM基础:p5:c3",
+      "Agent/LLM基础:p5:c4"
+    ],
+    "relevance": {
+      "Agent/LLM基础:p5": 3
+    },
+    "expected_files": [
+      "Agent/LLM基础"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0133",
+    "query": "在LLM的Context Window中，中间位置的信息会出现什么问题？",
+    "reference_facts": "实际测试中，中间位置的信息常常被'忘记'，因此重要的信息要放在prompt的开头或结尾。",
+    "source_doc": "Agent/LLM底座设计",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/LLM底座设计:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/LLM底座设计:0": 3
+    },
+    "expected_files": [
+      "Agent/LLM底座设计"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0134",
+    "query": "在长上下文场景下，如果模型需要输出结构化结果（如JSON），但中间位置的上下文信息容易被遗忘，那么在实际应用中应该如何设计提示词和验证流程来保证输出的可靠性？",
+    "reference_facts": "Context Window 指出一次会话窗口能塞多少token，且实际测试中中间位置的信息常常被忘记，因此重要信息应放在prompt的开头或结尾。Structured Output 部分提到，即使使用JSON mode，也要做schema校验和失败重试（如使用Pydantic, jsonschema）。结合两者，在长上下文中，应将关键指令和结构化输出要求放在prompt开头或结尾，并配合schema校验和重试机制，以应对中间信息遗忘导致的输出错误。",
+    "source_doc": "Agent/LLM底座设计",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/LLM底座设计:0",
+      "Agent/LLM底座设计:1",
+      "Agent/LLM底座设计:5"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/LLM底座设计:0": 1,
+      "Agent/LLM底座设计:1": 2,
+      "Agent/LLM底座设计:5": 1
+    },
+    "expected_files": [
+      "Agent/LLM底座设计"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0135",
+    "query": "docker run -p 8080:80 这个命令中，8080和80分别代表什么？",
+    "reference_facts": "docker run -p x:y 中，x是宿主机的端口，y是容器内的端口，意为把宿主机的x端口转发到容器内的y端口进行处理。",
+    "source_doc": "Agent/Main/Backend/Docker基础",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Backend/Docker基础:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Backend/Docker基础:p0:c0",
+      "Agent/Main/Backend/Docker基础:p0:c2",
+      "Agent/Main/Backend/Docker基础:p0:c3",
+      "Agent/Main/Backend/Docker基础:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Main/Backend/Docker基础:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Backend/Docker基础"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0136",
+    "query": "在使用Docker时，如何通过命令将容器内的端口映射到宿主机，同时确保容器删除后数据不会丢失？",
+    "reference_facts": "使用`docker run -p 宿主机端口:容器内端口`命令进行端口映射，将宿主机端口转发到容器内端口，从而访问容器内运行的程序。使用`docker run -v 宿主机目录:容器内目录`或`docker run -v 卷名:容器内目录`进行绑定挂载或命名卷挂载，实现数据持久化，因为删除容器时容器内数据会被删除，而挂载卷可以保留数据。",
+    "source_doc": "Agent/Main/Backend/Docker基础",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Backend/Docker基础:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Backend/Docker基础:p0:c3"
+    ],
+    "relevance": {
+      "Agent/Main/Backend/Docker基础:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Backend/Docker基础"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0137",
+    "query": "一篇ADR（架构决策记录）通常包含哪三个核心部分？",
+    "reference_facts": "一篇ADR的骨架是Context / Decision / Consequences（背景 / 决策 / 后果）。",
+    "source_doc": "Agent/Main/Branch/Harness/仓库即规范",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/仓库即规范:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/仓库即规范:p0:c1",
+      "Agent/Main/Branch/Harness/仓库即规范:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/仓库即规范:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/仓库即规范"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0138",
+    "query": "在“仓库即规范”和“方法论”中，都提到了 AGENTS.md 文件。请结合这两部分内容，说明 AGENTS.md 在仓库中承担什么角色，以及它应该包含哪些具体信息？",
+    "reference_facts": "在“仓库即规范”中，AGENTS.md 属于指令子系统，用于存放项目概览、目的、硬性约定和验证命令。在“方法论”中，AGENTS.md 被强调为必须包含的标准入口文件，需要说清楚“这是什么项目”、“怎么跑”、“怎么验证”。综合来看，AGENTS.md 是仓库的入口文件，负责向开发者（或 AI 代理）提供项目的基本信息、运行方式和验证方法，同时承载硬性约定。",
+    "source_doc": "Agent/Main/Branch/Harness/仓库即规范",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/仓库即规范:p0",
+      "Agent/Main/Branch/Harness/仓库即规范:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/仓库即规范:p0:c0",
+      "Agent/Main/Branch/Harness/仓库即规范:p0:c1",
+      "Agent/Main/Branch/Harness/仓库即规范:p0:c5",
+      "Agent/Main/Branch/Harness/仓库即规范:p1:c0",
+      "Agent/Main/Branch/Harness/仓库即规范:p1:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/仓库即规范:p0": 2,
+      "Agent/Main/Branch/Harness/仓库即规范:p1": 2
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/仓库即规范"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0139",
+    "query": "在harness中，功能清单主要服务于什么组件？",
+    "reference_facts": "功能清单服务于调度器、验证器、交接报告器和进度追踪器四个组件。",
+    "source_doc": "Agent/Main/Branch/Harness/任务完成标准",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/任务完成标准:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Branch/Harness/任务完成标准:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/任务完成标准"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0140",
+    "query": "功能清单如何同时支持调度器和验证器，一行功能项需要包含哪些东西？",
+    "reference_facts": "功能清单服务于调度器、验证器、交接报告器和进度追踪器。调度器读取状态并选择下一个not_started功能，验证器验证执行命令并判断是否允许状态转移。一行功能项需要包含三个原子：行为描述、验证命令和当前状态（not_started/active/blocked/passing）。只有三项都通过，该功能点才算通过。",
+    "source_doc": "Agent/Main/Branch/Harness/任务完成标准",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/任务完成标准:0",
+      "Agent/Main/Branch/Harness/任务完成标准:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Branch/Harness/任务完成标准:0": 2,
+      "Agent/Main/Branch/Harness/任务完成标准:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/任务完成标准"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0141",
+    "query": "为什么Agent需要引入状态持久化文件？",
+    "reference_facts": "因为上下文窗口有限，跨会话信息丢失，需要进度文件、决策日志、git检查点来持久化状态。",
+    "source_doc": "Agent/Main/Branch/Harness/任务状态持久化",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/任务状态持久化:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/任务状态持久化:p0:c0",
+      "Agent/Main/Branch/Harness/任务状态持久化:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/任务状态持久化:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/任务状态持久化"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0142",
+    "query": "在跨会话的长期开发任务中，如何结合PROGRESS.md和DECISION.md来减少上下文丢失，并确保每次会话开始时能快速恢复工作状态？",
+    "reference_facts": "PROGRESS.md 用于记录当前状态、已完成事项、进行中任务、已知问题和下一步行动，帮助在会话边界恢复上下文。DECISION.md 记录重要决策及其原因，避免重复讨论。init.sh 中规定了每次会话开始时的流程：读取PROGRESS.md了解当前状态，读取DECISION.md了解重要决策，运行make check确认仓库一致性，然后从PROGRESS.md的下一步继续工作。这些文件共同构成了状态持久化机制，减少因上下文窗口限制导致的信息丢失。",
+    "source_doc": "Agent/Main/Branch/Harness/任务状态持久化",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/任务状态持久化:p0",
+      "Agent/Main/Branch/Harness/任务状态持久化:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/任务状态持久化:p0:c3",
+      "Agent/Main/Branch/Harness/任务状态持久化:p0:c4",
+      "Agent/Main/Branch/Harness/任务状态持久化:p1:c0"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/任务状态持久化:p0": 2,
+      "Agent/Main/Branch/Harness/任务状态持久化:p1": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/任务状态持久化"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0143",
+    "query": "按照Harness的规范, 项目Agent会话退出前必须满足的五个条件是什么？",
+    "reference_facts": "构建通过, 测试通过, 进度已记录, 临时工件已清理, 启动路径可用",
+    "source_doc": "Agent/Main/Branch/Harness/会话交接",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/会话交接:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/会话交接:p0:c0",
+      "Agent/Main/Branch/Harness/会话交接:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/会话交接:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/会话交接"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0144",
+    "query": "在构建 harness 时，为什么需要同时设计运行层和过程层可观测性？冲刺合同如何帮助实现过程层可观测性？",
+    "reference_facts": "运行层可观测性回答'系统做了什么'，包括日志、追踪、进程事件、健康检查；过程层可观测性回答'为什么这个变更应该被接受'，包括计划、评分标准、验收条件。两者同时设计、相互增强，运行时信号解释行为，过程工件解释意图。冲刺合同是在每个任务开始前，生成者(Planner)和评估者(Evaluator)协商一份合同，明确要做什么、怎么做算通过，这为过程层提供了明确的验收条件和评分标准，使得评估可复现，避免依赖未成文假设。",
+    "source_doc": "Agent/Main/Branch/Harness/可观测性",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/可观测性:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/可观测性:p0:c0",
+      "Agent/Main/Branch/Harness/可观测性:p0:c1",
+      "Agent/Main/Branch/Harness/可观测性:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/可观测性:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/可观测性"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0145",
+    "query": "Agent Harness 每次初始化工作的产出是什么？",
+    "reference_facts": "初始化工作的产出包括可运行的环境、可验证的测试框架和启动就绪清单文档。",
+    "source_doc": "Agent/Main/Branch/Harness/每次工作前先初始化",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/每次工作前先初始化:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/每次工作前先初始化:p0:c0",
+      "Agent/Main/Branch/Harness/每次工作前先初始化:p0:c1",
+      "Agent/Main/Branch/Harness/每次工作前先初始化:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/每次工作前先初始化:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/每次工作前先初始化"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0146",
+    "query": "观测缺口和语义缺口的区别是什么？",
+    "reference_facts": "观测缺口是信号采不全导致判定无从谈起，语义缺口是信号采到了但判定标准错位。",
+    "source_doc": "Agent/Main/Branch/Harness/验证缺口测量",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/Harness/验证缺口测量:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/Harness/验证缺口测量:p0:c0"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/Harness/验证缺口测量:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/Harness/验证缺口测量"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0147",
+    "query": "在MCP架构中，当服务器需要用户提供额外信息时，客户端如何协助交互完成？",
+    "reference_facts": "Client由host程序实例化，用于与特定的MCP服务器通信，主机是用户交互的程序，而Client是实现与服务器连接的组件。Elicitation（征询）机制帮助Server以结构化方式按需收集必要信息，Server可以暂停操作向用户请求信息输入，用户通过适当UI提供信息，Client会通过清晰的上下文显示引发请求，说明是哪台Server在请求、为何需要这些信息以及如何使用，且征询从不要求密码或API密钥。",
+    "source_doc": "Agent/Main/Branch/MCP/Client",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/MCP/Client:p0",
+      "Agent/Main/Branch/MCP/Client:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/MCP/Client:p0:c0",
+      "Agent/Main/Branch/MCP/Client:p1:c2",
+      "Agent/Main/Branch/MCP/Client:p1:c3"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/MCP/Client:p0": 2,
+      "Agent/Main/Branch/MCP/Client:p1": 2
+    },
+    "expected_files": [
+      "Agent/Main/Branch/MCP/Client"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0148",
+    "query": "在MCP初始化过程中，如果客户端和服务器无法协商出兼容协议版本，会发生什么？",
+    "reference_facts": "如果未协商出兼容的版本, 连接将终止",
+    "source_doc": "Agent/Main/Branch/MCP/Data Layer示例",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/MCP/Data Layer示例:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/MCP/Data Layer示例:p0:c0"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/MCP/Data Layer示例:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/MCP/Data Layer示例"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0149",
+    "query": "MCP数据层中，服务器功能具体包括哪些内容？",
+    "reference_facts": "服务器功能包括AI操作工具、上下文数据资源、客户端交互模板的提示。",
+    "source_doc": "Agent/Main/Branch/MCP/MCP Structure",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/MCP/MCP Structure:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/MCP/MCP Structure:p0:c1",
+      "Agent/Main/Branch/MCP/MCP Structure:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/MCP/MCP Structure:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/MCP/MCP Structure"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0150",
+    "query": "在MCP架构中，当host应用需要连接多个服务器时，它如何管理多个客户端实例的？同时，数据层协议中的生命周期管理在连接过程中扮演什么角色？",
+    "reference_facts": "MCP采用客户端-服务器架构，host是协调和管理多个MCP客户端的AI应用。当一个应用作为host想要建立与一个Server的连接时，它会在运行时实例化一个Client对象以维护与Server的连接；当它随后连接到第二个Server时，会再实例化一个对应的Client以维持与另一个Server的连接。数据层协议提供生命周期管理，处理客户端与服务器之间的连接初始化、能力协商和连接终止。",
+    "source_doc": "Agent/Main/Branch/MCP/MCP Structure",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/MCP/MCP Structure:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/MCP/MCP Structure:p0:c1",
+      "Agent/Main/Branch/MCP/MCP Structure:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/MCP/MCP Structure:p0": 2
+    },
+    "expected_files": [
+      "Agent/Main/Branch/MCP/MCP Structure"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0151",
+    "query": "MCP Server中工具定义（tool definition）需包含哪些字段？",
+    "reference_facts": "工具定义示例包含name、description、inputSchema字段，其中inputSchema中required数组指定了必需属性。",
+    "source_doc": "Agent/Main/Branch/MCP/Server",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Branch/MCP/Server:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Branch/MCP/Server:p0:c0",
+      "Agent/Main/Branch/MCP/Server:p0:c3",
+      "Agent/Main/Branch/MCP/Server:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Main/Branch/MCP/Server:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Branch/MCP/Server"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0152",
+    "query": "在Hello-Agents的上下文管理系统中，ContextConfig的哪些参数会影响GSSC流水线中的Select和Compress阶段？",
+    "reference_facts": "ContextConfig包含max_tokens、reserve_ratio、min_relevance、enable_compression、recency_weight和relevance_weight等参数。其中min_relevance用于Select阶段过滤低相关性信息，recency_weight和relevance_weight用于评分排序；enable_compression控制是否启用Compress阶段的压缩策略，max_tokens和reserve_ratio则影响整体预算分配。GSSC流水线包括Gather、Select、Structure、Compress四个阶段，Select阶段基于相关性和新近性评分，Compress阶段在超限时进行压缩。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p0",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p1",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p2",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p3",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p4"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p0:c0",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p1:c0",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p1:c1",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p1:c2",
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p2:c1"
+    ],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p0": 1,
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p1": 2,
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p2": 1,
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p3": 1,
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建:p4": 1
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/Hello-Agents中的上下文构建"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0153",
+    "query": "工作记忆在Hello-Agents中有什么特点？",
+    "reference_facts": "工作记忆存储当前对话的上下文信息，其容量被有意限制，会话结束后即被清理，不支持按时间序列或主题进行回溯式检索。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统:0",
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统:0": 3,
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统:1": 1
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0154",
+    "query": "在Hello-Agents中，哪种记忆类型支持按时间序列或主题进行回溯式检索，并且RAG系统采用分层设计的主要优势是什么？",
+    "reference_facts": "情景记忆支持按时间序列或主题进行回溯式检索，是智能体'复盘'和学习过往经验的基础，属于持久化的记忆。RAG系统分为五层，分层设计的优势在于每一层都可以独立优化和替换。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/RAG系统/Hello-Agents中的RAG系统"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0155",
+    "query": "Hello-Agents框架中, BaseMemory类为所有记忆类型定义了哪些抽象方法？",
+    "reference_facts": "BaseMemory类声明了add(), retrieve(), update(), remove(), clear(), get_stats(), has_memory()抽象方法。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:0",
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:0": 3,
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0156",
+    "query": "Hello-Agents框架中, BaseMemory 定义了哪些抽象方法？其中 add 方法的输入和输出分别是什么？",
+    "reference_facts": "BaseMemory 声明了 add(), retrieve(), update(), remove(), clear(), get_stats(), has_memory() 七个抽象方法。add 方法的输入是 MemoryItem（含内容、类型、重要性、时间戳），输出是 str。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:0",
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:0": 2,
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/BaseMemory"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0157",
+    "query": "Hello-Agents框架中, MemoryConfig 在代码中扮演什么角色？它如何实现记忆行为的可配置化？",
+    "reference_facts": "MemoryConfig 是纯数据结构，不调用任何模块，用于将记忆系统运作参数化，允许通过修改配置参数（如容量、TTL）而不改动源码来调整不同场景下的记忆行为。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:0",
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:1",
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:2",
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:3"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:0": 2,
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:1": 2,
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:2": 2,
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig:3": 2
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryConfig"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0158",
+    "query": "Hello-Agents框架中, MemoryItem数据结构包含哪些字段？它在MemoryManager、四种记忆类型和存储后端之间传递时，哪些字段用于标识记忆类型和用户？",
+    "reference_facts": "MemoryItem包含id、content、memory_type、user_id、timestamp、importance、metadata七个字段。它被MemoryManager、四种记忆类型和存储后端调用，用于统一传递记忆结构。其中memory_type字段用于标识记忆类型，user_id用于标识用户，importance默认值为0.5。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryItem",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryItem:1",
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryItem:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryItem:1": 2,
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryItem:2": 2
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryItem"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0159",
+    "query": "Hello-Agents框架中, MemoryManager负责调度哪些记忆类型？",
+    "reference_facts": "MemoryManager执行四种记忆类型的调度，包括Working、Episodic、Semantic和Perceptual。",
+    "source_doc": "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryManager",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryManager:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryManager:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Hello-Agents源码分析/记忆系统/MemoryManager"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0160",
+    "query": "Agent测试中, BFCL基准测试使用什么来评估工具调用能力？",
+    "reference_facts": "BFCL使用AST匹配算法评估工具调用能力。",
+    "source_doc": "Agent/Main/MainLine/Agent性能评估",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Agent性能评估:p0",
+      "Agent/Main/MainLine/Agent性能评估:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Agent性能评估:p0:c2",
+      "Agent/Main/MainLine/Agent性能评估:p1:c2",
+      "Agent/Main/MainLine/Agent性能评估:p1:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Agent性能评估:p0": 3,
+      "Agent/Main/MainLine/Agent性能评估:p1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Agent性能评估"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0161",
+    "query": "在评估智能体性能时，BFCL和GAIA分别采用什么评估方法？它们各自适合评估智能体的哪些方面？",
+    "reference_facts": "BFCL使用抽象语法树（AST）匹配算法，将函数调用解析为语法树，通过比较树的结构和节点值来判断预测与标准答案是否完全等价，对部分正确零容忍，主要评估工具调用能力，涵盖简单、多函数、并行和无关调用等场景。GAIA使用准精确匹配（Quasi Exact Match）算法，包含466个真实世界问题，分为三个难度级别，覆盖多步推理、工具使用、文件处理、网页浏览等综合能力，适合评估智能体在真实任务中的通用表现。",
+    "source_doc": "Agent/Main/MainLine/Agent性能评估",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Agent性能评估:p0",
+      "Agent/Main/MainLine/Agent性能评估:p1",
+      "Agent/Main/MainLine/Agent性能评估:p2",
+      "Agent/Main/MainLine/Agent性能评估:p8",
+      "Agent/Main/MainLine/Agent性能评估:p10",
+      "Agent/Main/MainLine/Agent性能评估:p11"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Agent性能评估:p0:c1",
+      "Agent/Main/MainLine/Agent性能评估:p0:c2",
+      "Agent/Main/MainLine/Agent性能评估:p0:c3",
+      "Agent/Main/MainLine/Agent性能评估:p0:c4",
+      "Agent/Main/MainLine/Agent性能评估:p1:c0",
+      "Agent/Main/MainLine/Agent性能评估:p1:c1",
+      "Agent/Main/MainLine/Agent性能评估:p1:c2",
+      "Agent/Main/MainLine/Agent性能评估:p1:c5",
+      "Agent/Main/MainLine/Agent性能评估:p2:c0",
+      "Agent/Main/MainLine/Agent性能评估:p2:c1",
+      "Agent/Main/MainLine/Agent性能评估:p8:c1",
+      "Agent/Main/MainLine/Agent性能评估:p8:c2",
+      "Agent/Main/MainLine/Agent性能评估:p10:c4",
+      "Agent/Main/MainLine/Agent性能评估:p11:c0",
+      "Agent/Main/MainLine/Agent性能评估:p11:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Agent性能评估:p0": 3,
+      "Agent/Main/MainLine/Agent性能评估:p1": 1,
+      "Agent/Main/MainLine/Agent性能评估:p2": 1,
+      "Agent/Main/MainLine/Agent性能评估:p8": 1,
+      "Agent/Main/MainLine/Agent性能评估:p10": 1,
+      "Agent/Main/MainLine/Agent性能评估:p11": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Agent性能评估"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0162",
+    "query": "在Context Engineering中，如何充分利用prompt cache？",
+    "reference_facts": "固定不变的部分（系统prompt、工具定义、few-shots）放最前，尽可能被prompt cache，前缀必须完全相同，前缀必须达到最小长度，两次请求间隔在TTL内。",
+    "source_doc": "Agent/Main/MainLine/Agent架构设计/Context设计",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Agent架构设计/Context设计:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Agent架构设计/Context设计:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Agent架构设计/Context设计:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Agent架构设计/Context设计"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0163",
+    "query": "当工具数量超过20个时，如何解决工具选择问题，并且如何判断多个工具是否应该并行调用？",
+    "reference_facts": "当工具达到20+规模时，问题不在于LLM选不对，而在于Prompt膨胀、相似工具混淆和延迟线性增长。解决方案是采用分层工具路由。对于一次任务可能需要调用多个工具的情况，需要判断工具之间是否有先后顺序依赖：如果有依赖则串行，否则并行。",
+    "source_doc": "Agent/Main/MainLine/Agent架构设计/Tools & FC设计",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Agent架构设计/Tools & FC设计:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Agent架构设计/Tools & FC设计:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Agent架构设计/Tools & FC设计"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0164",
+    "query": "在ReAct范式中，如果智能体只根据当前的Observation做决策，可能带来什么风险？",
+    "reference_facts": "它可能会因为眼前的一个Observation而选择一个看似正确但长远来看并非最优的路径，甚至在某些情况下陷入'原地打转'的循环中。",
+    "source_doc": "Agent/Main/MainLine/Harness/Agent三大范式的实现",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0:c1",
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0:c2",
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0165",
+    "query": "ReAct范式的工作流程是怎样的？它又有什么局限性？",
+    "reference_facts": "ReAct范式的核心是一个循环，包括格式化提示词、调用LLM、执行工具、整合结果，直到任务完成或达到最大步数限制。ReAct范式的主要局限性包括：流程成功与否高度依赖模型本身的强度，完成一个任务通常需要多次调用LLM，导致较高的耗时和费用；步进式的决策模式缺乏全局长远的规划，可能因眼前观察而选择非最优路径，甚至陷入循环。",
+    "source_doc": "Agent/Main/MainLine/Harness/Agent三大范式的实现",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0",
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0:c1",
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0:c2",
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p1:c0"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p0": 3,
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现:p1": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Agent三大范式的实现"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0166",
+    "query": "项目内 Harness 和构建层 Harness 有什么区别？",
+    "reference_facts": "项目内Harness的装配对象是项目构建层面现有的编码Agents，验证对象是代码是否符合预期；构建层Harness的装配对象是开发者构建出的Agents，验证对象是Agent行为在真实任务上是否有效。",
+    "source_doc": "Agent/Main/MainLine/Harness/Harness Engineering",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0:c0",
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Harness Engineering"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0167",
+    "query": "在Harness工程中，为什么说构建层反馈（如pytest/mypy/ruff）无法验证产物Harness的有效性？",
+    "reference_facts": "构建层Harness用于验证开发者构建的Agents在真实任务上是否有效。构建层反馈（pytest/mypy/ruff）回答的是代码是否符合预期，但无法回答产物Harness是否在真实任务上有效，比如产物Agents的工具调用对不对、端到端完成率如何，因此出现了验证缺口。",
+    "source_doc": "Agent/Main/MainLine/Harness/Harness Engineering",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0:c3",
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Harness Engineering:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Harness Engineering"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0168",
+    "query": "在Claude Code的Hooks机制中，PreToolUse事件在什么时机被触发？",
+    "reference_facts": "PreToolUse事件在工具执行前触发，用于权限检查和日志记录。",
+    "source_doc": "Agent/Main/MainLine/Harness/Hooks",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Hooks:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Harness/Hooks:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Hooks:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Hooks"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0169",
+    "query": "在Claude Code工具使用的基本实现中，每个工具对象包含哪些关键部分？",
+    "reference_facts": "每个工具独立对象包含schema、验证、权限、执行。",
+    "source_doc": "Agent/Main/MainLine/Harness/Tools use",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Tools use:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Tools use:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Tools use"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0170",
+    "query": "在Claude Code中，工具是如何定义的？当模型一次返回多个工具调用时，系统如何决定并发执行还是串行执行？",
+    "reference_facts": "工具定义使用TOOLS数组和TOOLS_DISPATCH字段，每个工具是一个独立对象，包含schema、验证、权限、执行。对于多个工具调用，系统通过isConcurrencySafe(input)判断每个工具调用是否支持安全并发，如果支持则编入同一batch并发执行，否则开新batch串行执行。",
+    "source_doc": "Agent/Main/MainLine/Harness/Tools use",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness/Tools use:0",
+      "Agent/Main/MainLine/Harness/Tools use:1",
+      "Agent/Main/MainLine/Harness/Tools use:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Harness/Tools use:0": 2,
+      "Agent/Main/MainLine/Harness/Tools use:1": 2,
+      "Agent/Main/MainLine/Harness/Tools use:2": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness/Tools use"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0171",
+    "query": "在循环工程(Loop Engineering)中，人肉循环的代价是什么？而将循环交给Agent后，用户如何设定目标？",
+    "reference_facts": "人肉循环的代价是人的注意力被切碎，因为Agent每跑完一轮就得切回来，否则循环就暂停不动。而将循环交给Agent后，用户通过/goal命令设定一次目标，并且可以通过类似/grill-me来逐渐引导。",
+    "source_doc": "Agent/Main/MainLine/Harness2/Loop Engineering",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness2/Loop Engineering:0",
+      "Agent/Main/MainLine/Harness2/Loop Engineering:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Harness2/Loop Engineering:0": 2,
+      "Agent/Main/MainLine/Harness2/Loop Engineering:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness2/Loop Engineering"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0172",
+    "query": "Harness 架构中必须包含哪些核心？",
+    "reference_facts": "Harness必须包含的是Agent Loop + Tool Layer + Context Layer",
+    "source_doc": "Agent/Main/MainLine/Harness2/从ReAct Loop看起",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness2/从ReAct Loop看起:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Harness2/从ReAct Loop看起:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Harness2/从ReAct Loop看起:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness2/从ReAct Loop看起"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0173",
+    "query": "Harness 在什么情况下会使用确定性注入机制？",
+    "reference_facts": "当需要确保特定行为或防止意外操作时，会使用确定性注入，如Hook、中间件、PreToolUse/PostToolUse。",
+    "source_doc": "Agent/Main/MainLine/Harness2/作为模型之外的全部",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Harness2/作为模型之外的全部:0",
+      "Agent/Main/MainLine/Harness2/作为模型之外的全部:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Harness2/作为模型之外的全部:0": 2,
+      "Agent/Main/MainLine/Harness2/作为模型之外的全部:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Harness2/作为模型之外的全部"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0174",
+    "query": "在评估RAG系统时，测试集通常包含哪些元素？",
+    "reference_facts": "测试集是人工构建的20-50个问答对集合，每个问答对包含query、对应的文档和标准答案。",
+    "source_doc": "Agent/Main/MainLine/RAG/benchmark",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/benchmark:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/RAG/benchmark:p0:c0",
+      "Agent/Main/MainLine/RAG/benchmark:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/benchmark:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/benchmark"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0175",
+    "query": "在构建RAG系统时, Word和PDF在解析时分别存在哪些主要问题？",
+    "reference_facts": "Word解析容易丢失内嵌对象和复杂表格，PDF解析容易因双栏排版导致逻辑混乱。",
+    "source_doc": "Agent/Main/MainLine/RAG/PDF与Word处理",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/PDF与Word处理:0",
+      "Agent/Main/MainLine/RAG/PDF与Word处理:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/PDF与Word处理:0": 2,
+      "Agent/Main/MainLine/RAG/PDF与Word处理:1": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/PDF与Word处理"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0176",
+    "query": "在解析Word和PDF文档时，为什么容易丢失关键信息？有哪些工具可以解决这些问题？",
+    "reference_facts": "Word文档的盲区包括内嵌对象（如Visio、数学公式、游离文本框）和内部嵌套图表，解析不当会丢失核心信息。PDF底层没有段落和标题概念，粗暴抽取双栏排版会导致逻辑混乱。针对这些问题，可以使用Docling、Marker等工具精准转换，或使用LlamaParse进行云解析，它们能自动修复双栏逻辑并处理复杂表格。",
+    "source_doc": "Agent/Main/MainLine/RAG/PDF与Word处理",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/PDF与Word处理:0",
+      "Agent/Main/MainLine/RAG/PDF与Word处理:1",
+      "Agent/Main/MainLine/RAG/PDF与Word处理:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/PDF与Word处理:0": 2,
+      "Agent/Main/MainLine/RAG/PDF与Word处理:1": 2,
+      "Agent/Main/MainLine/RAG/PDF与Word处理:2": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/PDF与Word处理"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0177",
+    "query": "传统大模型和启用RAG在知识来源上有什么不同？",
+    "reference_facts": "传统大模型的知识来源是训练语料（静态），而启用RAG的知识来源是外部知识库（动态）。",
+    "source_doc": "Agent/Main/MainLine/RAG/RAG Tutorial",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/RAG Tutorial:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/RAG Tutorial:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/RAG Tutorial"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0178",
+    "query": "在Native RAG中，检索到的chunk是如何被处理的？",
+    "reference_facts": "检索到的chunk被直接拼接到prompt模板中，然后交给LLM生成。",
+    "source_doc": "Agent/Main/MainLine/RAG/RAG架构演进与反思机制",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:0",
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:0": 3,
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:1": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0179",
+    "query": "在RAG架构中，Native RAG存在哪些主要问题？Advanced RAG通过哪些阶段的优化来应对？请结合具体技术说明。",
+    "reference_facts": "Native RAG存在语义失配、检索粒度粗、冗余噪声、上下文缺失、无法处理复杂问题等问题。Advanced RAG在检索前、检索、检索后三个阶段引入特定工程手段，如查询改写、假设文档嵌入、子查询拆解等。",
+    "source_doc": "Agent/Main/MainLine/RAG/RAG架构演进与反思机制",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:1",
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:1": 2,
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制:2": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/RAG架构演进与反思机制"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0180",
+    "query": "传统NLP指标（如BLEU/ROUGE）与RAGAS评估方法在评估RAG系统时有何不同？",
+    "reference_facts": "传统NLP指标只比较字面重叠，忽略语义，且不检查答案是否忠实于检索文档；RAGAS定义了Faithfulness、Answer Relevance、Context Relevance等维度来评估RAG系统。",
+    "source_doc": "Agent/Main/MainLine/RAG/如何评估RAG系统效果",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:0",
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:1",
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:0": 3,
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:1": 1,
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:2": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0181",
+    "query": "传统NLP指标（如BLEU/ROUGE）无法检测幻觉，而RAGAS的Faithfulness和Answer Relevance是如何分别解决这一问题的？",
+    "reference_facts": "传统NLP指标如BLEU/ROUGE只比较字面重叠，忽略语义，且完全无视检索上下文，因此无法检测幻觉。RAGAS的Faithfulness通过将生成的答案拆分为独立声明，逐条比对检索文档是否支持，得分=被支持声明数/总声明数，从而检测答案是否忠实于文档。Answer Relevance则通过从答案反向生成N个问题，计算与原问题的余弦相似度，平均相似度作为得分，评估答案是否相关。",
+    "source_doc": "Agent/Main/MainLine/RAG/如何评估RAG系统效果",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:0",
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:0": 2,
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/RAG/如何评估RAG系统效果"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0182",
+    "query": "当CLAUDE.md文件变得臃肿时，CC(Claude Code)是如何处理的？",
+    "reference_facts": "当CLAUDE.md文件变得臃肿时，CC的做法是仅在CLAUDE.md中放入其他部分的索引或目录，告诉CC何时读取或更新文件。",
+    "source_doc": "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0183",
+    "query": "在CC(Claude Code)的三层记忆系统中，CLAUDE.md和memory.md文件分别承担什么职责？它们是如何避免记忆文件臃肿的？",
+    "reference_facts": "CC的三层记忆系统包括CLAUDE.md、Auto-Memory自动记忆等。最初CLAUDE.md包含所有内容并加载进系统提示词，但逐渐臃肿，后来改为仅在CLAUDE.md中放入其他部分的索引或目录，告诉CC何时读取或更新文件。Auto-Memory自动记忆功能作为指令，包含何时保存记忆和哪些内容值得保存。在memory文件夹中，memory.md只做索引，而具体的xx_yy.md文件包含各主题的记忆。",
+    "source_doc": "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:0",
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:1",
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:0": 1,
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:1": 2,
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理:2": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/self-evolving/CC对事实记忆的处理"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0184",
+    "query": "OpenClaw的记忆文件具体包含哪些文件？",
+    "reference_facts": "OpenClaw拥有定义更加明确的记忆文件，每个文件代表一个不同的方面，包括USER.md, TOOLS.md, AGENTS.md, SOUL.md, IDENTITY.md, GOALS.md, MEMORY.md, BOOTSTRAP.md。",
+    "source_doc": "Agent/Main/MainLine/self-evolving/Self-Evolving",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p0:c3",
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/self-evolving/Self-Evolving"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0185",
+    "query": "Hermes Agent在实现自进化时，如何将自主技能生成与记忆审查机制相结合？",
+    "reference_facts": "Hermes Agent引入了自主Skill生成和记忆审查器两个核心概念。自主技能生成会在Agent运行超过10步且未创建任何Skill时，启动子agent审查已完成工作并决定是否创建有用Skill，同时配备skill_manage工具和主动提示，当发现Skill过时或不完整时立即修补。记忆审查则管理USER.md和MEMORY.md等记忆文件，其中USER.md记录用户偏好，MEMORY.md记录项目约定，两者有严格字符限制并作为系统提示词的一部分。此外，Hermes还通过安全扫描（skill_guard.py）防止创建有害Skill。这些机制共同使Agent能从自身行为和反馈中持续学习，实现自进化。",
+    "source_doc": "Agent/Main/MainLine/self-evolving/Self-Evolving",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p1:c0",
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p1:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/self-evolving/Self-Evolving:p1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/self-evolving/Self-Evolving"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0186",
+    "query": "在什么情况下应该考虑将任务流程固化为Skill？",
+    "reference_facts": "当手动完成一次任务后，可以将其过程记录下来，然后调用/skill-creator来把流程固化成Skill。",
+    "source_doc": "Agent/Main/MainLine/Skill/写好Skill",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Skill/写好Skill:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Skill/写好Skill:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Skill/写好Skill"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0187",
+    "query": "复杂Skill并行中, 多Agent并行与传统并行在目的上有什么不同？",
+    "reference_facts": "传统并行是把多个确定性计算拆开加速，而多Agent并行是让多个独立的推理过程同时展开，每个过程都可能发现不同的东西。",
+    "source_doc": "Agent/Main/MainLine/Skill/复杂Skill的并行",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Skill/复杂Skill的并行:0",
+      "Agent/Main/MainLine/Skill/复杂Skill的并行:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Skill/复杂Skill的并行:0": 3,
+      "Agent/Main/MainLine/Skill/复杂Skill的并行:1": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Skill/复杂Skill的并行"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0188",
+    "query": "复杂Skill并行中, 为什么多Agent并行在复杂分析任务中能带来优势，但在子任务存在强依赖时却可能失效？",
+    "reference_facts": "多Agent并行通过在同一份数据上投入多份智力，让多个独立推理过程同时展开，每个过程可能发现不同内容，从而获得速度优势和多个视角。同时，每个子Agent有相互隔离的上下文，使注意力更聚焦，降低上下文风险。然而，当子任务之间存在强依赖时，例如子任务B的输入依赖于子任务A的输出，并行就失去意义，因为必须等待前序任务完成。此外，如果Lead Agent给子Agent的任务描述过于笼统，导致上下文共享不充分，多个子Agent可能产生高度相似的重合工作，降低并行效率。",
+    "source_doc": "Agent/Main/MainLine/Skill/复杂Skill的并行",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Skill/复杂Skill的并行:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/Skill/复杂Skill的并行:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Skill/复杂Skill的并行"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0189",
+    "query": "Skill和传统Prompt在加载方式上有什么不同？",
+    "reference_facts": "Skill是Agent能按需加载、自主选择的，而Prompt是硬编码拼接的。",
+    "source_doc": "Agent/Main/MainLine/Skill/认识Skill",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/Skill/认识Skill:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/Skill/认识Skill:p0:c0",
+      "Agent/Main/MainLine/Skill/认识Skill:p0:c1",
+      "Agent/Main/MainLine/Skill/认识Skill:p0:c2",
+      "Agent/Main/MainLine/Skill/认识Skill:p0:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/Skill/认识Skill:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/Skill/认识Skill"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0190",
+    "query": "Agent框架中，模型层、工具层和记忆层分别负责什么？",
+    "reference_facts": "模型层负责与大语言模型交互，可以轻松替换不同的模型；工具层提供标准化的工具定义、注册和执行接口；记忆层处理短期和长期记忆，可以根据需求切换不同的记忆策略。",
+    "source_doc": "Agent/Main/MainLine/框架/Agent框架说明",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/框架/Agent框架说明:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/框架/Agent框架说明"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0191",
+    "query": "使用Agent框架和不使用框架相比，各自的优缺点是什么？",
+    "reference_facts": "使用框架的好处包括提供现成的Agent基类、核心组件解耦、标准化状态管理和可观测性；不使用框架的优点是避免框架引入的额外抽象层带来的理解成本和调试负担，以及避免依赖风险和升级成本。",
+    "source_doc": "Agent/Main/MainLine/框架/Agent框架说明",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0:c0",
+      "Agent/Main/MainLine/框架/Agent框架说明:p0:c3",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c1",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c2",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/框架/Agent框架说明:p0": 3,
+      "Agent/Main/MainLine/框架/Agent框架说明:p1": 1
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/框架/Agent框架说明"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0192",
+    "query": "在什么情况下选择不使用Agent框架是合理的？",
+    "reference_facts": "当框架引入的抽象层带来的理解成本和调试成本超过框架带来的收益时，不使用框架是合理的。",
+    "source_doc": "Agent/Main/MainLine/框架/Agent框架说明",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0:c3",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c0",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c2",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/框架/Agent框架说明:p0": 3,
+      "Agent/Main/MainLine/框架/Agent框架说明:p1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/框架/Agent框架说明"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0193",
+    "query": "根据文档，为什么在某些情况下开发者会选择自研Agent框架而不是使用现成的框架？请结合框架的缺点和自研框架的优势说明。",
+    "reference_facts": "框架为了通用性，在意图与实际执行之间插入了很多额外的抽象层，理解这些抽象层的工作量和调试时的心理负担是使用框架的固有成本，当成本超过收益时不用框架是合理的。此外，框架存在依赖风险与升级成本，LLM SDK版本冲突、API破坏性变更等问题。自研框架可以让开发者深度理解Agent工作原理，对每一行代码有完全掌控，根据具体需求精确调优，并且能避免依赖冲突，满足定制化需求。",
+    "source_doc": "Agent/Main/MainLine/框架/Agent框架说明",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/框架/Agent框架说明:p0:c3",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c1",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c2",
+      "Agent/Main/MainLine/框架/Agent框架说明:p1:c3"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/框架/Agent框架说明:p0": 3,
+      "Agent/Main/MainLine/框架/Agent框架说明:p1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/框架/Agent框架说明"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0194",
+    "query": "Hermes Agent中记忆生命周期分为哪几个阶段？",
+    "reference_facts": "Hermes的记忆周期分为4阶段：prefetch_all、API调用、sync_all、queue_prefetch_all。",
+    "source_doc": "Agent/Main/MainLine/记忆系统/记忆系统设计对比",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0:c1",
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0:c2",
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0:c4"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0195",
+    "query": "Hermes如何利用内置的SQLite FTS5实现跨会话记忆的精确检索，其记忆生命周期中如何被应用？",
+    "reference_facts": "记忆主要分为会话内记忆和跨会话记忆，跨会话记忆是需要处理的部分。Hermes内置的SQLite FTS5全文搜索支持精确关键词匹配，对100万条记录仍保持毫秒级性能。Hermes的记忆生命周期包括prefetch_all阶段，该阶段在API调用前根据用户消息召回相关记忆，并将召回结果注入系统提示。",
+    "source_doc": "Agent/Main/MainLine/记忆系统/记忆系统设计对比",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0",
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0:c2",
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p1:c0",
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p1:c1"
+    ],
+    "relevance": {
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p0": 2,
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比:p1": 2
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/记忆系统/记忆系统设计对比"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0196",
+    "query": "在Moseon工具中，最明显的用户需求信号是什么？",
+    "reference_facts": "最明显的需求信号是帖子收藏量。",
+    "source_doc": "Agent/Main/MainLine/需求分析/如何做产品调研",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/MainLine/需求分析/如何做产品调研:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/MainLine/需求分析/如何做产品调研:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/MainLine/需求分析/如何做产品调研"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0197",
+    "query": "AI提升编码速度后，团队层面可能遭遇哪些现实问题？为了应对这些影响，需要重新设计哪些环节？",
+    "reference_facts": "AI带来的不是单纯的编码提速问题，而是工程系统是否能承接更高速执行的问题。团队层面可能遭遇沟通成本、返工、错误扩散和质量失衡。真正需要被重新设计的是整条链路：想法形成 -> 需求澄清 -> 工程实现 -> 验证 -> 上线 -> 反馈回流。",
+    "source_doc": "Agent/Main/Pattern/AI时代开发者重心2",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/AI时代开发者重心2:1",
+      "Agent/Main/Pattern/AI时代开发者重心2:2",
+      "Agent/Main/Pattern/AI时代开发者重心2:3"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/AI时代开发者重心2:1": 3,
+      "Agent/Main/Pattern/AI时代开发者重心2:2": 1,
+      "Agent/Main/Pattern/AI时代开发者重心2:3": 1
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/AI时代开发者重心2"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0198",
+    "query": "UML图在表达软件设计时，有哪些信息是它无法描绘的？",
+    "reference_facts": "UML图画出的是决策的结果，但无法描绘为什么有这个决策问题产生、为什么作这样的决策、这个决策是如何作出的、在什么约束下权衡了什么。",
+    "source_doc": "Agent/Main/Pattern/UML图",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/UML图:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/UML图:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/UML图"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0199",
+    "query": "VibeCoding的核心能力是什么？",
+    "reference_facts": "VibeCoding的核心能力是设计和架构能力，用于指挥和评估AI产出的质量，并发现安全问题。",
+    "source_doc": "Agent/Main/Pattern/VibeCoding基本指南",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/VibeCoding基本指南:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/VibeCoding基本指南:0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/VibeCoding基本指南"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0200",
+    "query": "在VibeCoding中，核心能力是设计和架构能力，而使用ClaudeCode时，要恢复最近一次中断的记录，应该使用哪个命令？",
+    "reference_facts": "VibeCoding的核心能力是设计和架构能力，用于指挥和评估AI产出的质量。ClaudeCode中，使用`claude -c`命令可以恢复最近一次中断的记录。",
+    "source_doc": "Agent/Main/Pattern/VibeCoding基本指南",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/VibeCoding基本指南:1",
+      "Agent/Main/Pattern/VibeCoding基本指南:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/VibeCoding基本指南:1": 3,
+      "Agent/Main/Pattern/VibeCoding基本指南:2": 1
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/VibeCoding基本指南"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0201",
+    "query": "当项目处于初始阶段时，spec应何时产生？",
+    "reference_facts": "spec应该滞后于代码并伴随代码慢慢迭代长出来。",
+    "source_doc": "Agent/Main/Pattern/单人项目迭代经验",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/单人项目迭代经验:0",
+      "Agent/Main/Pattern/单人项目迭代经验:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/单人项目迭代经验:0": 3,
+      "Agent/Main/Pattern/单人项目迭代经验:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/单人项目迭代经验"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0202",
+    "query": "在项目初始阶段，AI应该承担什么角色？spec应该在什么时机产生？",
+    "reference_facts": "项目初始阶段应该让LLM自己决策架构基调，AI负责探索（与用户进行多轮需求碰撞）。spec应该滞后于代码并伴随代码慢慢迭代长出来，探索完了之后某个决定不再修改时再写spec。",
+    "source_doc": "Agent/Main/Pattern/单人项目迭代经验",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/单人项目迭代经验:0",
+      "Agent/Main/Pattern/单人项目迭代经验:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/单人项目迭代经验:0": 3,
+      "Agent/Main/Pattern/单人项目迭代经验:1": 3
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/单人项目迭代经验"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0203",
+    "query": "在Mattpocock Skills中，从初始化到实现一个功能，需要经历哪些步骤？请详细说明每个步骤中使用的命令或工具。",
+    "reference_facts": "首先，需要运行npx skills@latest add mattpocock/skills来安装Skills。然后，通过/setup-matt-pocock-skills进行初始化，选择本地并配置分类标签词汇表和领域文档。接着，使用/grill-me或/grill-with-docs进行采访，明确需求，并生成CONTEXT.md。之后，根据需求大小，使用/to-issues或/to-prd保存需求。最后，进入Plan模式，根据PRD文档生成具体计划并执行，或者使用/tdd进行测试驱动开发。",
+    "source_doc": "Agent/Main/Pattern/开发工作流借鉴2",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/开发工作流借鉴2:0",
+      "Agent/Main/Pattern/开发工作流借鉴2:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Main/Pattern/开发工作流借鉴2:0": 2,
+      "Agent/Main/Pattern/开发工作流借鉴2:1": 2
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/开发工作流借鉴2"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0204",
+    "query": "开闭原则的核心思想是什么？",
+    "reference_facts": "对扩展开放，对修改关闭。",
+    "source_doc": "Agent/Main/Pattern/设计模式",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/设计模式:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Pattern/设计模式:p0:c0"
+    ],
+    "relevance": {
+      "Agent/Main/Pattern/设计模式:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/设计模式"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0205",
+    "query": "在工厂模式中，简单工厂违反了哪个设计原则？请结合设计模式原则解释原因。",
+    "reference_facts": "开闭原则（OCP）要求对扩展开放、对修改关闭，即程序需要扩展时不应修改原有代码。简单工厂在新增工具时必须修改 create() 方法的 if 分支，这违反了开闭原则，因为每次扩展都需要修改已有代码。",
+    "source_doc": "Agent/Main/Pattern/设计模式",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Pattern/设计模式:p0",
+      "Agent/Main/Pattern/设计模式:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Pattern/设计模式:p0:c2",
+      "Agent/Main/Pattern/设计模式:p1:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Pattern/设计模式:p0": 1,
+      "Agent/Main/Pattern/设计模式:p1": 3
+    },
+    "expected_files": [
+      "Agent/Main/Pattern/设计模式"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0206",
+    "query": "在Python中处理大数据流时，为什么推荐使用生成器表达式而不是列表推导式？",
+    "reference_facts": "生成器表达式省内存，适合大数据流或无限流。",
+    "source_doc": "Agent/Main/Python/特殊特性/如何少写for-loop",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Main/Python/特殊特性/如何少写for-loop:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Main/Python/特殊特性/如何少写for-loop:p0:c1",
+      "Agent/Main/Python/特殊特性/如何少写for-loop:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Main/Python/特殊特性/如何少写for-loop:p0": 3
+    },
+    "expected_files": [
+      "Agent/Main/Python/特殊特性/如何少写for-loop"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0207",
+    "query": "在RAG系统中，metadata（元数据）不喂给LLM，那它有什么用？",
+    "reference_facts": "metadata的作用包括：RAG溯源（附带source链接）、过滤检索（如按章节过滤）、排序/去重（按source去重）、时间衰减（按date降权）。",
+    "source_doc": "Agent/metadata",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/metadata:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/metadata:p0:c2"
+    ],
+    "relevance": {
+      "Agent/metadata:p0": 3
+    },
+    "expected_files": [
+      "Agent/metadata"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0208",
+    "query": "NumPy 的向量化运算本质是什么？",
+    "reference_facts": "NumPy 的向量化运算本质上是给 Python 套了一层 Fortran/C 的壳，科学计算领域（物理模拟、信号处理、统计分析）几十年前就用 Fortran 写矩阵运算了。",
+    "source_doc": "Agent/numpy",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/numpy:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/numpy:0": 3
+    },
+    "expected_files": [
+      "Agent/numpy"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0209",
+    "query": "在什么情况下不应该使用同义词扩展（RAG场景 Query 改写）？",
+    "reference_facts": "同义词扩展不适合用户查询已经很长，或查询包含专有名词、需要精确匹配需求的场景。",
+    "source_doc": "Agent/Query改写",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Query改写:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Query改写:p0:c1",
+      "Agent/Query改写:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Query改写:p0": 3
+    },
+    "expected_files": [
+      "Agent/Query改写"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0210",
+    "query": "在RAG系统中，查询扩展和HyDE都是提升检索效果的技术，请分别说明它们的实现方式以及为什么HyDE有效？",
+    "reference_facts": "查询扩展包括同义词扩展（使用词典、伪相关反馈、LLM生成式扩展）和主改写（还原完整规范问题），其中LLM生成式扩展通过提示词生成3-5个相关搜索词并用OR逻辑组合。HyDE（假设文档嵌入）先让LLM生成假设文档，再用其向量进行检索，其有效性在于向量空间中文档与文档的相似度高于查询与文档，HyDE将查询伪装成文档形态，使相似度计算变成文档-文档比较。",
+    "source_doc": "Agent/Query改写",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Query改写:p0",
+      "Agent/Query改写:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Query改写:p0:c0",
+      "Agent/Query改写:p0:c1",
+      "Agent/Query改写:p0:c2",
+      "Agent/Query改写:p0:c4",
+      "Agent/Query改写:p1:c0",
+      "Agent/Query改写:p1:c1"
+    ],
+    "relevance": {
+      "Agent/Query改写:p0": 3,
+      "Agent/Query改写:p1": 3
+    },
+    "expected_files": [
+      "Agent/Query改写"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0211",
+    "query": "在RAG评估中，Context Precision和Context Recall分别衡量什么？",
+    "reference_facts": "Context Precision衡量检索到的文档中有多少是真正相关的，Context Recall衡量所有相关文档是否都被检索到。",
+    "source_doc": "Agent/RAG优化与选型",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/RAG优化与选型:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/RAG优化与选型:p0:c2",
+      "Agent/RAG优化与选型:p0:c3"
+    ],
+    "relevance": {
+      "Agent/RAG优化与选型:p0": 3
+    },
+    "expected_files": [
+      "Agent/RAG优化与选型"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0212",
+    "query": "RAG（检索增强生成）的核心思想是什么？它如何通过外部知识库提升回答的准确性？",
+    "reference_facts": "RAG（Retrieval-Augmented-Generation）即检索增强生成，其核心思想是在模型生成回答之前，先从外部知识库（如企业内部产品文档、数据库、API）中检索出最相关的信息，并将这些信息融入提示词一同提供给模型，从而生成更准确、可靠的回答。",
+    "source_doc": "Agent/RAG基础架构",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/RAG基础架构:1",
+      "Agent/RAG基础架构:2"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/RAG基础架构:1": 3,
+      "Agent/RAG基础架构:2": 1
+    },
+    "expected_files": [
+      "Agent/RAG基础架构"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0213",
+    "query": "在RAG系统中，如何利用RRF融合和BGE-Reranker-v2-M3进行重排优化？请描述完整的重排流程，并说明BGE-Reranker-v2-M3的优势及部署优化建议。",
+    "reference_facts": "Rerank解决检索阶段高召回率但低精度的问题，将最有用的证据放到模型最容易看到的位置。完整流程为：多路检索RRF后的结果候选集 -> 结果融合+去重（候选集压缩至20~30个）-> Reranker精细打分 -> 证据截断（取top-3~5，拼入上下文）-> 生成回答。BGE-Reranker-v2-M3是开源模型中综合表现最强的之一，支持多语言、长文本（8192 token），中文效果顶尖，可本地部署，在国内RAG工程实践中使用率最高。部署优化建议：使用BGE-Reranker-v2-M3 + FP16量化 + Top-50候选 + 设置batch_size=32，硬件NVIDIA T4即可加载FP16模型，50个候选单次重排延迟约80ms，单卡QPS约12~15；对query较短但document较长的场景，可截断document到512token，重排效果略有下降但速度提升显著。",
+    "source_doc": "Agent/Rerank",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/Rerank:p0",
+      "Agent/Rerank:p1"
+    ],
+    "expected_child_ids": [
+      "Agent/Rerank:p0:c0",
+      "Agent/Rerank:p0:c2",
+      "Agent/Rerank:p0:c4",
+      "Agent/Rerank:p1:c0",
+      "Agent/Rerank:p1:c1"
+    ],
+    "relevance": {
+      "Agent/Rerank:p0": 2,
+      "Agent/Rerank:p1": 2
+    },
+    "expected_files": [
+      "Agent/Rerank"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0214",
+    "query": "在RAG系统中，如果同时采用缩小候选集（如将Top-K从200缩减到50）和模型量化（如FP16或INT8）来优化Reranker性能，这两种优化手段分别会带来哪些精度风险？如何评估它们对最终检索质量的影响？",
+    "reference_facts": "缩小候选集将Top-K从200缩减到50-100，会直接丢弃检索阶段排在第51~200位的文档，其中可能包含检索分数低但Reranker打分高的'被低估文档'。需要通过对比Retrieval@50和Retrieval@200的召回率差来评估：如果差1~2%可接受，如果差10%+则说明检索模型存在系统性盲区，不能缩减。量化将FP32转为FP16或INT8，精度略有损失但速度提升2~3倍，可通过设置torch_dtype=torch.float16或使用BitsAndBytesConfig的load_in_8bit/load_in_4bit实现，也可用GGUF格式的Q4_K_M量化。两种优化都会影响Reranker的最终排序质量，需要综合评估。",
+    "source_doc": "Agent/Rerank优化",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Rerank优化:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/Rerank优化:p0:c0",
+      "Agent/Rerank优化:p0:c1",
+      "Agent/Rerank优化:p0:c2"
+    ],
+    "relevance": {
+      "Agent/Rerank优化:p0": 2
+    },
+    "expected_files": [
+      "Agent/Rerank优化"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0215",
+    "query": "为什么RRF算法在融合多个检索结果时只看排名而不看具体分数？",
+    "reference_facts": "因为不同召回算法输出的分数范围完全不同，直接将算法分数相加没有意义，而排名代表该路算法对文档的相对信心。",
+    "source_doc": "Agent/RRF算法",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/RRF算法:0",
+      "Agent/RRF算法:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/RRF算法:0": 3,
+      "Agent/RRF算法:1": 2
+    },
+    "expected_files": [
+      "Agent/RRF算法"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0216",
+    "query": "RRF算法在多路召回中如何融合不同检索结果，其公式中的k值通常如何设置？",
+    "reference_facts": "RRF算法用于将多个检索结果列表合并成一个单一列表，例如Vector和BM25的结果。它忽略具体分数，只看排名，因为不同召回算法的分数范围不同，直接相加无意义。公式为RRF(d) = sum(1/(k + r_r(d)))，其中r_r(d)是文档d在系统r中的排名，k是平滑常数，一般固定为60，实际工程中可在10~100范围内微调。",
+    "source_doc": "Agent/RRF算法",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/RRF算法:0",
+      "Agent/RRF算法:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/RRF算法:0": 2,
+      "Agent/RRF算法:1": 2
+    },
+    "expected_files": [
+      "Agent/RRF算法"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0217",
+    "query": "在Small-to-Big检索方法中，当命中一个chunk后，如何扩展上下文窗口？",
+    "reference_facts": "获取chunk_k前后各N个相邻块，合并为一个大上下文窗口并送给LLM。",
+    "source_doc": "Agent/Sentence Window",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Sentence Window:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Sentence Window:0": 3
+    },
+    "expected_files": [
+      "Agent/Sentence Window"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0218",
+    "query": "CoT和Step-Back在推理方向上有什么不同？",
+    "reference_facts": "CoT是向前推理，Step-Back是向后抽象。",
+    "source_doc": "Agent/Step-Back和CoT有什么区别",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Step-Back和CoT有什么区别:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Step-Back和CoT有什么区别:0": 3
+    },
+    "expected_files": [
+      "Agent/Step-Back和CoT有什么区别"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0219",
+    "query": "在LLM中，Token是如何被转换为Word Embedding的？对于中文文本，一个汉字大约对应多少个token？",
+    "reference_facts": "Token是模型阅读文本的最小单位，原始文本经过Tokenizer查表映射为整数ID，然后去Q矩阵取第ID行得到一个768维的稠密向量，即Word Embedding。LLM处理的是token而不是字符，中文1汉字约1.5~2 token，具体取决于tokenizer。",
+    "source_doc": "Agent/token",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/token:0",
+      "Agent/token:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/token:0": 2,
+      "Agent/token:1": 2
+    },
+    "expected_files": [
+      "Agent/token"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+  {
+    "query_id": "Q0220",
+    "query": "在RAG系统中，有重排模型和没有重排模型时，k值的设置策略有何不同？",
+    "reference_facts": "有重排模型时，k可以设置大一点比如20~30，因为重排后质量高，只取3~5即可；没有重排模型时，k设小一点比如10~15，靠大模型自己过滤信息。",
+    "source_doc": "Agent/Top-K中的K应该怎么定",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/Top-K中的K应该怎么定:0",
+      "Agent/Top-K中的K应该怎么定:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/Top-K中的K应该怎么定:0": 3,
+      "Agent/Top-K中的K应该怎么定:1": 2
+    },
+    "expected_files": [
+      "Agent/Top-K中的K应该怎么定"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0221",
+    "query": "在URL校验流程中，如果URL不在证据中且未命中白名单，下一步做什么？",
+    "reference_facts": "如果URL不在证据中且未命中白名单，则进行HTTP状态码检查（加超时），若状态码为200/301/302则通过，否则从回答中移除该URL。",
+    "source_doc": "Agent/URL幻觉治理",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/URL幻觉治理:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/URL幻觉治理:p0:c0",
+      "Agent/URL幻觉治理:p0:c1"
+    ],
+    "relevance": {
+      "Agent/URL幻觉治理:p0": 3
+    },
+    "expected_files": [
+      "Agent/URL幻觉治理"
+    ],
+    "expected_pages": [],
+    "question_type": "conditional"
+  },
+  {
+    "query_id": "Q0222",
+    "query": "PgSQL和MySQL InnoDB在存储旧版本行时有什么不同？",
+    "reference_facts": "PgSQL将旧版本行和当前版本行存在同一个数据页中，而MySQL InnoDB将旧版本存在独立的undolog（回滚段）中，数据页里只有当前版本。",
+    "source_doc": "Agent/VACUUM",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/VACUUM:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/VACUUM:0": 3
+    },
+    "expected_files": [
+      "Agent/VACUUM"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0223",
+    "query": "在检索系统中，元数据字段中的section_header和chunk_index分别起到什么作用？",
+    "reference_facts": "section_header用于恢复层级上下文，chunk_index用于支持前后扩展。",
+    "source_doc": "Agent/一个chunk中通常有什么",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/一个chunk中通常有什么:p0"
+    ],
+    "expected_child_ids": [
+      "Agent/一个chunk中通常有什么:p0:c1",
+      "Agent/一个chunk中通常有什么:p0:c2"
+    ],
+    "relevance": {
+      "Agent/一个chunk中通常有什么:p0": 3
+    },
+    "expected_files": [
+      "Agent/一个chunk中通常有什么"
+    ],
+    "expected_pages": [],
+    "question_type": "factual"
+  },
+  {
+    "query_id": "Q0224",
+    "query": "权重参数和解码参数在LLM中分别解决什么问题？",
+    "reference_facts": "权重参数解决给定任意上文在词汇表上输出概率分布的问题，解码参数解决如何从概率分布中挑选token的问题。",
+    "source_doc": "Agent/三种参数",
+    "category": "builtin",
+    "difficulty": "single_chunk",
+    "expected_parent_ids": [
+      "Agent/三种参数:0"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/三种参数:0": 3
+    },
+    "expected_files": [
+      "Agent/三种参数"
+    ],
+    "expected_pages": [],
+    "question_type": "comparison"
+  },
+  {
+    "query_id": "Q0225",
+    "query": "在LLM中，权重参数和解码参数分别解决什么问题？采样参数属于哪一类，并举例说明？",
+    "reference_facts": "权重参数解决的是给定任意上文时，在词汇表上输出什么样的概率分布，属于训练时参数，是映射规则本身。解码参数解决的是怎么从概率分布中挑token，属于推理时参数，涵盖解码策略的选择和配置。采样参数是解码参数的一个子集，特指decoding策略为sampling时的控制参数，如temperature、top_p、top_k等。",
+    "source_doc": "Agent/三种参数",
+    "category": "builtin",
+    "difficulty": "multi_chunk",
+    "expected_parent_ids": [
+      "Agent/三种参数:0",
+      "Agent/三种参数:1"
+    ],
+    "expected_child_ids": [],
+    "relevance": {
+      "Agent/三种参数:0": 2,
+      "Agent/三种参数:1": 2
+    },
+    "expected_files": [
+      "Agent/三种参数"
+    ],
+    "expected_pages": [],
+    "question_type": "multi_hop"
+  },
+]
