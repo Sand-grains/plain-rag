@@ -55,7 +55,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from config import TOP_K, LLM_MODEL_ID, EVAL_LLM_MODEL_ID, EVAL_THREADPOOL_WORKERS, GENERATOR_TEMPERATURE, STORAGE_BACKEND
+from config import TOP_K, LLM_MODEL_ID, EVAL_LLM_MODEL_ID, EVAL_THREADPOOL_WORKERS, GENERATOR_TEMPERATURE, STORAGE_BACKEND, DEFAULT_BENCHMARK
 from indexing.index_store import IndexStore
 from retrieval.retriever import Retriever
 from retrieval.generator import Generator
@@ -63,6 +63,8 @@ from retrieval.generator import Generator
 if TYPE_CHECKING:
     from eval.core.benchmark import BenchmarkItem, BenchmarkLoadResult
     from eval.core.llm_as_judge.judge import JudgeResult
+    from eval.core.retrieval.retrieval_layer import LayerOutput
+    from eval.core.subsets import BenchmarkSubset
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent  # eval/runner.py → eval/ → 项目根
 
@@ -242,6 +244,23 @@ def _evaluate_one(item: BenchmarkItem, retriever: Retriever, generator: Generato
 
 # ---- 评估模式 ----
 
+def _restore_store_or_exit() -> IndexStore:
+    """恢复本地索引 store; 若缺失, 打印原因并退出 1 ( _prepare_eval/_prepare_subsets 共用)。
+
+    Returns:
+        IndexStore: 恢复成功的本地 store。
+
+    Raises:
+        SystemExit: 索引缓存不存在时退出 1。
+    """
+    logger.info("加载索引（%s 模式）...", STORAGE_BACKEND)
+    store = IndexStore.vector_restore()
+    if store is None:
+        logger.error("索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
+        sys.exit(1)
+    return store
+
+
 def _prepare_eval(benchmark_path: str):
     """前置自检 + 就绪: 索引存在 + benchmark 标注有效 + 条目非空; 未满足时打印原因并退出 1。
 
@@ -259,11 +278,7 @@ def _prepare_eval(benchmark_path: str):
     """
     from eval.core.benchmark import load_benchmark
 
-    logger.info("加载索引（%s 模式）...", STORAGE_BACKEND)
-    store = IndexStore.vector_restore()
-    if store is None:
-        logger.error("索引缓存不存在（memory 模式下需先运行 agent_pipeline.py 入库）")
-        sys.exit(1)
+    store = _restore_store_or_exit()
     retriever = Retriever(store)
 
     logger.info("加载 benchmark: %s", benchmark_path)
@@ -301,11 +316,51 @@ def _abort_if_invalid_benchmark(result: BenchmarkLoadResult) -> None:
     sys.exit(1)
 
 
-def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | None:
-    """仅 Layer 1 检索评估（不调 LLM，免费），输出终端报告并落盘结果。
+def _prepare_subsets(benchmark_paths: list[str]) -> list[BenchmarkSubset]:
+    """多子集前置自检 + 就绪: 加载本地索引 + 加载多个 benchmark 子集(私有/公开), 缺失则 skip。
+
+    私有子集校验本地 IndexStore; 公开子集装配独立 memory store + 交集断言(见 eval/core/subsets);
+    任一非跳过子集标注失效或条目为空时打印原因并退出 1。
 
     Args:
-        benchmark_path: benchmark 文件路径。
+        benchmark_paths: benchmark 文件路径列表。
+
+    Returns:
+        list[BenchmarkSubset]: 加载后的子集列表(含 skipped 标记)。
+
+    Raises:
+        SystemExit: 索引缺失 / 任一子集标注失效 / 条目为空时退出 1。
+    """
+    from eval.core.subsets import load_subsets
+    from config import PUBLIC_BENCHMARK_PATHS, PUBLIC_STORE_CACHE_DIR, SKIP_IF_MISSING_BENCHMARKS
+
+    store = _restore_store_or_exit()
+
+    subsets = load_subsets(
+        benchmark_paths,
+        local_store=store,
+        public_paths=set(PUBLIC_BENCHMARK_PATHS),
+        public_cache_dir=PUBLIC_STORE_CACHE_DIR,
+        skip_if_missing=set(SKIP_IF_MISSING_BENCHMARKS),
+    )
+    for subset in subsets:
+        if subset.skipped:
+            logger.info("  跳过子集(缺失): %s", subset.path)
+            continue
+        _abort_if_invalid_benchmark(subset.load_result)
+        total = len(subset.items)
+        logger.info("  子集 %s (%s): %d 条", subset.path, subset.kind, total)
+        if total == 0:
+            logger.error("benchmark 无有效条目，中止: %s", subset.path)
+            sys.exit(1)
+    return subsets
+
+
+def run_retrieval_mode(benchmark_paths: list[str], no_report: bool = False) -> str | None:
+    """仅 Layer 1 检索评估（不调 LLM，免费），多子集分列统计 + 终端报告 + 落盘结果。
+
+    Args:
+        benchmark_paths: benchmark 文件路径列表(多子集, 私有/公开独立统计, 缺失即 skip)。
         no_report: True 时跳过 generate_report 与 timeline 落盘，保留终端报告。
 
     Returns:
@@ -324,35 +379,61 @@ def run_retrieval_mode(benchmark_path: str, no_report: bool = False) -> str | No
     reset_traces()
     metrics = get_metrics()
 
-    retriever, items = _prepare_eval(benchmark_path)
-    total = len(items)
+    subsets = _prepare_subsets(benchmark_paths)
+    active_subsets = [subset for subset in subsets if not subset.skipped]
+    total = sum(len(subset.items) for subset in active_subsets)
 
     # MonitorPanel（仅 final_report, 无 daemon 线程）
     previous_per_query = _load_previous_run()
     panel = MonitorPanel(metrics, previous_per_query)
     panel.set_total(total)
-    panel.set_meta(benchmark_name=benchmark_path, eval_mode="retrieval")
+    panel.set_meta(benchmark_name=",".join(benchmark_paths), eval_mode="retrieval")
 
     logger.info("执行 Layer 1 检索评估...")
-    output = run_retrieval_eval(retriever, items,
-                                 per_query_ctx=lambda item: trace_scope(item.query_id, item.query))
-    metrics.layer1_results = output.results
+    per_subset_outputs: list[tuple[BenchmarkSubset, LayerOutput]] = []
+    all_results = []
+    all_items = []
+    for subset in active_subsets:
+        output = run_retrieval_eval(subset.retriever, subset.items,
+                                    per_query_ctx=lambda item: trace_scope(item.query_id, item.query))
+        per_subset_outputs.append((subset, output))
+        all_results.extend(output.results)
+        all_items.extend(subset.items)
+    metrics.layer1_results = all_results
 
     panel.query_count = total
     panel.final_report()
 
+    # 分列统计(终端): 每子集独立指标, 合计为总规模, 不互相污染口径
+    for subset, output in per_subset_outputs:
+        aggregate = output.aggregate
+        logger.info("  [%s] %s: recall@K=%.4f hit@K=%.4f MRR=%.4f NDCG@K=%.4f (%d query)",
+                    subset.kind, subset.path, aggregate.get("recall_at_k", 0.0),
+                    aggregate.get("hit_at_k", 0.0), aggregate.get("mrr", 0.0),
+                    aggregate.get("ndcg_at_k", 0.0), len(subset.items))
+
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")  # 共享 run_id: 同时喂 timeline 目录与指标库
     write_step_report(session_traces(), trace_type="eval")  # 阶段计时报告(finalize 消费收集器前只读聚合)
-    _, attribution = finalize_traces(items, [], layer1_results=output.results, return_attribution=True)
-    _record_run_metrics(run_id=timestamp, benchmark_path=benchmark_path, retriever=retriever,
-                        items=items, output=output, judge_results=[], metrics=metrics,
-                        attribution=attribution, test_mode="retrieval")
+    _, attribution = finalize_traces(all_items, [], layer1_results=all_results, return_attribution=True)
+    # 指标库按子集分列记录(每子集一条 run, 语料签名各自独立, 不互相污染)
+    # M1: 归因表按子集 query_id 过滤, 避免把其他子集的归因条目写进本子集记录
+    for subset, output in per_subset_outputs:
+        subset_query_ids = {item.query_id for item in subset.items}
+        subset_attribution = {
+            query_id: att for query_id, att in attribution.items() if query_id in subset_query_ids
+        }
+        _record_run_metrics(run_id=f"{timestamp}-{subset.kind}-{Path(subset.path).stem}",
+                            benchmark_path=subset.path, retriever=subset.retriever,
+                            items=subset.items, output=output, judge_results=[], metrics=metrics,
+                            attribution=subset_attribution, test_mode="retrieval")
 
     if no_report:
         return None
     results_dir = str(_PROJECT_ROOT / "eval" / "results" / "timeline" / timestamp)
-    run_info = build_run_info(benchmark_path)
-    generate_report(output, results_dir, run_info)
+    for subset, output in per_subset_outputs:
+        subset_dir = str(Path(results_dir) / f"{subset.kind}-{Path(subset.path).stem}")
+        run_info = build_run_info(subset.path)
+        generate_report(output, subset_dir, run_info)
     return results_dir
 
 
@@ -610,7 +691,8 @@ def main() -> None:
         logging.getLogger(noisy).setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="plain-rag eval runner")
     parser.add_argument("--mode", choices=["retrieval", "full"], help="评估模式")
-    parser.add_argument("--benchmark", default="benchmark/private_v6.json", help="benchmark 文件路径")
+    parser.add_argument("--benchmark", nargs="+", default=[DEFAULT_BENCHMARK],
+                        help="benchmark 文件路径(可多个, 多子集分列统计; 缺省 DEFAULT_BENCHMARK)")
     parser.add_argument("--precheck", action="store_true", help="前置自检(索引/标注/条目), 不跑 eval")
     parser.add_argument("--smoke", action="store_true", help="生成链路冒烟(只跑前 limit 条, 隐含 --no-report)")
     parser.add_argument("--limit", type=int, default=SMOKE_DEFAULT_LIMIT, help="smoke 只评估前 N 条")
@@ -621,14 +703,14 @@ def main() -> None:
     if args.compare:
         run_compare(args.compare[0], args.compare[1])
     elif args.precheck:
-        run_precheck(args.benchmark)
+        run_precheck(args.benchmark[0])
     elif args.mode == "retrieval":
         run_retrieval_mode(args.benchmark, no_report=args.no_report)
     elif args.mode == "full":
         if args.smoke:
-            run_smoke_mode(args.benchmark, limit=args.limit)
+            run_smoke_mode(args.benchmark[0], limit=args.limit)
         else:
-            run_full_mode(args.benchmark, no_report=args.no_report)
+            run_full_mode(args.benchmark[0], no_report=args.no_report)
     else:
         parser.print_help()
 
