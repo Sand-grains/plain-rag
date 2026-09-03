@@ -45,11 +45,22 @@ STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "memory")
 # 向量缓存目录
 VECTOR_CACHE_DIR = str(_PROJECT_ROOT / ".vector_cache")
 
+# 语料本地版本化: 独立本地 git 仓库路径, 默认项目根同级 plain_rag_corpus, 不 push GitHub
+CORPUS_REPO_DIR = os.getenv("CORPUS_REPO_DIR", str(_PROJECT_ROOT.parent / "plain_rag_corpus"))
+
+# 多格式转制: pandoc 可执行文件显式路径(未加 PATH 时用), 空则回退 shutil.which("pandoc")
+PANDOC_PATH = os.getenv("PANDOC_PATH", "")
+
 # === LLM 与生成 ===
 # LLM API 配置，从 .env 读取（默认空串：无 .env 的 CI 环境也能 import，GENERATOR_CONFIG_HASH 只需确定性）
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")        # API 密钥
 LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "")      # 模型 ID，如 deepseek-v4-pro
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")      # API 地址，如 https://api.deepseek.com
+
+# query_generate 单独 LLM(默认继承主 LLM 保 eval 基线; .env 可配 QG_LLM_*)
+QG_LLM_API_KEY = os.getenv("QG_LLM_API_KEY", LLM_API_KEY)
+QG_LLM_BASE_URL = os.getenv("QG_LLM_BASE_URL", LLM_BASE_URL)
+QG_LLM_MODEL_ID = os.getenv("QG_LLM_MODEL_ID", LLM_MODEL_ID)
 
 EVAL_LLM_MODEL_ID = os.getenv("EVAL_LLM_MODEL_ID", "deepseek-v4-flash")  # 评估专用低成本模型
 
@@ -92,6 +103,7 @@ _generator_fingerprint = "|".join([
 ])
 GENERATOR_CONFIG_HASH = hashlib.sha256(_generator_fingerprint.encode()).hexdigest()[:12]
 
+
 # === 数据摄入===
 # precheck 预检开关
 PRECHECK_ENABLED = os.getenv("PRECHECK_ENABLED", "1") == "1"          # 预检总开关
@@ -114,23 +126,54 @@ DOCX_TEXT_THRESHOLD = int(os.getenv("DOCX_TEXT_THRESHOLD", "150"))  # DOCX WHOLE
 
 PPTX_SLIDE_TEXT_THRESHOLD = int(os.getenv("PPTX_SLIDE_TEXT_THRESHOLD", "50"))  # 文本 slide 最小字符数
 
+# 顶层路由阈值: ColPali 触发(图表面积占比 / 表格占比)
+IMAGE_AREA_RATIO = float(os.getenv("IMAGE_AREA_RATIO", "0.3"))   # 图表 bbox 面积 >= 页面 30% -> 触发 ColPali
+TABLE_RATIO = float(os.getenv("TABLE_RATIO", "0.3"))             # 表格元素数 / 总元素数 > 30% -> 触发 ColPali
+
 # loaders 解析开关(默认开)
 PDF_LOADER_ENABLED = os.getenv("PDF_LOADER_ENABLED", "1") == "1"
 HTML_LOADER_ENABLED = os.getenv("HTML_LOADER_ENABLED", "1") == "1"
 DOCX_LOADER_ENABLED = os.getenv("DOCX_LOADER_ENABLED", "1") == "1"
 PPTX_LOADER_ENABLED = os.getenv("PPTX_LOADER_ENABLED", "1") == "1"
 
-# cleaner 清洗开关
-CLEAN_PLAIN_TEXT = os.getenv("CLEAN_PLAIN_TEXT", "0") == "1"   # .md/.txt 是否过 cleaner, 默认关(保 private_v6 字节级不变)
-CLEAN_NEW_FORMAT = os.getenv("CLEAN_NEW_FORMAT", "1") == "1"   # 新格式归一化 MD 是否过 cleaner, 默认开
+# cleaner 清洗开关(默认都关, 禁止单侧开)
+CLEAN_PLAIN_TEXT = os.getenv("CLEAN_PLAIN_TEXT", "0") == "1"   # .md/.txt 是否过 cleaner, 默认关
+CLEAN_NEW_FORMAT = os.getenv("CLEAN_NEW_FORMAT", "0") == "1"   # 新格式归一化 MD 是否过 cleaner, 默认关(与 CLEAN_PLAIN_TEXT 对称)
 
-# parse_backends 重型后端门控(v2 逐个接入)
-DOCLING_ENABLED = os.getenv("DOCLING_ENABLED", "0") == "1"
-MINERU_ENABLED = os.getenv("MINERU_ENABLED", "0") == "1"
-MARKER_ENABLED = os.getenv("MARKER_ENABLED", "0") == "1"
-LLAMAPARSE_ENABLED = os.getenv("LLAMAPARSE_ENABLED", "0") == "1"
-VLM_ENABLED = os.getenv("VLM_ENABLED", "0") == "1"
-COLPALI_ENABLED = os.getenv("COLPALI_ENABLED", "0") == "1"
+# parse_backends 重型后端(HEAVY_ENABLED 默认 True 为重型链总开关)
+# 各 *_ENABLED 默认 True, 依赖缺失/无 key 时由 adapter 自动禁用, 对应文档将进失败清单
+HEAVY_ENABLED = os.getenv("HEAVY_ENABLED", "1") == "1"   # 重型文本链总开关(Docling/MinerU/Marker/MarkItDown)
+DOCLING_ENABLED = os.getenv("DOCLING_ENABLED", "1") == "1"
+MINERU_ENABLED = os.getenv("MINERU_ENABLED", "1") == "1"
+MARKER_ENABLED = os.getenv("MARKER_ENABLED", "1") == "1"
+LLAMAPARSE_ENABLED = os.getenv("LLAMAPARSE_ENABLED", "0") == "1"  # LlamaParse 排除, 默认关
+# VLM 薄封装: 统一 OpenAI 兼容接口 + base64 data URL
+VLM_ENABLED = os.getenv("VLM_ENABLED", "1") == "1"
+VLM_PROVIDER = os.getenv("VLM_PROVIDER", "deepseek_official")  # 不配置本地 VLM, 调用云 VLM
+VLM_API_KEY = os.getenv("VLM_API_KEY", "")                     # DeepSeek 官方 API 凭证
+VLM_MODEL = os.getenv("VLM_MODEL", "deepseek-v4-flash-vision-exp")  # 视觉模型(固定)
+VLM_BASE_URL = os.getenv("VLM_BASE_URL", LLM_BASE_URL)         # 默认同 LLM(api.deepseek.com)
+VLM_TIMEOUT_S = float(os.getenv("VLM_TIMEOUT_S", "60"))        # 单次 VLM 调用超时
+COLPALI_ENABLED = os.getenv("COLPALI_ENABLED", "1") == "1"
+# ColPali 薄封装(012-2 F40): 现成 ColPali/ColQwen 编码, 不实现训练
+COLPALI_MODEL_PATH = os.getenv("COLPALI_MODEL_PATH", "")   # ColPali/ColQwen 权重路径
+COLPALI_TIMEOUT_S = float(os.getenv("COLPALI_TIMEOUT_S", "60"))  # 单图编码超时
+MARKITDOWN_ENABLED = os.getenv("MARKITDOWN_ENABLED", "1") == "1"
+# MinerU 独立发行版 python 路径: 配了则 adapter 用其调 CLI, 否则用项目 venv python
+MINERU_PYTHON = os.getenv("MINERU_PYTHON") or None
+# MinerU 独立发行版根目录(含 src/models/config/cuda/output; 配了则复刻启动脚本环境)
+MINERU_ROOT = os.getenv("MINERU_ROOT") or None
+
+# 运行时健壮性: 重型/视觉后端执行模型与失败清单
+SUBPROCESS_EXECUTION = os.getenv("SUBPROCESS_EXECUTION", "0") == "1"  # 后端走独立子进程(超时 kill); 关=进程内(测试/调试)
+PARSE_WORKER_COUNT = int(os.getenv("PARSE_WORKER_COUNT", "1"))        # 子进程 worker 数(先设 1, 实测后调整)
+CIRCUIT_BREAKER_MAX_FAILURES = int(os.getenv("CIRCUIT_BREAKER_MAX_FAILURES", "3"))  # 连续失败熔断阈值
+WARM_UP_ENABLED = os.getenv("WARM_UP_ENABLED", "1") == "1"            # 启动 warm_up 探活(失败禁用对应管线)
+FAILURE_LIST_PATH = os.getenv("FAILURE_LIST_PATH", str(_PROJECT_ROOT / "eval" / "results" / "failure_list.json"))  # 失败清单落盘
+# 各后端单文档超时
+DOCLING_TIMEOUT_S = float(os.getenv("DOCLING_TIMEOUT_S", "120"))
+MINERU_TIMEOUT_S = float(os.getenv("MINERU_TIMEOUT_S", "300"))
+MARKITDOWN_TIMEOUT_S = float(os.getenv("MARKITDOWN_TIMEOUT_S", "60"))
 
 # === Embedding ===
 # Embedding 模型路径，首次运行自动从 HuggingFace 下载到本地缓存
@@ -188,6 +231,15 @@ MERGE_MIN_CHILD_HITS: int = 2    # 触发所需的最小非相邻子块命中数
 # 不加 score 下限 —— dense top-40 命中分数全 ≥0.47（达标父块 min-kept-hit p5=0.505）, 下限无约束力（0.5 仅滤 2.7%）
 
 # === Eval ===
+# 评测语料子集: 默认路径切换点集中
+DEFAULT_BENCHMARK = os.getenv("DEFAULT_BENCHMARK", "benchmark/private_builtin.json")
+# 公开子集路径集合(填充 MIRACL 适配产物), 命中则走独立 store + valid_chunk_ids=None
+PUBLIC_BENCHMARK_PATHS = [p for p in os.getenv("PUBLIC_BENCHMARK_PATHS", "").split(",") if p]
+# 公开语料索引缓存目录, 公开集 store 显式 memory 构造用
+PUBLIC_STORE_CACHE_DIR = str(_PROJECT_ROOT / ".vector_cache_public")
+# 缺失即跳过的 benchmark 路径集合(private_crawler.json 不进主仓库, 缺失时跳过)
+SKIP_IF_MISSING_BENCHMARKS = {"benchmark/private_crawler.json"}
+
 # Eval 并发加速
 EVAL_THREADPOOL_WORKERS = int(os.getenv("EVAL_THREADPOOL_WORKERS", "5"))  # 外层线程池 worker 数（query 级并发）
 
