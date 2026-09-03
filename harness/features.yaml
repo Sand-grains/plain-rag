@@ -1,3 +1,358 @@
 schema: 1
-milestone: 008-multiformat-parsing
-items: []
+milestone: 011-eval-corpus
+items:
+- id: F31
+  behavior: 'corpus-versioning: scripts/corpus_versioning.py 独立本地 git 仓库快照 data/+benchmark
+    标注 + SHA manifest 完整性校验 + 恢复, 不 push GitHub; config 增 CORPUS_REPO_DIR'
+  behavior_hash: 82cbee3ed15c
+  gate: uv run pytest tests/unit/test_corpus_versioning.py -q --cov=scripts.corpus_versioning
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-29 21:09
+  state: passed
+  note: 011-5 语料版本化落地
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 18
+    coverage: 97.92
+    duration: 12.92
+    mode: gate
+    artifact: verify-20260831-093537-F31.log
+- id: F32
+  behavior: 'eval-multisubset: eval/core/subsets.py 多子集加载/分列统计 + 公开集独立 memory store
+    装配(禁 vector_restore) + chunk_ids 交集断言 + 缺失即 skip(private_crawler); runner --benchmark
+    支持多值, 默认路径切换点集中(DEFAULT_BENCHMARK)'
+  behavior_hash: 2dc73c7a02c6
+  gate: uv run pytest tests/unit/test_subsets.py tests/unit/test_eval_runner_modes.py
+    -q --cov=eval.core.subsets --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: true
+  finished_time: 2026-08-29 21:22
+  state: passed
+  note: 011-0 评测基建适配落地
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 24
+    coverage: 100.0
+    duration: 39.02
+    mode: gate
+    artifact: verify-20260831-093617-F32.log
+- id: F33
+  behavior: 'corpus-convert: scripts/corpus_convert.py 内容形态分类 + 分层样本选择(表格全量) + 4 格式转制(html/docx
+    经 pandoc PANDOC_PATH, pdf 经 Edge headless --no-sandbox --print-to-pdf=, pptx 经
+    python-pptx) + gold 生成 + 转制语料 SHA 快照; 真实转制 51 篇 x 4 格式 + gold 已产出'
+  behavior_hash: bc4b20342096
+  gate: uv run pytest tests/unit/test_corpus_convert.py -q --cov=scripts.corpus_convert
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-29 21:44
+  state: passed
+  note: 011-4 完整转制落地(51篇x4格式+gold+快照)
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 19
+    coverage: 91.88
+    duration: 3.67
+    mode: gate
+    artifact: verify-20260831-093620-F33.log
+- id: F34
+  behavior: 'parse-baseline: eval/core/parse_metrics.py 文本召回率/精确率(char n-gram) + 结构保真度(标题/表格/代码块)
+    + scripts/parse_baseline.py 独立基线脚本(--backend 参数); 真实轻量基线已跑(204 样本, 报告落盘 baseline.json)'
+  behavior_hash: 7ba069173794
+  gate: uv run pytest tests/unit/test_parse_metrics.py tests/unit/test_parse_baseline.py
+    -q --cov=eval.core.parse_metrics --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-29 21:59
+  state: passed
+  note: 011-6 真实轻量基线(修正 pdf 后重跑)
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 27
+    coverage: 100.0
+    duration: 3.74
+    mode: gate
+    artifact: verify-20260831-093624-F34.log
+- id: F36
+  behavior: 'parse-diff: scripts/synthetic_scan.py 合成扫描 gold 集(md->pdf->png 渲染+加噪/歪斜,
+    gold 仍原 md, 真实 51 篇) + scripts/parse_diff.py 重型链差分报告(版本冻结头 + 预注册阈值 + Wilcoxon
+    配对检验 + 扫描层指标 + 判定字段)'
+  behavior_hash: bf2149beb96a
+  gate: uv run pytest tests/unit/test_synthetic_scan.py tests/unit/test_parse_diff.py
+    -q --cov=scripts.synthetic_scan --cov=scripts.parse_diff --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-30 15:12
+  state: passed
+  note: 012-1 合成扫描 gold 集 + 差分报告框架落地
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 15
+    coverage: 88.38000000000001
+    duration: 7.75
+    mode: gate
+    artifact: verify-20260831-093632-F36.log
+- id: F37
+  behavior: 'precheck-top-router: preprocess/format_precheck 顶层路由升级(text/vlm/colpali/skip
+    四格式判定) + DispatchDecision 增 VLM_TEXT_PIPELINE + PrecheckResult 增 colpali_triggered
+    + loaders VLM 不落轻量(route_decision=vlm) + config 增 IMAGE_AREA_RATIO/TABLE_RATIO
+    + test_splitter_byte_invariance golden 随语料 216->272 重算'
+  behavior_hash: 6d1cc54a4307
+  gate: uv run pytest tests/unit/test_precheck.py tests/unit/test_loaders.py -q --cov=preprocess.format_precheck
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-30 16:45
+  state: passed
+  note: 012-2 precheck 顶层路由升级
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 39
+    coverage: 92.15
+    duration: 37.44
+    mode: gate
+    artifact: verify-20260831-093710-F37.log
+- id: F39
+  behavior: 'vlm-backend: indexing/parse_backends/vlm.py VLM 薄封装(OpenAI 兼容 + base64
+    data URL, 直连 DeepSeek 官方 API, VLM_MODEL=deepseek-v4-flash-vision-exp, vlm_provider=deepseek_official)
+    + config 增 VLM_PROVIDER/VLM_API_KEY/VLM_MODEL/VLM_BASE_URL/VLM_TIMEOUT_S + 注册
+    vlm 后端'
+  behavior_hash: c41f67660d65
+  gate: uv run pytest tests/unit/test_parse_vlm.py tests/unit/test_parse_backends.py
+    -q --cov=indexing.parse_backends.vlm --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-30 16:53
+  state: passed
+  note: 012-2 VLM 薄封装 + 视觉类路由
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 43
+    coverage: 100.0
+    duration: 7.28
+    mode: gate
+    artifact: verify-20260831-093717-F39.log
+- id: F40
+  behavior: 'colpali-backend: indexing/parse_backends/colpali.py ColPali/ColQwen 视觉检索薄封装
+    (is_available 门控+权重路径+import 守卫 / version 版本冻结 / triggered 复用 precheck colpali_triggered
+    / encode_image 多向量编码, 不可用抛 ColPaliUnavailableError 进失败清单, 不与文本链混用) + config 增
+    COLPALI_MODEL_PATH/COLPALI_TIMEOUT_S'
+  behavior_hash: ff78260d0c4d
+  gate: uv run pytest tests/unit/test_parse_colpali.py -q --cov=indexing.parse_backends.colpali
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-30 16:57
+  state: passed
+  note: 012-2 ColPali 薄封装 + 触发
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 13
+    coverage: 100.0
+    duration: 8.72
+    mode: gate
+    artifact: verify-20260831-093726-F40.log
+- id: F41
+  behavior: 'runtime-robustness: indexing/parse_backends/failure_list.py 失败清单(JSON
+    落盘 eval/results/failure_list.json, 记录文件路径/路由决策/失败原因/后端尝试/版本串) + robustness.py
+    失败分类/熔断(3次/import_error立即)/run级统计/warm_up + subprocess_runner.py 子进程隔离执行 (SUBPROCESS_EXECUTION
+    开关, 超时 kill, worker=1) + parse_text_pipeline/heavy_chain_extract 走 _run_backend(熔断+统计)
+    + _load_multiformat 挂点(text->重型/VLM->VLM/skip/colpali 标记, 失败进清单不落轻量) + config
+    增 SUBPROCESS_EXECUTION/PARSE_WORKER_COUNT/CIRCUIT_BREAKER_MAX_FAILURES/ WARM_UP_ENABLED/FAILURE_LIST_PATH/DOCLING_TIMEOUT_S/MINERU_TIMEOUT_S/MARKITDOWN_TIMEOUT_S'
+  behavior_hash: b02cf4ab2b22
+  gate: uv run pytest tests/unit/test_parse_robustness.py tests/unit/test_parse_backends.py
+    tests/unit/test_loaders.py -q --cov=indexing.parse_backends.failure_list --cov=indexing.parse_backends.robustness
+    --cov=indexing.parse_backends.subprocess_runner --cov=indexing.loader --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-30 17:18
+  state: passed
+  note: 012-2 失败清单 + 运行时健壮性 + loader 挂点
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 74
+    coverage: 95.71
+    duration: 35.75
+    mode: gate
+    artifact: verify-20260831-093802-F41.log
+- id: F42
+  behavior: 'e2e-retrieval: 012-2 生产链端到端验证——改索引摄入路径(_load_multiformat 挂点 text->重型/VLM->VLM/skip/colpali
+    + 失败清单不落轻量), retrieval 模式跑 benchmark(.md/.txt 语料, 预期指标不漂移, 冒烟门抓崩溃/前置)'
+  behavior_hash: 74098791b2f5
+  gate: uv run pytest tests/unit/test_parse_robustness.py tests/unit/test_parse_backends.py
+    tests/unit/test_loaders.py tests/unit/test_parse_vlm.py tests/unit/test_parse_colpali.py
+    -q --cov=indexing.parse_backends --cov=indexing.loader --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: true
+  finished_time: 2026-08-30 17:20
+  state: passed
+  note: 012-2 生产链 e2e(retrieval 模式)
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 99
+    coverage: 83.6
+    duration: 38.22
+    mode: gate
+    artifact: verify-20260831-093840-F42.log
+- id: F43
+  behavior: 'private-crawler: scripts/private_crawler.py 011-2 定向爬取(URL 由用户提供, requests
+    抓取+trafilatura 抽正文+cleaner 清洗+存 data/Crawler/*.md+manifest.json, 限频 delay, 单条失败不阻塞)'
+  behavior_hash: dec6c23ce04b
+  gate: uv run pytest tests/unit/test_private_crawler.py -q --cov=scripts.private_crawler
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-30 17:34
+  state: passed
+  note: 011-2 定向爬虫基础设施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 17
+    coverage: 87.85
+    duration: 2.81
+    mode: gate
+    artifact: verify-20260831-093850-F43.log
+- id: F38
+  behavior: 'parse-text-pipeline: indexing/parse_backends/quality.py 质量代理信号(空产出/表格保留/代码fence/标题连续)
+    + merge.py 跨页表格/列表合并(去重复表头/有序+1/无序bullet一致) + parse_text_pipeline 质量驱动重试链 (Docling->MinerU->MarkItDown,
+    质量不达标降级, 记 retry_stats)'
+  behavior_hash: 240136e76dad
+  gate: uv run pytest tests/unit/test_parse_quality.py tests/unit/test_parse_merge.py
+    tests/unit/test_parse_backends.py tests/unit/test_paged_pipeline.py tests/unit/test_parse_vlm.py
+    tests/unit/test_parse_colpali.py tests/unit/test_parse_robustness.py -q --cov=indexing.parse_backends
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-31 09:35
+  state: passed
+  note: 补 paged_pipeline 测试入 gate, 覆盖率回 80%+
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 113
+    coverage: 91.67
+    duration: 15.53
+    mode: gate
+    artifact: verify-20260831-093906-F38.log
+- id: F35
+  behavior: 'parse-heavy-adapter: indexing/parse_backends 重型文本链 adapter(docling/mineru/markitdown,
+    import 守卫 + 008 归一化 + 惰性注册 + heavy_chain_extract 兜底链) + config 增 MARKITDOWN_ENABLED
+    + scripts/parse_baseline --backend 重型分支与失败记账 + scripts/route_acceptance.py 路由验收
+    (真实 HTML 21 篇, precision/recall/误判代价) + pyproject parse-heavy 组版本 pin + LICENSE
+    转 AGPL-3.0'
+  behavior_hash: 3b4bbb99e9fd
+  gate: uv run pytest tests/unit/test_parse_backends.py tests/unit/test_route_acceptance.py
+    tests/unit/test_parse_baseline.py tests/unit/test_paged_pipeline.py tests/unit/test_parse_vlm.py
+    tests/unit/test_parse_colpali.py tests/unit/test_parse_robustness.py -q --cov=indexing.parse_backends
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-31 09:35
+  state: passed
+  note: 补 paged_pipeline 测试入 gate, 覆盖率回 80%+
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 111
+    coverage: 89.38000000000001
+    duration: 14.91
+    mode: gate
+    artifact: verify-20260831-093921-F35.log
+- id: F44
+  behavior: 'query-generate: scripts/query_generate.py 011-2 爬取语料 query 生成(复用生产 Router
+    切分保证 expected_parent_ids 一致, LLM 生成 query+reference_facts, single_chunk/multi_chunk
+    难度分层, 产出 private_crawler.json 不进主仓库)'
+  behavior_hash: 7f976fe9871b
+  gate: uv run pytest tests/unit/test_query_generate.py -q --cov=scripts.query_generate
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-08-31 14:24
+  state: passed
+  note: 补 _run_multi_only 测试, 覆盖率回 80%+
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 14
+    coverage: 82.38
+    duration: 5.84
+    mode: gate
+    artifact: verify-20260831-142425-F44.log
+- id: F45
+  behavior: '011-1-closeout: 自建检索集 private_builtin 收口。重标完成(300→225 条, 清除尾逗号修复 JSON),
+    DEFAULT_BENCHMARK 已切换指向 benchmark/private_builtin.json, 225 条字段完整且 retrieval eval
+    无 invalid chunk(accept 221/ranking_miss 3/recall_miss 1)'
+  behavior_hash: e5538ba54f5e
+  gate: uv run pytest tests/unit/test_0111_private_builtin_closeout.py tests/unit/test_benchmark.py
+    -q --cov=eval.core.benchmark --cov-fail-under=80
+  e2e: uv run python -m eval.runner --mode retrieval --no-report
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-02 17:43
+  state: passed
+  note: '011-1 收口: private_builtin 重标完成+默认路径切换+225条全有效'
+  timeout: 600
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 14
+    coverage: 100.0
+    duration: 37.31
+    mode: gate
+    artifact: verify-20260902-174321-F45.log
