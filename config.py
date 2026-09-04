@@ -54,8 +54,10 @@ PANDOC_PATH = os.getenv("PANDOC_PATH", "")
 # === LLM 与生成 ===
 # LLM API 配置，从 .env 读取（默认空串：无 .env 的 CI 环境也能 import，GENERATOR_CONFIG_HASH 只需确定性）
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")        # API 密钥
-LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "")      # 模型 ID，如 deepseek-v4-pro
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")      # API 地址，如 https://api.deepseek.com
+LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "")      # 模型 ID
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "")      # API 地址
+# anno_llm 单次 LLM 调用超时(秒): 防止 远端端点挂起时进程无限等待(默认 120秒)
+LLM_CALL_TIMEOUT_S = float(os.getenv("LLM_CALL_TIMEOUT_S", "120"))
 
 # query_generate 单独 LLM(默认继承主 LLM 保 eval 基线; .env 可配 QG_LLM_*)
 QG_LLM_API_KEY = os.getenv("QG_LLM_API_KEY", LLM_API_KEY)
