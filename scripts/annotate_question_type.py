@@ -1,4 +1,4 @@
-"""收口时给 private_builtin 快速补 question_type 的一次性启发式工具
+"""收口时给 private_builtin 快速补 question_type 的一次性启发式小工具
 
 规则(启发式, 非 LLM 判定, 可能会误判漏判):
   - difficulty == multi_chunk -> multi_hop
