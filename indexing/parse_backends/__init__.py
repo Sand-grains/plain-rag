@@ -63,8 +63,8 @@ _REGISTRY_INITIALIZED = False
 @dataclass
 class ParseResult:
     """重型后端解析结果。"""
-    markdown: str = ""  # 归一化 Markdown 输出(v2 接入时消费)
-    format_meta: dict[str, Any] = field(default_factory=dict)  # 格式元信息(v2 接入时消费)
+    markdown: str = ""  # 归一化 Markdown 输出
+    format_meta: dict[str, Any] = field(default_factory=dict)  # 格式元信息
 
 
 class ParseBackend(Protocol):
