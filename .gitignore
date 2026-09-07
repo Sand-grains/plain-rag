@@ -46,6 +46,8 @@ benchmark/route_sample
 benchmark/private_builtin.checkpoint.json
 # 归档的历史 benchmark 版本(local-only, 不进版本控制)
 benchmark/archive/
+# 开发过程中的诊断产物
+benchmark/anno_llm/reports
 
-# 011/012 解析评测生成产物(整目录忽略, 可重生成)
+# 多格式解析评测生成产物(整目录忽略, 可重生成)
 artifacts/
