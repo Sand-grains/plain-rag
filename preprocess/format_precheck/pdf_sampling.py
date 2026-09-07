@@ -1,15 +1,16 @@
 """PDF 采样预检：摄入 PDF 文件路径，产出 PrecheckResult（分流决策 + 采样统计[样本页数/文本页数/空页率/图占比] + 质量降级标记[multi_column / text_page_ratio_below_threshold]）。
 
-决策域: {WHOLE_TEXT_PIPELINE, SKIP_TEXT_PIPELINE}
-
-采样窗口内存在文本页 -> WHOLE_TEXT_PIPELINE；无文本页 -> SKIP_TEXT_PIPELINE。
-文本页占比不足(0 < 占比 < 0.9)不是决策，是 WHOLE_TEXT_PIPELINE 的质量档位，
-记 degraded_flag("text_page_ratio_below_threshold") + vlm_candidate_count。
-多栏检测只标记 degraded_flag("multi_column")，本期不处理阅读顺序。
+决策域: {WHOLE_TEXT_PIPELINE, VLM_TEXT_PIPELINE, SKIP_TEXT_PIPELINE}
+  - 采样页全为文本(text>=150 且无图) 或 多栏 -> WHOLE_TEXT_PIPELINE(Docling 布局)
+  - 采样页全为视觉(text<150 且有图) -> VLM_TEXT_PIPELINE
+  - 采样页全为空(text<150 且无图) -> SKIP_TEXT_PIPELINE
+  - 混合 -> WHOLE_TEXT_PIPELINE(图文混排, vlm 页记 vlm_candidate)
+图表 bbox 面积 >= 页面 30% -> colpali_triggered(并行触发, 非互斥)。
 """
 from pathlib import Path
 
 from config import (
+    IMAGE_AREA_RATIO,
     PDF_IMAGE_AREA_RATIO,
     PDF_MULTI_COLUMN_GAP,
     PDF_SAMPLE_PAGES,
@@ -60,10 +61,13 @@ def precheck_pdf(path: Path) -> PrecheckResult:
         total_pages = len(pdf.pages)
         sample_indices = _sample_indices(total_pages, PDF_SAMPLE_PAGES)
         text_pages = 0
+        vlm_pages = 0
+        skip_pages = 0
         empty_pages = 0
         vlm_candidates = 0
         sampled = 0
         multi_column = False
+        colpali_triggered = False
 
         for index in sample_indices:
             page = pdf.pages[index]
@@ -72,12 +76,21 @@ def precheck_pdf(path: Path) -> PrecheckResult:
             if not text:
                 empty_pages += 1
             area_ratio = pdf_image_area_ratio(page)
-            if len(text) >= PDF_TEXT_THRESHOLD and area_ratio <= PDF_IMAGE_AREA_RATIO:
+            has_text = len(text) >= PDF_TEXT_THRESHOLD
+            has_image = area_ratio > 0
+            if has_text and not has_image:
                 text_pages += 1
-            else:
+            elif not has_text and has_image:
+                vlm_pages += 1
+            elif not has_text and not has_image:
+                skip_pages += 1
+            else:  # 图文混排: 文本管线处理, 图页记 vlm_candidate
+                text_pages += 1
                 vlm_candidates += 1
             if _is_multi_column(page):
                 multi_column = True
+            if area_ratio >= IMAGE_AREA_RATIO:
+                colpali_triggered = True
 
         ratio = text_pages / sampled if sampled else 0.0
         degraded_flags: list[str] = []
@@ -86,15 +99,25 @@ def precheck_pdf(path: Path) -> PrecheckResult:
         if 0 < ratio < PDF_TEXT_PAGE_RATIO:
             degraded_flags.append("text_page_ratio_below_threshold")
 
+        if multi_column or text_pages > 0:
+            decision = DispatchDecision.WHOLE_TEXT_PIPELINE
+        elif vlm_pages > 0:
+            decision = DispatchDecision.VLM_TEXT_PIPELINE
+        else:
+            decision = DispatchDecision.SKIP_TEXT_PIPELINE
+
         return PrecheckResult(
-            doc_decision=DispatchDecision.WHOLE_TEXT_PIPELINE if text_pages > 0 else DispatchDecision.SKIP_TEXT_PIPELINE,
+            doc_decision=decision,
             empty_page_ratio=(empty_pages / sampled) if sampled else 0.0,
             vlm_candidate_count=vlm_candidates,
+            colpali_triggered=colpali_triggered,
             degraded_flags=degraded_flags,
             sampling_format_stats={
                 "total_pages": total_pages,
                 "sampled_pages": sampled,
                 "sample_indices": sample_indices,
                 "text_pages": text_pages,
+                "vlm_pages": vlm_pages,
+                "skip_pages": skip_pages,
             },
         )
