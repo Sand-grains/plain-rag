@@ -141,6 +141,64 @@ class TestSmokeMode:
         assert before == after
 
 
+class TestMultiSubset:
+    """011-0: 多子集加载/分列统计 + 缺失即 skip。"""
+
+    def test_prepare_subsets_skips_missing_crawler(self, monkeypatch, tmp_path):
+        import config as config_mod
+        _patch_index(monkeypatch, _FakeStore(chunk_ids={"c1"}))
+        bench = _benchmark(tmp_path, [{"query_id": "Q1", "query": "q", "expected_parent_ids": ["c1"]}])
+        # private_crawler.json 已存在, 用 tmp 下真正缺失的文件 + 注入 skip 集合验证"缺失即 skip"
+        missing = str(tmp_path / "missing_crawler.json")
+        monkeypatch.setattr(config_mod, "SKIP_IF_MISSING_BENCHMARKS", {missing})
+        subsets = runner._prepare_subsets([bench, missing])
+        assert len(subsets) == 2
+        assert subsets[0].skipped is False
+        assert subsets[0].kind == "private"
+        assert subsets[1].skipped is True
+        assert subsets[1].retriever is None
+
+    def test_prepare_subsets_aborts_on_invalid(self, monkeypatch, tmp_path):
+        _patch_index(monkeypatch, _FakeStore(chunk_ids={"c1"}))
+        bench = _benchmark(tmp_path, [{"query_id": "Q1", "query": "q", "expected_parent_ids": ["MISSING"]}])
+        with pytest.raises(SystemExit) as exc:
+            runner._prepare_subsets([bench])
+        assert exc.value.code == 1
+
+    def test_retrieval_mode_runs_each_subset(self, monkeypatch, tmp_path):
+        from eval.core.retrieval import retrieval_layer
+
+        class _FakeOutput:
+            def __init__(self, query_id):
+                self.results = [type("R", (), {"query_id": query_id})()]
+                self.aggregate = {"recall_at_k": 0.5, "hit_at_k": 1.0, "mrr": 0.5, "ndcg_at_k": 0.5}
+
+        def fake_prepare(paths):
+            return [
+                type("S", (), {"path": "a.json", "kind": "private", "retriever": object(),
+                               "items": [_make_item("Q0")], "skipped": False})(),
+                type("S", (), {"path": "b.json", "kind": "public", "retriever": object(),
+                               "items": [_make_item("Q1")], "skipped": False})(),
+            ]
+
+        calls = []
+        recorded = []
+
+        def fake_eval(retriever, items, per_query_ctx=None):
+            calls.append(items[0].query_id)
+            return _FakeOutput(items[0].query_id)
+
+        def fake_record(**kwargs):
+            recorded.append(kwargs["benchmark_path"])
+
+        monkeypatch.setattr(runner, "_prepare_subsets", fake_prepare)
+        monkeypatch.setattr(retrieval_layer, "run_retrieval_eval", fake_eval)
+        monkeypatch.setattr(runner, "_record_run_metrics", fake_record)
+        runner.run_retrieval_mode(["a.json", "b.json"], no_report=True)
+        assert calls == ["Q0", "Q1"]
+        assert recorded == ["a.json", "b.json"]
+
+
 class TestRunCompare:
     """F20: run_compare 改读指标库(metrics_sink), 参数语义为 run_id。"""
 

@@ -53,7 +53,8 @@ class TestPdfPrecheck:
         result = precheck(path)
         assert result.doc_decision is DispatchDecision.WHOLE_TEXT_PIPELINE
         assert "text_page_ratio_below_threshold" in result.degraded_flags
-        assert result.vlm_candidate_count > 0
+        # 空页(无文本无图) -> skip, 不再计 vlm_candidate
+        assert result.sampling_format_stats["skip_pages"] > 0
 
 
 class TestHtmlPrecheck:
@@ -67,7 +68,7 @@ class TestHtmlPrecheck:
         path = tmp_path / "b.html"
         path.write_text(make_html("标题", "x", images=3), encoding="utf-8")
         result = precheck(path)
-        assert result.doc_decision is DispatchDecision.SKIP_TEXT_PIPELINE
+        assert result.doc_decision is DispatchDecision.VLM_TEXT_PIPELINE
         assert result.vlm_candidate_count == 3
 
     def test_empty_html_skip(self, tmp_path):
@@ -95,7 +96,7 @@ class TestDocxPrecheck:
     def test_image_only_docx_skip_vlm(self, tmp_path):
         path = make_docx([], with_image=True, tmp_path=tmp_path)
         result = precheck(path)
-        assert result.doc_decision is DispatchDecision.SKIP_TEXT_PIPELINE
+        assert result.doc_decision is DispatchDecision.VLM_TEXT_PIPELINE
         assert result.vlm_candidate_count > 0
 
     def test_empty_docx_skip(self, tmp_path):
@@ -103,6 +104,19 @@ class TestDocxPrecheck:
         result = precheck(path)
         assert result.doc_decision is DispatchDecision.SKIP_TEXT_PIPELINE
         assert result.vlm_candidate_count == 0
+
+    def test_table_ratio_triggers_colpali(self, tmp_path):
+        import docx
+        document = docx.Document()
+        document.add_paragraph("正文" * 80)  # 160 字符 >= 150 -> text
+        for _ in range(2):
+            table = document.add_table(rows=2, cols=2)
+            table.cell(0, 0).text = "a"
+        path = tmp_path / "t.docx"
+        document.save(str(path))
+        result = precheck(path)
+        assert result.doc_decision is DispatchDecision.WHOLE_TEXT_PIPELINE
+        assert result.colpali_triggered is True
 
 
 class TestPptxPrecheck:

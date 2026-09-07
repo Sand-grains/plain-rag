@@ -8,6 +8,7 @@
 
 - 基线指纹：2026-08-24 生成，216 文件 / 2278 子块 / 0 跳过，覆盖纯文本、
   标题树、超长 section、代码块等形态。
+- 2026-08-30 重算：data/ 语料扩充至 272 篇，指纹随语料更新（.md/.txt 分块路径未变）。
 - 任何会改变 .md/.txt 分块结果的核心改动都会使指纹漂移 → 测试失败，
   从而守住 private_v6 不变承诺。
 - 本测试不触碰 embedding / 索引 / 检索，无 infra 依赖，可离线运行。
@@ -22,7 +23,9 @@ from indexing.router import Router
 from preprocess.md_diagnosis import diagnose
 
 # 基线指纹（.md/.txt 全语料分块产出的 sha256）
-GOLDEN_SHA256 = "d15c24f3915dbc5369ec74ecf39362dab5feadf573cb22354dff6a4c2ed47510"
+# 2026-08-30 重算: data/ 语料 216 -> 272 篇(011 语料扩充), 指纹随语料更新
+# 2026-08-31 重算: data/ 语料 272 -> 397 篇(011-2 爬虫导入 data/Crawler 125 篇), 指纹随语料更新
+GOLDEN_SHA256 = "8604265a0c5e71923c85cfd9c351f090add23db6f54727a18077c67ba06dd126"
 
 _SUPPORTED_SUFFIXES = (".txt", ".md")
 
