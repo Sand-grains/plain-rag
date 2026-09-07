@@ -18,7 +18,7 @@ from config import (
 )
 from preprocess.format_precheck import PrecheckResult, SUFFIX_TO_PARSER_KIND
 
-__all__ = ["load_multiformat", "skip_result"]
+__all__ = ["load_multiformat", "skip_result", "vlm_result"]
 
 # 各格式 loader 门控: 解析器名(kind) -> 格式级开关(默认开); 关掉时整篇跳过, 返回空 MD + disabled 标记
 _FORMAT_LOADER_GATES = {
@@ -87,3 +87,24 @@ def skip_result(doc_type: str, vlm_candidate_count: int, disabled: bool = False)
     if disabled:
         meta["disabled"] = True
     return "", meta
+
+
+def vlm_result(doc_type: str, vlm_candidate_count: int) -> tuple[str, dict]:
+    """VLM_TEXT_PIPELINE 的统一返回: 返回空 MD + route_decision=vlm(不落轻量)。
+
+    视觉/扫描类文档由 precheck 路由到 VLM 管线;
+    这是因为轻量 loader 不解析视觉/扫描类文档, 返回空 MD + route_decision="vlm", 由调用方进 VLM 管线或失败清单
+
+    Args:
+        doc_type: 文件后缀（如 ".pdf"）。
+        vlm_candidate_count: 图文/纯图候选聚合计数。
+
+    Returns:
+        (markdown, format_meta)：markdown 恒为空串，format_meta 记 skipped=True + route_decision="vlm"。
+    """
+    return "", {
+        "doc_type": doc_type,
+        "vlm_candidate_count": vlm_candidate_count,
+        "skipped": True,
+        "route_decision": "vlm",
+    }
