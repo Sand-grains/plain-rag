@@ -1,10 +1,9 @@
 """HTML 采样预检：摄入 HTML 文件路径，产出 PrecheckResult（分流决策 + 正文统计[字符数/text_tag_ratio/图片数] + 质量降级标记[low_text_tag_ratio]）。
 
-决策域为 {HTML_TEXT, SKIP_TEXT_PIPELINE}
-
-正文 >= HTML_MIN_TEXT -> HTML_TEXT；
-正文 < 阈值且含图 -> SKIP_TEXT_PIPELINE + vlm_candidate；
-正文 < 阈值且无图 -> SKIP_TEXT_PIPELINE。
+决策域: {HTML_TEXT, VLM_TEXT_PIPELINE, SKIP_TEXT_PIPELINE}
+  - 正文 >= HTML_MIN_TEXT -> HTML_TEXT
+  - 正文 < 阈值 且含图 -> VLM_TEXT_PIPELINE
+  - 正文 < 阈值 且无图 -> SKIP_TEXT_PIPELINE
 text_tag_ratio 低 -> degraded_flag("low_text_tag_ratio")。
 """
 from pathlib import Path
@@ -23,7 +22,7 @@ def precheck_html(path: Path) -> PrecheckResult:
         path: HTML 文件路径。
 
     Returns:
-        PrecheckResult：HTML_TEXT 或 SKIP_TEXT_PIPELINE 决策与质量信号。
+        PrecheckResult：HTML_TEXT / VLM_TEXT_PIPELINE / SKIP_TEXT_PIPELINE 决策与质量信号。
     """
     from bs4 import BeautifulSoup
 
@@ -43,9 +42,12 @@ def precheck_html(path: Path) -> PrecheckResult:
     if len(main_text) >= HTML_MIN_TEXT:
         decision = DispatchDecision.HTML_TEXT
         vlm_candidates = 0
+    elif len(images) > 0:
+        decision = DispatchDecision.VLM_TEXT_PIPELINE
+        vlm_candidates = len(images)
     else:
         decision = DispatchDecision.SKIP_TEXT_PIPELINE
-        vlm_candidates = len(images)
+        vlm_candidates = 0
 
     return PrecheckResult(
         doc_decision=decision,
