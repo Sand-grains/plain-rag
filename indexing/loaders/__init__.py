@@ -92,8 +92,8 @@ def skip_result(doc_type: str, vlm_candidate_count: int, disabled: bool = False)
 def vlm_result(doc_type: str, vlm_candidate_count: int) -> tuple[str, dict]:
     """VLM_TEXT_PIPELINE 的统一返回: 返回空 MD + route_decision=vlm(不落轻量)。
 
-    视觉/扫描类文档由 precheck 路由到 VLM 管线;
-    这是因为轻量 loader 不解析视觉/扫描类文档, 返回空 MD + route_decision="vlm", 由调用方进 VLM 管线或失败清单
+    凡是 precheck 决策为 VLM_TEXT_PIPELINE,轻量 loader 就返回空 MD + route_decision="vlm"(vlm_result),不解析。
+    由调用方转交进 VLM 管线或失败清单。
 
     Args:
         doc_type: 文件后缀（如 ".pdf"）。
