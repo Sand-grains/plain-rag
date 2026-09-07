@@ -1,5 +1,5 @@
 schema: 1
-milestone: 011-eval-corpus
+milestone: 007-anno-llm
 items:
 - id: F31
   behavior: 'corpus-versioning: scripts/corpus_versioning.py 独立本地 git 仓库快照 data/+benchmark
@@ -356,3 +356,224 @@ items:
     duration: 37.31
     mode: gate
     artifact: verify-20260902-174321-F45.log
+- id: F46
+  behavior: 'anno-llm-prompt: benchmark/anno_llm/ 包 + prompt.py(build_prompt 输入隔离/编号[CHUNK
+    n]/不喂 reference_facts/多块/删除分支 hint_location + call_llm DeepSeek OpenAI 兼容 temperature=0
+    结构化JSON解析失败重试一次 mock可测) + 提议者/校验者提示词模板(§5.1/§5.2)'
+  behavior_hash: b36bee004d68
+  gate: uv run pytest tests/unit/test_anno_llm_prompt.py -q --cov=benchmark.anno_llm.prompt
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-03 15:32
+  state: passed
+  note: F46 anno-llm-prompt 开始实施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 16
+    coverage: 93.15
+    duration: 36.27
+    mode: gate
+    artifact: verify-20260903-170031-F46.log
+- id: F47
+  behavior: 'anno-llm-grounding: benchmark/anno_llm/grounding.py —— normalize(NFKC归一化空白/大小写/全角标点)
+    + verify_grounding(引用存在性子串匹配) + term_overlap(中文bigram+英文词低线0.3) + verify_semantic(BGE-M3
+    余弦>0.85 query↔quote为主/↔chunk为辅, mock可测) + enforce_consistency(difficulty由选块数派生+multi_hop
+    一致性+冲突降级review)'
+  behavior_hash: 9d1d019a7133
+  gate: uv run pytest tests/unit/test_anno_llm_grounding.py -q --cov=benchmark.anno_llm.grounding
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-03 15:36
+  state: passed
+  note: F47 anno-llm-grounding 开始实施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 18
+    coverage: 95.08
+    duration: 34.03
+    mode: gate
+    artifact: verify-20260903-162258-F47.log
+- id: F48
+  behavior: 'anno-llm-roles: benchmark/anno_llm/roles.py —— propose(提议者读全文单发) + verify_two_pass(校验者两轮
+    ROUND1被提块或hint区域/ROUND2全读, 一致或全读⊇否则review, 块级负样本注入须拒绝) + verify_delete(按hint_location
+    读原文确无→confirm删除) + negative_inject(条目级10%无解注入器, seed确定性)'
+  behavior_hash: 6ec98b0ef801
+  gate: uv run pytest tests/unit/test_anno_llm_roles.py -q --cov=benchmark.anno_llm.roles
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-03 15:41
+  state: passed
+  note: F48 anno-llm-roles 开始实施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 11
+    coverage: 100.0
+    duration: 33.92
+    mode: gate
+    artifact: verify-20260903-162333-F48.log
+- id: F49
+  behavior: 'anno-llm-writeback: benchmark/anno_llm/writeback.py —— rebuild_reference_facts(纯程序逐字拼接
+    evidence_quote) + confidence_split(阈值0.8分流) + apply_delete_list(自动剔除+重排query_id)
+    + report_grounding_rate(质检报告) + write_benchmark(原子写回复用anno_tool) + assert_index_coverable(fail-fast)
+    + IndexCoverageError'
+  behavior_hash: 1a9eb6bf1dad
+  gate: uv run pytest tests/unit/test_anno_llm_writeback.py -q --cov=benchmark.anno_llm.writeback
+    --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-03 15:45
+  state: passed
+  note: F49 anno-llm-writeback 开始实施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 12
+    coverage: 100.0
+    duration: 34.94
+    mode: gate
+    artifact: verify-20260903-162416-F49.log
+- id: F50
+  behavior: 'anno-tool-only: benchmark/anno_tool.py 加向后兼容 --only Q0001,Q0005,... 参数(不传则行为不变),
+    经 filter_by_only 纯函数过滤条目到指定 query_id, 消费 review 清单; 删除清单自动写回、--only 不消费'
+  behavior_hash: 37ad8ec0e9b0
+  gate: uv run pytest tests/unit/test_anno_tool_only.py -q
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-03 15:47
+  state: passed
+  note: F50 anno-tool-only 开始实施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 5
+    coverage: null
+    duration: 27.2
+    mode: gate
+    artifact: verify-20260903-154752-F50.log
+- id: F51
+  behavior: 'anno-llm-validation: benchmark/anno_llm/validation.py —— sanitize_entries/make_sanitized_copy(制副本+清洗堵泄漏)
+    + gate1_hit_rate(门控1 builtin 宽松口径: 任意有效块命中/等价集术语重叠≥0.3) + gate2_pilot_summary(门控2
+    crawler 语义相关率≥0.8+噪音处置量化) + q4_disposition_accuracy(坏query处置正确率) + health_review_ratio(健康阈值
+    review>35%非阻断) + checkpoint_status(前置验证人工检查点流程门); CLI 经 python -m benchmark.anno_llm(§4.7
+    草案, LLM实跑属人工执行步)'
+  behavior_hash: a711c05c9b19
+  gate: uv run pytest tests/unit/test_anno_llm_validation.py tests/unit/test_anno_llm_cli.py
+    -q --cov=benchmark.anno_llm.validation --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-03 15:55
+  state: passed
+  note: F51 anno-llm-validation 开始实施
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 22
+    coverage: 98.55000000000001
+    duration: 37.38
+    mode: gate
+    artifact: verify-20260903-191906-F51.log
+- id: F52
+  behavior: 'anno-llm-semantic-calibration: verify_semantic 度量重写(multi_chunk 整答案 concat
+    quotes / single_chunk chunk.content + term_overlap 降级诊断+极低floor0.1 + token 截断8192)
+    + call_llm 超时重试/退避(瞬时错误重试2~3次, 永久错误不重试) + 提议者 prompt 摘核心答案句 + cli --no-negative-blocks
+    开关 + validation 精度向防全标指标(重叠率+块数对比) + 前置基线诊断(gate1≥0.8) + scripts/anno_llm_calibrate.py
+    阈值校准脚本(方案B+平衡目标)'
+  behavior_hash: f48bdc4d6b8b
+  gate: uv run pytest tests/unit/test_anno_llm_grounding.py tests/unit/test_anno_llm_prompt.py
+    tests/unit/test_anno_llm_cli.py tests/unit/test_anno_llm_validation.py tests/unit/test_anno_llm_calibrate.py
+    -q --cov=benchmark.anno_llm.grounding --cov=benchmark.anno_llm.prompt --cov=benchmark.anno_llm.cli
+    --cov=benchmark.anno_llm.validation --cov=scripts.anno_llm_calibrate --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-05 15:30
+  state: passed
+  note: 'anno_llm-semantic-calibration 落地: verify_semantic 度量重写(整答案/chunk.content
+    + term_overlap 降级0.1 + 截断8192) + call_llm 瞬时错误退避重试 + 提议者摘核心答案句 + cli --no-negative-blocks/--no-semantic-gate
+    + validation 精度向防全标指标 + 前置基线诊断 + scripts/anno_llm_calibrate.py 阈值校准; 全量回归 1075
+    passed'
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 112
+    coverage: 85.87
+    duration: 45.12
+    mode: gate
+    artifact: verify-20260905-153047-F52.log
+- id: F53
+  behavior: 'anno-llm-semantic-gate-reposition: cli 归因分解(逐条 reject 子原因 cos/term_overlap/chunk_missing/quote_missing/quote_absent,
+    落盘 attribution 归因表) + 三方案可切换代码路径(--semantic-mode hard/weak/remove/data + --semantic-threshold)
+    + 乙下 all_grounded 只做引用存在性校验 + validation 精度抽样(部分命中即正) + 方案乙决策规则(review率<35%且精度≥0.8则全量)
+    + 归因表汇总'
+  behavior_hash: d80b8bcb3a5d
+  gate: uv run pytest tests/unit/test_anno_llm_grounding.py tests/unit/test_anno_llm_prompt.py
+    tests/unit/test_anno_llm_cli.py tests/unit/test_anno_llm_validation.py tests/unit/test_anno_llm_calibrate.py
+    -q --cov=benchmark.anno_llm.grounding --cov=benchmark.anno_llm.prompt --cov=benchmark.anno_llm.cli
+    --cov=benchmark.anno_llm.validation --cov=scripts.anno_llm_calibrate --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-07 10:44
+  state: passed
+  note: '009 语义门重定位: 归因分解 + 三方案可切换代码路径'
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 127
+    coverage: 89.29
+    duration: 55.31
+    mode: gate
+    artifact: verify-20260907-104421-F53.log
+- id: F54
+  behavior: 'anno-llm-pilot-speedup: run_pipeline 线程池并发加速(008 §3.1)——_process_entry
+    改为返回增量 delta(线程安全, 主线程 _merge 收口) + workers 参数(默认1串行, >1 线程池并发, I/O 密集墙钟≈除以并发数)
+    + CLI --workers + 即时写盘 on_entry 按完成序回调 + 总超时提交前检查'
+  behavior_hash: 7161ba15fa7b
+  gate: uv run pytest tests/unit/test_anno_llm_grounding.py tests/unit/test_anno_llm_prompt.py
+    tests/unit/test_anno_llm_cli.py tests/unit/test_anno_llm_validation.py tests/unit/test_anno_llm_calibrate.py
+    -q --cov=benchmark.anno_llm.grounding --cov=benchmark.anno_llm.prompt --cov=benchmark.anno_llm.cli
+    --cov=benchmark.anno_llm.validation --cov=scripts.anno_llm_calibrate --cov-fail-under=80
+  e2e: null
+  precheck: null
+  e2e_passed: false
+  finished_time: 2026-09-07 11:13
+  state: passed
+  note: '008 §3.1 并发加速: run_pipeline 线程池并行化(workers 可配)'
+  timeout: null
+  metric_gate: null
+  baseline_run_id: null
+  last_verify:
+    exit_code: 0
+    tests: 129
+    coverage: 89.35
+    duration: 57.86
+    mode: gate
+    artifact: verify-20260907-111313-F54.log
