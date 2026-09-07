@@ -1,15 +1,15 @@
 """DOCX 采样预检：摄入 DOCX 文件路径，产出 PrecheckResult（分流决策 + 文档统计[字符数/段落数/表格数/图片数]）。
 
-决策域: {WHOLE_TEXT_PIPELINE, SKIP_TEXT_PIPELINE}
-
-总字符 >= 150 -> WHOLE_TEXT_PIPELINE；
-总字符 < 150 且含图 -> SKIP_TEXT_PIPELINE + vlm_candidate；
-总字符 < 150 且无图 -> SKIP_TEXT_PIPELINE。
+决策域: {WHOLE_TEXT_PIPELINE, VLM_TEXT_PIPELINE, SKIP_TEXT_PIPELINE}
+  - 总字符 >= 150 -> WHOLE_TEXT_PIPELINE
+  - 总字符 < 150 且含图 -> VLM_TEXT_PIPELINE
+  - 总字符 < 150 且无图 -> SKIP_TEXT_PIPELINE
+表格元素数 / 总元素数 > 30% -> colpali_triggered(并行触发)。
 图片量度用数量（python-docx 难拿面积）。
 """
 from pathlib import Path
 
-from config import DOCX_TEXT_THRESHOLD
+from config import DOCX_TEXT_THRESHOLD, TABLE_RATIO
 from .result import DispatchDecision, PrecheckResult
 
 
@@ -28,7 +28,7 @@ def precheck_docx(path: Path) -> PrecheckResult:
         path: DOCX 文件路径。
 
     Returns:
-        PrecheckResult：WHOLE_TEXT_PIPELINE 或 SKIP_TEXT_PIPELINE 决策与质量信号。
+        PrecheckResult：WHOLE_TEXT_PIPELINE / VLM_TEXT_PIPELINE / SKIP_TEXT_PIPELINE 决策与质量信号。
     """
     from docx import Document
 
@@ -48,12 +48,15 @@ def precheck_docx(path: Path) -> PrecheckResult:
                 total_chars += len(cell.text)
 
     image_count = _count_images(document)
+    total_elements = paragraph_count + table_count
+    table_ratio = (table_count / total_elements) if total_elements else 0.0
+    colpali_triggered = table_ratio > TABLE_RATIO
 
     if total_chars >= DOCX_TEXT_THRESHOLD:
         decision = DispatchDecision.WHOLE_TEXT_PIPELINE
         vlm_candidates = 0
     elif image_count > 0:
-        decision = DispatchDecision.SKIP_TEXT_PIPELINE
+        decision = DispatchDecision.VLM_TEXT_PIPELINE
         vlm_candidates = image_count
     else:
         decision = DispatchDecision.SKIP_TEXT_PIPELINE
@@ -63,11 +66,13 @@ def precheck_docx(path: Path) -> PrecheckResult:
         doc_decision=decision,
         empty_page_ratio=0.0,
         vlm_candidate_count=vlm_candidates,
+        colpali_triggered=colpali_triggered,
         degraded_flags=[],
         sampling_format_stats={
             "total_chars": total_chars,
             "paragraph_count": paragraph_count,
             "table_count": table_count,
             "image_count": image_count,
+            "table_ratio": round(table_ratio, 4),
         },
     )
