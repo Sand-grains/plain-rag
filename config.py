@@ -157,7 +157,7 @@ VLM_MODEL = os.getenv("VLM_MODEL", "deepseek-v4-flash-vision-exp")  # 视觉模�
 VLM_BASE_URL = os.getenv("VLM_BASE_URL", LLM_BASE_URL)         # 默认同 LLM(api.deepseek.com)
 VLM_TIMEOUT_S = float(os.getenv("VLM_TIMEOUT_S", "60"))        # 单次 VLM 调用超时
 COLPALI_ENABLED = os.getenv("COLPALI_ENABLED", "1") == "1"
-# ColPali 薄封装(012-2 F40): 现成 ColPali/ColQwen 编码, 不实现训练
+# ColPali 薄封装: 现成 ColPali/ColQwen 编码, 不实现训练
 COLPALI_MODEL_PATH = os.getenv("COLPALI_MODEL_PATH", "")   # ColPali/ColQwen 权重路径
 COLPALI_TIMEOUT_S = float(os.getenv("COLPALI_TIMEOUT_S", "60"))  # 单图编码超时
 MARKITDOWN_ENABLED = os.getenv("MARKITDOWN_ENABLED", "1") == "1"
