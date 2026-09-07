@@ -258,7 +258,7 @@ def _run_whole_doc_chain(doc_path: str, original_table_count: int | None,
 
 def parse_text_pipeline(doc_path: str, original_table_count: int | None = None,
                         expected_code_blocks: int | None = None) -> tuple[str, dict[str, Any]]:
-    """质量驱动的文本管线: 整篇链 -> 未达标则页级重试 + VLM 修正。
+    """质量驱动的文本管线: 整篇链 -> 未达标则 页级重试 + VLM 修正(paged_pipeline 中编排了重试逻辑, 但 VLM API 注入是在这里)。
 
     先跑整篇质量驱动链(Docling -> MinerU -> MarkItDown);
     整篇未达标时进入页级: PDF/PPTX 按页/slide 拆分逐页重试, 仍不达标页 VLM 修正, 跨页合并;
