@@ -7,7 +7,7 @@ from pathlib import Path
 from bs4 import Tag
 
 from preprocess.format_precheck import DispatchDecision, PrecheckResult
-from indexing.loaders import skip_result
+from indexing.loaders import skip_result, vlm_result
 from ._md import count_degraded_tables, heading_md, to_pipe_table
 
 _SKIP_TAGS = {"nav", "aside", "footer", "script", "style", "header", "form", "noscript"}
@@ -73,6 +73,8 @@ def html_loader(path: Path, precheck: PrecheckResult) -> tuple[str, dict]:
 
     if precheck.doc_decision is DispatchDecision.SKIP_TEXT_PIPELINE:
         return skip_result(".html", precheck.vlm_candidate_count)
+    if precheck.doc_decision is DispatchDecision.VLM_TEXT_PIPELINE:
+        return vlm_result(".html", precheck.vlm_candidate_count)
 
     soup = BeautifulSoup(path.read_text(encoding="utf-8", errors="replace"), "html.parser")
     markdown = _normalize_body(soup)

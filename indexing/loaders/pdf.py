@@ -8,7 +8,7 @@ from pathlib import Path
 from config import PDF_IMAGE_AREA_RATIO, PDF_TEXT_THRESHOLD
 from preprocess.format_precheck import DispatchDecision, PrecheckResult
 from preprocess.format_precheck.shared import pdf_image_area_ratio
-from indexing.loaders import skip_result
+from indexing.loaders import skip_result, vlm_result
 from ._md import count_degraded_tables
 
 
@@ -28,6 +28,8 @@ def pdf_loader(path: Path, precheck: PrecheckResult) -> tuple[str, dict]:
 
     if precheck.doc_decision is DispatchDecision.SKIP_TEXT_PIPELINE:
         return skip_result(".pdf", precheck.vlm_candidate_count)
+    if precheck.doc_decision is DispatchDecision.VLM_TEXT_PIPELINE:
+        return vlm_result(".pdf", precheck.vlm_candidate_count)
 
     blocks: list[str] = []
     vlm_candidates = 0

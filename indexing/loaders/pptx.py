@@ -8,7 +8,7 @@ from pathlib import Path
 from config import PPTX_SLIDE_TEXT_THRESHOLD
 from preprocess.format_precheck import DispatchDecision, PrecheckResult
 from preprocess.format_precheck.shared import pptx_image_area_ratio, slide_text
-from indexing.loaders import skip_result
+from indexing.loaders import skip_result, vlm_result
 from ._md import count_degraded_tables, to_pipe_table
 
 
@@ -66,6 +66,8 @@ def pptx_loader(path: Path, precheck: PrecheckResult) -> tuple[str, dict]:
 
     if precheck.doc_decision is DispatchDecision.SKIP_TEXT_PIPELINE:
         return skip_result(".pptx", precheck.vlm_candidate_count)
+    if precheck.doc_decision is DispatchDecision.VLM_TEXT_PIPELINE:
+        return vlm_result(".pptx", precheck.vlm_candidate_count)
 
     presentation = Presentation(str(path))
     slide_width = presentation.slide_width or 0
